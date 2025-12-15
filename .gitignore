@@ -62,12 +62,13 @@ apps/api/bun.lock
 # Next.js (additional)
 apps/web/.swc/
 
-# Storage/Data (for future phases)
+# Storage/Data (ignore data directories, but keep storage code)
 *.db
 *.sqlite
 *.sqlite3
 data/
-storage/
+apps/api/data/
+# Note: apps/api/storage/ contains code, not data - it should be tracked
 
 # Temporary files
 *.tmp

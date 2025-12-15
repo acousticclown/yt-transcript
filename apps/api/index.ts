@@ -1,5 +1,6 @@
 import "dotenv/config";
 import http from "http";
+import { randomUUID } from "crypto";
 import { getSubtitles } from "youtube-caption-extractor";
 import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
@@ -7,6 +8,8 @@ import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
 import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
 import { transcribeAudio } from "./utils/whisperTranscription";
+import { saveNote } from "./storage/saveNote";
+import { toMarkdown } from "./utils/toMarkdown";
 
 const PORT = 3001;
 
@@ -267,6 +270,131 @@ const server = http.createServer(async (req, res) => {
       res.end(
         JSON.stringify({
           error: "Failed to generate sections",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/save") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        url?: string;
+        sections?: Array<{
+          title: string;
+          summary: string;
+          bullets: string[];
+        }>;
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { url, sections } = parsedBody;
+
+      if (!url || typeof url !== "string" || url.trim() === "") {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Valid URL is required" }));
+        return;
+      }
+
+      if (!sections || !Array.isArray(sections) || sections.length === 0) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Sections array is required and cannot be empty" }));
+        return;
+      }
+
+      // Validate sections structure
+      for (const section of sections) {
+        if (!section || typeof section !== "object") {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Invalid section structure" }));
+          return;
+        }
+        if (!Array.isArray(section.bullets)) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(JSON.stringify({ error: "Section bullets must be an array" }));
+          return;
+        }
+      }
+
+      const note = {
+        id: randomUUID(),
+        url: url.trim(),
+        createdAt: new Date().toISOString(),
+        sections,
+      };
+
+      await saveNote(note);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ id: note.id }));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to save note",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/export/markdown") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        sections?: Array<{
+          title: string;
+          summary: string;
+          bullets: string[];
+        }>;
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { sections } = parsedBody;
+
+      if (!sections || !Array.isArray(sections)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Sections array is required" }));
+        return;
+      }
+
+      const markdown = toMarkdown(sections);
+
+      res.writeHead(200, {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="notes.md"',
+      });
+      res.end(markdown);
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to export markdown",
           details: err.message,
         })
       );
