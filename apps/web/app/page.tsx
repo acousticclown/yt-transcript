@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  DndContext,
-  closestCenter,
-  DragEndEvent,
-} from "@dnd-kit/core";
+import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
@@ -80,10 +76,12 @@ export default function Home() {
       }
 
       // Add stable IDs to sections for drag & drop
-      const sectionsWithIds = (sectionsData.sections || []).map((section: Omit<Section, "id">) => ({
-        ...section,
-        id: crypto.randomUUID(),
-      }));
+      const sectionsWithIds = (sectionsData.sections || []).map(
+        (section: Omit<Section, "id">) => ({
+          ...section,
+          id: crypto.randomUUID(),
+        })
+      );
       setSections(sectionsWithIds);
     } catch {
       alert(

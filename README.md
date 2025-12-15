@@ -13,6 +13,8 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 - ✅ **Inline AI actions** - Simplify, expand, or add examples to text (contextual, on hover)
 - ✅ **Partial regeneration** - Regenerate one section at a time without affecting others
 - ✅ **Smooth animations** - Subtle, premium feel with Framer Motion
+- ✅ **Drag & drop reordering** - Reorder sections to organize thoughts
+- ✅ **Focus mode** - Distraction-free editing by dimming other sections
 
 ## Tech Stack
 
@@ -45,6 +47,7 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 - Day 9: Playful Animations with Framer Motion ✅
 - Day 10: Inline AI Actions ✅
 - Day 11: Partial Regeneration ✅
+- Day 12: Drag, Reorder & Focus Mode ✅
 
 **Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
 

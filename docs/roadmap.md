@@ -40,8 +40,11 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Preserves other sections
 - [x] Surgical AI - no chaos
 
-### Day 12 (Planned)
-- Drag, reorder & focus mode
+### Day 12 ✅ (Complete)
+- [x] Drag & drop reordering
+- [x] Stable IDs for sections
+- [x] Focus mode (distraction-free editing)
+- [x] Dim other sections when focused
 
 ### Day 13 (Planned)
 - Visual hierarchy + themes
