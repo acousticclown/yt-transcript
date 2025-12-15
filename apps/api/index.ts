@@ -13,6 +13,7 @@ import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
+import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
 
 // Storage & Export
 import { saveNote } from "./storage/saveNote";
@@ -406,6 +407,62 @@ const server = http.createServer(async (req, res) => {
       res.end(
         JSON.stringify({
           error: "Failed to export markdown. Please try again.",
+        })
+      );
+    }
+    return;
+  }
+
+  // ============================================
+  // POST /ai/inline - Inline AI actions (simplify, expand, example)
+  // ============================================
+  if (req.method === "POST" && pathname === "/ai/inline") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        action?: "simplify" | "expand" | "example";
+        text?: string;
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { action, text } = parsedBody;
+
+      if (!action || !text) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Action and text are required" })
+        );
+        return;
+      }
+
+      if (!["simplify", "expand", "example"].includes(action)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid action" }));
+        return;
+      }
+
+      // Generate AI response
+      const prompt = inlineActionPrompt(action, text);
+      const result = await geminiModel.generateContent(prompt);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ text: result.trim() }));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to process inline AI action",
         })
       );
     }

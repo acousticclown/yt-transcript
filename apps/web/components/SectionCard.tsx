@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { InlineAIButton } from "./InlineAIButton";
 
 type Section = {
   title: string;
@@ -15,6 +17,40 @@ export function SectionCard({
   section: Section;
   onChange: (section: Section) => void;
 }) {
+  const [loadingSummary, setLoadingSummary] = useState<string | null>(null);
+  const [loadingBullets, setLoadingBullets] = useState<Record<number, string>>({});
+
+  async function runInlineAI(
+    action: "simplify" | "expand" | "example",
+    text: string,
+    onUpdate: (newText: string) => void,
+    setLoading: (loading: boolean) => void
+  ) {
+    if (!text.trim()) return;
+
+    setLoading(true);
+    try {
+      const res = await fetch("http://localhost:3001/ai/inline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, text }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+        alert(`⚠️ ${errorData.error || "Failed to process AI action"}`);
+        return;
+      }
+
+      const data = await res.json();
+      onUpdate(data.text);
+    } catch {
+      alert("⚠️ Failed to process AI action. Make sure the API server is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <motion.div
       whileHover={{ scale: 1.005 }}
@@ -32,30 +68,152 @@ export function SectionCard({
       />
 
       {/* Summary - Subtle background, looks like a note */}
-      <textarea
-        className="w-full bg-gray-50 rounded-lg p-3 resize-none outline-none text-gray-700 placeholder-gray-400 min-h-[60px]"
-        placeholder="Summary..."
-        value={section.summary}
-        onChange={(e) =>
-          onChange({ ...section, summary: e.target.value })
-        }
-      />
+      <div className="relative group">
+        <textarea
+          className="w-full bg-gray-50 rounded-lg p-3 resize-none outline-none text-gray-700 placeholder-gray-400 min-h-[60px]"
+          placeholder="Summary..."
+          value={section.summary}
+          onChange={(e) =>
+            onChange({ ...section, summary: e.target.value })
+          }
+        />
+        <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
+          <InlineAIButton
+            label="✨ Simplify"
+            loading={loadingSummary === "simplify"}
+            onClick={() =>
+              runInlineAI(
+                "simplify",
+                section.summary,
+                (newText) => onChange({ ...section, summary: newText }),
+                (loading) => setLoadingSummary(loading ? "simplify" : null)
+              )
+            }
+          />
+          <InlineAIButton
+            label="➕ Expand"
+            loading={loadingSummary === "expand"}
+            onClick={() =>
+              runInlineAI(
+                "expand",
+                section.summary,
+                (newText) => onChange({ ...section, summary: newText }),
+                (loading) => setLoadingSummary(loading ? "expand" : null)
+              )
+            }
+          />
+          <InlineAIButton
+            label="💡 Example"
+            loading={loadingSummary === "example"}
+            onClick={() =>
+              runInlineAI(
+                "example",
+                section.summary,
+                (newText) => onChange({ ...section, summary: newText }),
+                (loading) => setLoadingSummary(loading ? "example" : null)
+              )
+            }
+          />
+        </div>
+      </div>
 
       {/* Bullets - Soft rows, feels like writing notes */}
       <ul className="space-y-2">
         {section.bullets.map((bullet, i) => (
-          <li key={i} className="flex items-start gap-2">
+          <li key={i} className="flex items-start gap-2 group/bullet">
             <span className="mt-1 text-gray-400">•</span>
-            <input
-              className="flex-1 outline-none bg-transparent text-gray-700 placeholder-gray-400"
-              placeholder="Bullet point..."
-              value={bullet}
-              onChange={(e) => {
-                const bullets = [...section.bullets];
-                bullets[i] = e.target.value;
-                onChange({ ...section, bullets });
-              }}
-            />
+            <div className="flex-1 relative">
+              <input
+                className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                placeholder="Bullet point..."
+                value={bullet}
+                onChange={(e) => {
+                  const bullets = [...section.bullets];
+                  bullets[i] = e.target.value;
+                  onChange({ ...section, bullets });
+                }}
+              />
+              <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1">
+                <InlineAIButton
+                  label="✨ Simplify"
+                  loading={loadingBullets[i] === "simplify"}
+                  onClick={() =>
+                    runInlineAI(
+                      "simplify",
+                      bullet,
+                      (newText) => {
+                        const bullets = [...section.bullets];
+                        bullets[i] = newText;
+                        onChange({ ...section, bullets });
+                      },
+                      (loading) => {
+                        if (loading) {
+                          setLoadingBullets((prev) => ({ ...prev, [i]: "simplify" }));
+                        } else {
+                          setLoadingBullets((prev) => {
+                            const next = { ...prev };
+                            delete next[i];
+                            return next;
+                          });
+                        }
+                      }
+                    )
+                  }
+                />
+                <InlineAIButton
+                  label="➕ Expand"
+                  loading={loadingBullets[i] === "expand"}
+                  onClick={() =>
+                    runInlineAI(
+                      "expand",
+                      bullet,
+                      (newText) => {
+                        const bullets = [...section.bullets];
+                        bullets[i] = newText;
+                        onChange({ ...section, bullets });
+                      },
+                      (loading) => {
+                        if (loading) {
+                          setLoadingBullets((prev) => ({ ...prev, [i]: "expand" }));
+                        } else {
+                          setLoadingBullets((prev) => {
+                            const next = { ...prev };
+                            delete next[i];
+                            return next;
+                          });
+                        }
+                      }
+                    )
+                  }
+                />
+                <InlineAIButton
+                  label="💡 Example"
+                  loading={loadingBullets[i] === "example"}
+                  onClick={() =>
+                    runInlineAI(
+                      "example",
+                      bullet,
+                      (newText) => {
+                        const bullets = [...section.bullets];
+                        bullets[i] = newText;
+                        onChange({ ...section, bullets });
+                      },
+                      (loading) => {
+                        if (loading) {
+                          setLoadingBullets((prev) => ({ ...prev, [i]: "example" }));
+                        } else {
+                          setLoadingBullets((prev) => {
+                            const next = { ...prev };
+                            delete next[i];
+                            return next;
+                          });
+                        }
+                      }
+                    )
+                  }
+                />
+              </div>
+            </div>
           </li>
         ))}
       </ul>
