@@ -1,6 +1,6 @@
 import "dotenv/config";
 import http from "http";
-import { YoutubeTranscript } from "youtube-transcript";
+import { getSubtitles } from "youtube-caption-extractor";
 import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
@@ -58,22 +58,62 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Extract video ID
+      const videoIdMatch = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/
+      );
+      const videoId = videoIdMatch ? videoIdMatch[1] : null;
+
+      if (!videoId) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Could not extract video ID from URL" })
+        );
+        return;
+      }
+
       // Try YouTube captions first (fast path)
-      let transcript: Array<{ text: string; start: number; duration: number }> = [];
+      let transcript: Array<{ text: string; start: number; duration: number }> =
+        [];
       let transcriptSource = "youtube_captions";
 
       try {
-        // Try to fetch transcript - attempt multiple language options
-        try {
-          transcript = await YoutubeTranscript.fetchTranscript(url, { lang: "en" });
-        } catch {
-          // If English fails, try without language specification
-          transcript = await YoutubeTranscript.fetchTranscript(url);
-        }
-        console.log(`Fetched transcript from YouTube: ${transcript.length} segments`);
+        // Try to fetch transcript with youtube-caption-extractor (works better!)
+        const subtitles = await getSubtitles({
+          videoID: videoId,
+          lang: "en", // Try English first
+        });
+
+        // Convert format: { start: '1.36', dur: '1.68', text: '...' }
+        // to { text: '...', start: 1.36, duration: 1.68 }
+        transcript = subtitles.map((sub: any) => ({
+          text: sub.text || "",
+          start: parseFloat(sub.start) || 0,
+          duration: parseFloat(sub.dur) || 0,
+        }));
+
+        console.log(
+          `Fetched transcript from YouTube: ${transcript.length} segments`
+        );
       } catch (error: any) {
-        console.log(`YouTube captions not available: ${error.message}`);
-        // Will fall back to audio extraction
+        console.log(`YouTube captions not available (en): ${error.message}`);
+        // Try without language specification (auto-detect)
+        try {
+          const subtitles = await getSubtitles({
+            videoID: videoId,
+          });
+          transcript = subtitles.map((sub: any) => ({
+            text: sub.text || "",
+            start: parseFloat(sub.start) || 0,
+            duration: parseFloat(sub.dur) || 0,
+          }));
+          console.log(
+            `Fetched transcript (auto language): ${transcript.length} segments`
+          );
+        } catch (err2: any) {
+          console.log(`YouTube captions not available: ${err2.message}`);
+          // Will fall back to audio extraction
+        }
       }
 
       // Fallback: If no captions, try audio extraction + Whisper
@@ -89,9 +129,13 @@ const server = http.createServer(async (req, res) => {
           // Transcribe with Whisper API
           transcript = await transcribeAudio(audioFilePath);
           transcriptSource = "whisper";
-          console.log(`Whisper transcription complete: ${transcript.length} segments`);
+          console.log(
+            `Whisper transcription complete: ${transcript.length} segments`
+          );
         } catch (error: any) {
-          console.error(`Audio extraction/transcription failed: ${error.message}`);
+          console.error(
+            `Audio extraction/transcription failed: ${error.message}`
+          );
 
           // Clean up audio file if it exists
           if (audioFilePath) {
@@ -99,22 +143,24 @@ const server = http.createServer(async (req, res) => {
           }
 
           // Check if it's a YouTube blocking issue
-          const isYouTubeBlocked = 
-            error.message.includes("403") || 
+          const isYouTubeBlocked =
+            error.message.includes("403") ||
             error.message.includes("Status code: 403") ||
             error.message.includes("decipher function") ||
             error.message.includes("blocking audio extraction");
-          
+
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
-              error: "Transcript not available. This video doesn't have captions, and audio transcription failed.",
+              error:
+                "Transcript not available. This video doesn't have captions, and audio transcription failed.",
               details: error.message,
               transcript: [],
               language: "unknown",
-              note: isYouTubeBlocked 
+              note: isYouTubeBlocked
                 ? "YouTube is blocking audio extraction (403). Your OpenAI API key is configured correctly, but we can't get the audio file to transcribe. This is a YouTube limitation, not an API issue. Try a video with captions enabled - those work perfectly!"
-                : error.message.includes("OPENAI_API_KEY") || error.message.includes("API key")
+                : error.message.includes("OPENAI_API_KEY") ||
+                  error.message.includes("API key")
                 ? "OpenAI API key issue: " + error.message
                 : "Audio extraction failed: " + error.message,
             })
@@ -207,7 +253,10 @@ const server = http.createServer(async (req, res) => {
       const result = await geminiModel.generateContent(prompt);
 
       // Gemini sometimes wraps JSON in ``` — strip safely
-      const jsonText = result.replace(/```json/g, "").replace(/```/g, "").trim();
+      const jsonText = result
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
       const sections = JSON.parse(jsonText);
 

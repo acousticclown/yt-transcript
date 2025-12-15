@@ -69,9 +69,9 @@ Each layer must:
 Never mix multiple layers in a single step unless explicitly instructed.
 
 Transcript Extraction Strategy:
-• Primary: Use YouTube captions when available (fast, free) ✅
-• Fallback (Day 5.5): Extract audio → transcribe with Whisper (works on any video) ✅
-• This ensures we can process any video, not just those with captions
+• Primary: Use YouTube captions when available (fast, free) ✅ **WORKING with youtube-caption-extractor**
+• Fallback (Day 5.5): Extract audio → transcribe with Whisper (blocked by YouTube 403) ⚠️
+• This ensures we can process videos with captions reliably
 
 ────────────────────────────────────────
 TECH STACK (LOCKED)
@@ -87,8 +87,9 @@ Backend:
 • Node.js
 • Simple REST APIs
 • No framework-heavy solutions unless justified
-• Audio extraction: @distube/ytdl-core (pure JavaScript, no system binaries) ✅
-• Speech-to-text: OpenAI Whisper API (cloud-based, works on any server) ✅
+• Transcript extraction: youtube-caption-extractor (primary method, working!) ✅
+• Audio extraction: @distube/ytdl-core (fallback, pure JavaScript, blocked by YouTube) ⚠️
+• Speech-to-text: OpenAI Whisper API (fallback, cloud-based, works on any server) ✅
 
 AI:
 • Google Gemini (free tier) - for summaries and section detection

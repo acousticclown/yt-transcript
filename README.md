@@ -20,12 +20,12 @@ Turn long-form YouTube content into:
 - Gemini AI (free tier) - for summaries and section detection
 - OpenAI Whisper API - for audio transcription fallback
 - Tailwind
-- YouTube transcript extraction (primary method)
-- @distube/ytdl-core - for audio extraction (pure JavaScript)
+- youtube-caption-extractor - for YouTube transcript extraction (primary method)
+- @distube/ytdl-core - for audio extraction (pure JavaScript, fallback)
 
 ## Features
 
-- ✅ YouTube transcript extraction (primary method - works for videos with captions)
+- ✅ YouTube transcript extraction (primary method - works for videos with captions) ✅ **NOW WORKING!**
 - ⚠️ Audio extraction + Whisper transcription fallback (implemented, but YouTube blocks extraction)
 - ✅ AI-powered summaries (Gemini)
 - ✅ Structured section detection
@@ -34,13 +34,15 @@ Turn long-form YouTube content into:
 
 ## Status
 
-Day 5.5 – Audio Extraction + Whisper Fallback (Implemented)
+Day 5.5 – Transcript Extraction Fixed + Whisper Fallback (Implemented)
 
-**Note:** Audio extraction fallback is implemented using `@distube/ytdl-core` and OpenAI Whisper API, but YouTube actively blocks audio extraction (403 errors). The app works best with videos that have captions enabled.
+**Update:** Switched from `youtube-transcript` to `youtube-caption-extractor` - transcript extraction is now working! ✅
+
+**Note:** Transcript extraction is now working using `youtube-caption-extractor`! Audio extraction fallback is implemented but YouTube blocks it (403 errors). The app works great with videos that have captions enabled.
 
 ### How It Works
 
-1. **Primary method**: Extracts YouTube captions (fast, free, reliable) ✅
+1. **Primary method**: Extracts YouTube captions using `youtube-caption-extractor` (fast, free, reliable) ✅ **WORKING!**
 2. **Fallback method**: Attempts to extract audio and transcribe with OpenAI Whisper API ⚠️
    - **Current limitation**: YouTube blocks audio extraction libraries (403 errors)
    - **Status**: Implemented correctly, but YouTube prevents it from working
@@ -75,7 +77,7 @@ Day 5.5 – Audio Extraction + Whisper Fallback (Implemented)
 ### API Endpoints
 
 - `POST /transcript` - Extract transcript from YouTube URL
-  - Primary: Uses YouTube captions (fast, free)
-  - Fallback: Extracts audio and transcribes with Whisper (works on any video)
+  - Primary: Uses YouTube captions via `youtube-caption-extractor` (fast, free, working!) ✅
+  - Fallback: Extracts audio and transcribes with Whisper (blocked by YouTube 403) ⚠️
 - `POST /summary` - Generate AI summary from transcript array
 - `POST /sections` - Generate structured sections (title, summary, bullets) from transcript array
