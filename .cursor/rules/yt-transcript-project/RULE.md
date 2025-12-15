@@ -55,7 +55,7 @@ ARCHITECTURE (STRICT)
 The system is built in clear layers:
 
 1. YouTube ingestion
-2. Transcript extraction
+2. Transcript extraction (with fallback: audio extraction + Whisper)
 3. Structuring & section detection
 4. Smart notes generation
 5. Playful editor UI
@@ -67,6 +67,11 @@ Each layer must:
 • Be built one at a time
 
 Never mix multiple layers in a single step unless explicitly instructed.
+
+Transcript Extraction Strategy:
+• Primary: Use YouTube captions when available (fast, free)
+• Fallback (Day 5.5): Extract audio → transcribe with Whisper (works on any video)
+• This ensures we can process any video, not just those with captions
 
 ────────────────────────────────────────
 TECH STACK (LOCKED)
@@ -82,9 +87,12 @@ Backend:
 • Bun
 • Simple REST APIs
 • No framework-heavy solutions unless justified
+• Audio extraction: ytdl-core or yt-dlp (for Day 5.5+)
+• Speech-to-text: OpenAI Whisper (free, open-source)
 
 AI:
-• Google Gemini (free tier)
+• Google Gemini (free tier) - for summaries and section detection
+• OpenAI Whisper (free tier) - for audio transcription fallback
 • AI provider must be swappable
 • Prompts are treated as versioned code
 
