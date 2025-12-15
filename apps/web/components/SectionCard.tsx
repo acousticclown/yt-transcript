@@ -1,5 +1,7 @@
 "use client";
 
+import { motion } from "framer-motion";
+
 type Section = {
   title: string;
   summary: string;
@@ -14,7 +16,11 @@ export function SectionCard({
   onChange: (section: Section) => void;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow">
+    <motion.div
+      whileHover={{ scale: 1.005 }}
+      transition={{ duration: 0.2 }}
+      className="rounded-xl border border-gray-200 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow"
+    >
       {/* Title - Bigger, bolder, calm */}
       <input
         className="w-full text-xl font-semibold outline-none bg-transparent text-gray-900 placeholder-gray-400"
@@ -53,7 +59,7 @@ export function SectionCard({
           </li>
         ))}
       </ul>
-    </div>
+    </motion.div>
   );
 }
 
