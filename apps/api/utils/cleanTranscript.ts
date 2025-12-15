@@ -9,4 +9,3 @@ export function cleanTranscript(chunks: TranscriptChunk[]): string {
     .replace(/\s+/g, " ")
     .trim();
 }
-

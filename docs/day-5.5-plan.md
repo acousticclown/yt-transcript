@@ -37,6 +37,10 @@ Implement a fallback system:
 - **Slower** - audio download + transcription takes longer
 - **More processing** - requires audio extraction step
 - **More dependencies** - need audio extraction libraries
+- **Deployment consideration** - yt-dlp must be installed on the server
+  - Works on: Railway, Render, Fly.io, Docker containers, VPS
+  - Limited on: Vercel (serverless), some PaaS platforms
+  - Solution: Use platforms that support system binaries or containerize
 
 ## Success Criteria
 - Video without captions → successfully transcribes via Whisper

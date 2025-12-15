@@ -2,7 +2,6 @@ import { exec } from "yt-dlp-exec";
 import { unlink, access } from "fs/promises";
 import { join } from "path";
 import { tmpdir } from "os";
-import { access } from "fs/promises";
 
 /**
  * Extract audio from YouTube video and save as temporary file
