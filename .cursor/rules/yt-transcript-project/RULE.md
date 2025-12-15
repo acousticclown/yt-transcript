@@ -87,12 +87,12 @@ Backend:
 • Bun
 • Simple REST APIs
 • No framework-heavy solutions unless justified
-• Audio extraction: @distube/ytdl-core (for Day 5.5+)
+• Audio extraction: yt-dlp-exec (for Day 5.5+, requires yt-dlp binary installed)
 • Speech-to-text: @xenova/transformers with Whisper (local, free, no API needed)
 
 AI:
 • Google Gemini (free tier) - for summaries and section detection
-• OpenAI Whisper (free tier) - for audio transcription fallback
+• @xenova/transformers with Whisper (local, free) - for audio transcription fallback
 • AI provider must be swappable
 • Prompts are treated as versioned code
 
