@@ -12,9 +12,17 @@ import { SortableSectionCard } from "../components/SortableSectionCard";
 
 type Section = {
   id: string;
-  title: string;
-  summary: string;
-  bullets: string[];
+  source: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  current: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  language: "english" | "hindi" | "hinglish";
 };
 
 const loadingMessages = [
@@ -75,11 +83,19 @@ export default function Home() {
         return;
       }
 
-      // Add stable IDs to sections for drag & drop
+      // Initialize sections with source, current, and language
+      // source = always English (stable, editable)
+      // current = what user sees & edits
       const sectionsWithIds = (sectionsData.sections || []).map(
-        (section: Omit<Section, "id">) => ({
-          ...section,
+        (section: {
+          title: string;
+          summary: string;
+          bullets: string[];
+        }) => ({
           id: crypto.randomUUID(),
+          source: section, // Always English from backend
+          current: section, // Initially same as source
+          language: "english" as const,
         })
       );
       setSections(sectionsWithIds);
@@ -178,12 +194,14 @@ export default function Home() {
                 return;
               }
               try {
+                // Export only current content (what user sees)
+                const sectionsToExport = sections.map((s) => s.current);
                 const res = await fetch(
                   "http://localhost:3001/export/markdown",
                   {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sections }),
+                    body: JSON.stringify({ sections: sectionsToExport }),
                   }
                 );
 

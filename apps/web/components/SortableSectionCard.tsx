@@ -6,9 +6,17 @@ import { SectionCard } from "./SectionCard";
 
 type Section = {
   id: string;
-  title: string;
-  summary: string;
-  bullets: string[];
+  source: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  current: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  language: "english" | "hindi" | "hinglish";
 };
 
 export function SortableSectionCard({

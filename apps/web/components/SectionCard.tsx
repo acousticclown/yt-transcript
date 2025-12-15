@@ -6,9 +6,17 @@ import { InlineAIButton } from "./InlineAIButton";
 
 type Section = {
   id: string;
-  title: string;
-  summary: string;
-  bullets: string[];
+  source: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  current: {
+    title: string;
+    summary: string;
+    bullets: string[];
+  };
+  language: "english" | "hindi" | "hinglish";
 };
 
 function cleanTranscript(
@@ -83,11 +91,76 @@ export function SectionCard({
         <input
           className="flex-1 text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           placeholder="Section title..."
-          value={section.title}
+          value={section.current.title}
           onChange={(e) =>
-            onChange({ ...section, title: e.target.value })
+            onChange({
+              ...section,
+              current: { ...section.current, title: e.target.value },
+            })
           }
         />
+        {/* Language selector - Per section control */}
+        <select
+          value={section.language}
+          onChange={async (e) => {
+            const target = e.target.value as Section["language"];
+
+            // If switching to English, restore from source
+            if (target === "english") {
+              onChange({
+                ...section,
+                current: section.source,
+                language: "english",
+              });
+              return;
+            }
+
+            // Transform to target language
+            setSwitchingLanguage(true);
+            try {
+              const res = await fetch(
+                "http://localhost:3001/ai/transform-language",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    target,
+                    section: section.source, // Always use source for transformation
+                  }),
+                }
+              );
+
+              if (!res.ok) {
+                const errorData = await res
+                  .json()
+                  .catch(() => ({ error: "Unknown error" }));
+                alert(
+                  `⚠️ Couldn't convert to ${target}. ${errorData.error || "Try again."}`
+                );
+                return;
+              }
+
+              const transformed = await res.json();
+              onChange({
+                ...section,
+                current: transformed,
+                language: target,
+              });
+            } catch {
+              alert(
+                "⚠️ Couldn't convert language. Make sure the API server is running."
+              );
+            } finally {
+              setSwitchingLanguage(false);
+            }
+          }}
+          disabled={switchingLanguage}
+          className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <option value="english">English</option>
+          <option value="hinglish">Hinglish</option>
+          <option value="hindi">Hindi</option>
+        </select>
         {/* 5. Secondary actions - Regenerate, Focus (smaller, lighter) */}
         <div className="flex gap-2">
           {onFocus && !isFocused && (
@@ -119,7 +192,7 @@ export function SectionCard({
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
-                    section,
+                    section: section.source, // Regenerate from source
                     transcript: cleanedTranscript,
                   }),
                 });
@@ -131,7 +204,13 @@ export function SectionCard({
                 }
 
                 const data = await res.json();
-                onChange({ ...data, id: section.id });
+                // Regeneration updates both source and current
+                onChange({
+                  ...section,
+                  source: data,
+                  current: data,
+                  language: "english", // Reset to English after regeneration
+                });
               } catch {
                 alert("⚠️ Failed to regenerate section. Make sure the API server is running.");
               } finally {
@@ -151,9 +230,12 @@ export function SectionCard({
         <textarea
           className="w-full bg-gray-50 dark:bg-gray-800 rounded-lg p-3 resize-none outline-none text-base text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[60px]"
           placeholder="Summary..."
-          value={section.summary}
+          value={section.current.summary}
           onChange={(e) =>
-            onChange({ ...section, summary: e.target.value })
+            onChange({
+              ...section,
+              current: { ...section.current, summary: e.target.value },
+            })
           }
         />
               {/* 4. Inline actions - Appear on hover, contextual */}
@@ -164,8 +246,12 @@ export function SectionCard({
             onClick={() =>
               runInlineAI(
                 "simplify",
-                section.summary,
-                (newText) => onChange({ ...section, summary: newText }),
+                section.current.summary,
+                (newText) =>
+                  onChange({
+                    ...section,
+                    current: { ...section.current, summary: newText },
+                  }),
                 (loading) => setLoadingSummary(loading ? "simplify" : null)
               )
             }
@@ -176,8 +262,12 @@ export function SectionCard({
             onClick={() =>
               runInlineAI(
                 "expand",
-                section.summary,
-                (newText) => onChange({ ...section, summary: newText }),
+                section.current.summary,
+                (newText) =>
+                  onChange({
+                    ...section,
+                    current: { ...section.current, summary: newText },
+                  }),
                 (loading) => setLoadingSummary(loading ? "expand" : null)
               )
             }
@@ -188,8 +278,12 @@ export function SectionCard({
             onClick={() =>
               runInlineAI(
                 "example",
-                section.summary,
-                (newText) => onChange({ ...section, summary: newText }),
+                section.current.summary,
+                (newText) =>
+                  onChange({
+                    ...section,
+                    current: { ...section.current, summary: newText },
+                  }),
                 (loading) => setLoadingSummary(loading ? "example" : null)
               )
             }
@@ -199,7 +293,7 @@ export function SectionCard({
 
       {/* Bullets - Soft rows, feels like writing notes */}
       <ul className="space-y-2">
-        {section.bullets.map((bullet, i) => (
+        {section.current.bullets.map((bullet, i) => (
           <li key={i} className="flex items-start gap-2 group/bullet">
             <span className="mt-1 text-gray-400 dark:text-gray-500">•</span>
             <div className="flex-1 relative">
@@ -208,9 +302,12 @@ export function SectionCard({
                 placeholder="Bullet point..."
                 value={bullet}
                 onChange={(e) => {
-                  const bullets = [...section.bullets];
+                  const bullets = [...section.current.bullets];
                   bullets[i] = e.target.value;
-                  onChange({ ...section, bullets });
+                  onChange({
+                    ...section,
+                    current: { ...section.current, bullets },
+                  });
                 }}
               />
               <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1">
@@ -222,9 +319,12 @@ export function SectionCard({
                       "simplify",
                       bullet,
                       (newText) => {
-                        const bullets = [...section.bullets];
+                        const bullets = [...section.current.bullets];
                         bullets[i] = newText;
-                        onChange({ ...section, bullets });
+                        onChange({
+                          ...section,
+                          current: { ...section.current, bullets },
+                        });
                       },
                       (loading) => {
                         if (loading) {
@@ -248,9 +348,12 @@ export function SectionCard({
                       "expand",
                       bullet,
                       (newText) => {
-                        const bullets = [...section.bullets];
+                        const bullets = [...section.current.bullets];
                         bullets[i] = newText;
-                        onChange({ ...section, bullets });
+                        onChange({
+                          ...section,
+                          current: { ...section.current, bullets },
+                        });
                       },
                       (loading) => {
                         if (loading) {
@@ -274,9 +377,12 @@ export function SectionCard({
                       "example",
                       bullet,
                       (newText) => {
-                        const bullets = [...section.bullets];
+                        const bullets = [...section.current.bullets];
                         bullets[i] = newText;
-                        onChange({ ...section, bullets });
+                        onChange({
+                          ...section,
+                          current: { ...section.current, bullets },
+                        });
                       },
                       (loading) => {
                         if (loading) {
