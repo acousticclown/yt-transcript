@@ -11,6 +11,25 @@ serve({
     const url = new URL(req.url);
     const pathname = url.pathname;
 
+    // Handle CORS preflight
+    if (req.method === "OPTIONS") {
+      return new Response(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type",
+        },
+      });
+    }
+
+    // CORS headers for all responses
+    const corsHeaders = {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+
     if (req.method === "POST" && pathname === "/transcript") {
       try {
         const body = (await req.json()) as { url?: string };
@@ -21,7 +40,10 @@ serve({
             JSON.stringify({ error: "YouTube URL is required" }),
             {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders,
+              },
             }
           );
         }
@@ -35,7 +57,10 @@ serve({
             JSON.stringify({ error: "Invalid YouTube URL" }),
             {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders,
+              },
             }
           );
         }
@@ -55,7 +80,10 @@ serve({
             }),
             {
               status: 200,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders,
+              },
             }
           );
         }
@@ -66,7 +94,10 @@ serve({
             language: "unknown",
           }),
           {
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
           }
         );
       } catch (error: any) {
@@ -77,7 +108,10 @@ serve({
           }),
           {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
           }
         );
       }
@@ -93,7 +127,10 @@ serve({
             JSON.stringify({ error: "Transcript array required" }),
             {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders,
+              },
             }
           );
         }
@@ -108,7 +145,10 @@ serve({
             summary,
           }),
           {
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
           }
         );
       } catch (err: any) {
@@ -119,7 +159,10 @@ serve({
           }),
           {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
           }
         );
       }
@@ -135,7 +178,10 @@ serve({
             JSON.stringify({ error: "Transcript array required" }),
             {
               status: 400,
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                ...corsHeaders,
+              },
             }
           );
         }
@@ -154,7 +200,10 @@ serve({
         const sections = JSON.parse(jsonText);
 
         return new Response(JSON.stringify(sections), {
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...corsHeaders,
+          },
         });
       } catch (err: any) {
         return new Response(
@@ -164,13 +213,19 @@ serve({
           }),
           {
             status: 500,
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              ...corsHeaders,
+            },
           }
         );
       }
     }
 
-    return new Response("Not Found", { status: 404 });
+    return new Response("Not Found", {
+      status: 404,
+      headers: corsHeaders,
+    });
   },
 });
 

@@ -73,3 +73,11 @@ storage/
 *.temp
 .cache/
 
+# Audio files (for Day 5.5+ audio extraction)
+*.mp3
+*.wav
+*.m4a
+*.ogg
+audio/
+temp_audio/
+
