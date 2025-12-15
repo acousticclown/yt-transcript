@@ -50,7 +50,9 @@ export default function Home() {
 
       setSections(sectionsData.sections || []);
     } catch {
-      alert("⚠️ Failed to generate notes. Make sure the API server is running on port 3001.");
+      alert(
+        "⚠️ Failed to generate notes. Make sure the API server is running on port 3001."
+      );
     } finally {
       setLoading(false);
     }
