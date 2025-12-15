@@ -63,7 +63,13 @@ const server = http.createServer(async (req, res) => {
       let transcriptSource = "youtube_captions";
 
       try {
-        transcript = await YoutubeTranscript.fetchTranscript(url);
+        // Try to fetch transcript - attempt multiple language options
+        try {
+          transcript = await YoutubeTranscript.fetchTranscript(url, { lang: "en" });
+        } catch {
+          // If English fails, try without language specification
+          transcript = await YoutubeTranscript.fetchTranscript(url);
+        }
         console.log(`Fetched transcript from YouTube: ${transcript.length} segments`);
       } catch (error: any) {
         console.log(`YouTube captions not available: ${error.message}`);

@@ -82,6 +82,7 @@ storage/
 audio/
 temp_audio/
 
-# ytdl-core debug files
+# ytdl-core debug files (created when YouTube blocks extraction)
 *-player-script.js
+**/*-player-script.js
 
