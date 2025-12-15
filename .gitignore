@@ -50,9 +50,10 @@ Thumbs.db
 *.swo
 *~
 
-# Bun
+# Bun (no longer used - migrated to Node.js)
 apps/api/.bun
 apps/api/bun.lockb
+apps/api/bun.lock
 .bun/
 
 # TypeScript
@@ -80,4 +81,7 @@ storage/
 *.ogg
 audio/
 temp_audio/
+
+# ytdl-core debug files
+*-player-script.js
 

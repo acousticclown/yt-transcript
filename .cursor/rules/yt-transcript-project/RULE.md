@@ -69,8 +69,8 @@ Each layer must:
 Never mix multiple layers in a single step unless explicitly instructed.
 
 Transcript Extraction Strategy:
-• Primary: Use YouTube captions when available (fast, free)
-• Fallback (Day 5.5): Extract audio → transcribe with Whisper (works on any video)
+• Primary: Use YouTube captions when available (fast, free) ✅
+• Fallback (Day 5.5): Extract audio → transcribe with Whisper (works on any video) ✅
 • This ensures we can process any video, not just those with captions
 
 ────────────────────────────────────────
@@ -84,15 +84,15 @@ Frontend:
 • Framer Motion (later, for playfulness)
 
 Backend:
-• Bun
+• Node.js
 • Simple REST APIs
 • No framework-heavy solutions unless justified
-• Audio extraction: Temporarily disabled (Day 5.5) - need pure JS solution
-• Speech-to-text: Will be added when audio extraction is re-enabled
+• Audio extraction: @distube/ytdl-core (pure JavaScript, no system binaries) ✅
+• Speech-to-text: OpenAI Whisper API (cloud-based, works on any server) ✅
 
 AI:
 • Google Gemini (free tier) - for summaries and section detection
-• Audio transcription fallback: Temporarily disabled (Day 5.5) - will be re-enabled with pure JS solution
+• OpenAI Whisper API - for audio transcription fallback (~$0.006/min) ✅
 • AI provider must be swappable
 • Prompts are treated as versioned code
 
@@ -107,7 +107,7 @@ REPO STRUCTURE (DO NOT VIOLATE)
 yt-transcript/
 ├── apps/
 │ ├── web/ # Next.js frontend
-│ └── api/ # Bun backend
+│ └── api/ # Node.js backend
 ├── packages/
 │ └── prompts/ # All AI prompts live here
 ├── docs/

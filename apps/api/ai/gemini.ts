@@ -15,7 +15,6 @@ export const geminiModel = {
       contents: prompt,
     });
     // response.text is a property, not a method
-    return response.text;
+    return response.text || "";
   },
 };
-

@@ -1,15 +1,16 @@
-# api
+# API Server
 
 To install dependencies:
 
 ```bash
-bun install
+npm install
 ```
 
 To run:
 
 ```bash
-bun run index.ts
+npm run dev    # Development with hot reload
+npm run start  # Production
 ```
 
-This project was created using `bun init` in bun v1.3.4. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
+Built with Node.js and TypeScript.

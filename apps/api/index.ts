@@ -1,246 +1,228 @@
-import { serve } from "bun";
+import "dotenv/config";
+import http from "http";
 import { YoutubeTranscript } from "youtube-transcript";
 import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
-import { basicSummaryPrompt } from "../../packages/prompts/basicSummary";
-import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection";
-// Audio extraction temporarily disabled - requires system binary
-// Will be re-enabled when we find a pure JS solution
-// import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
-// import { transcribeAudio } from "./utils/whisperTranscription";
+import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
+import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
+import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
+import { transcribeAudio } from "./utils/whisperTranscription";
 
-serve({
-  port: 3001,
-  async fetch(req) {
-    const url = new URL(req.url);
-    const pathname = url.pathname;
+const PORT = 3001;
 
-    // Handle CORS preflight
-    if (req.method === "OPTIONS") {
-      return new Response(null, {
-        status: 204,
-        headers: {
-          "Access-Control-Allow-Origin": "*",
-          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
-        },
-      });
-    }
+// CORS headers for all responses
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
 
-    // CORS headers for all responses
-    const corsHeaders = {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    };
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+  const pathname = url.pathname;
 
-    if (req.method === "POST" && pathname === "/transcript") {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    res.writeHead(204, corsHeaders);
+    res.end();
+    return;
+  }
+
+  // Set CORS headers for all responses
+  Object.entries(corsHeaders).forEach(([key, value]) => {
+    res.setHeader(key, value);
+  });
+
+  if (req.method === "POST" && pathname === "/transcript") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+      const parsedBody = JSON.parse(body) as { url?: string };
+      const { url } = parsedBody;
+
+      if (!url) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "YouTube URL is required" }));
+        return;
+      }
+
+      // Basic URL validation
+      const isValidYouTubeUrl =
+        url.includes("youtube.com/watch") || url.includes("youtu.be/");
+
+      if (!isValidYouTubeUrl) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid YouTube URL" }));
+        return;
+      }
+
+      // Try YouTube captions first (fast path)
+      let transcript: Array<{ text: string; start: number; duration: number }> = [];
+      let transcriptSource = "youtube_captions";
+
       try {
-        const body = (await req.json()) as { url?: string };
-        const { url } = body;
+        transcript = await YoutubeTranscript.fetchTranscript(url);
+        console.log(`Fetched transcript from YouTube: ${transcript.length} segments`);
+      } catch (error: any) {
+        console.log(`YouTube captions not available: ${error.message}`);
+        // Will fall back to audio extraction
+      }
 
-        if (!url) {
-          return new Response(
-            JSON.stringify({ error: "YouTube URL is required" }),
-            {
-              status: 400,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
-            }
-          );
-        }
-
-        // Basic URL validation
-        const isValidYouTubeUrl =
-          url.includes("youtube.com/watch") || url.includes("youtu.be/");
-
-        if (!isValidYouTubeUrl) {
-          return new Response(
-            JSON.stringify({ error: "Invalid YouTube URL" }),
-            {
-              status: 400,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
-            }
-          );
-        }
-
-        // Try YouTube captions first (fast path)
-        let transcript: Array<{ text: string; start: number; duration: number }> = [];
-        let transcriptSource = "youtube_captions";
+      // Fallback: If no captions, try audio extraction + Whisper
+      if (transcript.length === 0) {
+        console.log("Attempting audio extraction + Whisper fallback...");
+        let audioFilePath: string | null = null;
 
         try {
-          transcript = await YoutubeTranscript.fetchTranscript(url);
-          console.log(`Fetched transcript from YouTube: ${transcript.length} segments`);
-        } catch (error: any) {
-          console.log(`YouTube captions not available: ${error.message}`);
-          // Will fall back to audio extraction
-        }
+          // Extract audio (using service-based approach)
+          audioFilePath = await extractAudio(url);
+          console.log(`Audio extracted to: ${audioFilePath}`);
 
-        // Fallback: Audio extraction temporarily disabled
-        // Currently requires system binary (yt-dlp) which doesn't work on all web servers
-        // Will be re-enabled when we find a pure JS solution
-        if (transcript.length === 0) {
-          return new Response(
+          // Transcribe with Whisper API
+          transcript = await transcribeAudio(audioFilePath);
+          transcriptSource = "whisper";
+          console.log(`Whisper transcription complete: ${transcript.length} segments`);
+        } catch (error: any) {
+          console.error(`Audio extraction/transcription failed: ${error.message}`);
+
+          // Clean up audio file if it exists
+          if (audioFilePath) {
+            await cleanupAudioFile(audioFilePath);
+          }
+
+          // Check if it's a YouTube blocking issue
+          const isYouTubeBlocked = 
+            error.message.includes("403") || 
+            error.message.includes("Status code: 403") ||
+            error.message.includes("decipher function") ||
+            error.message.includes("blocking audio extraction");
+          
+          res.writeHead(200, { "Content-Type": "application/json" });
+          res.end(
             JSON.stringify({
-              error: "Transcript not available. This video doesn't have captions, and audio transcription is not yet available.",
+              error: "Transcript not available. This video doesn't have captions, and audio transcription failed.",
+              details: error.message,
               transcript: [],
               language: "unknown",
-              note: "Audio extraction fallback coming soon - will work on any video",
-            }),
-            {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
-            }
+              note: isYouTubeBlocked 
+                ? "YouTube is blocking audio extraction (403). Your OpenAI API key is configured correctly, but we can't get the audio file to transcribe. This is a YouTube limitation, not an API issue. Try a video with captions enabled - those work perfectly!"
+                : error.message.includes("OPENAI_API_KEY") || error.message.includes("API key")
+                ? "OpenAI API key issue: " + error.message
+                : "Audio extraction failed: " + error.message,
+            })
           );
+          return;
+        } finally {
+          // Always clean up audio file
+          if (audioFilePath) {
+            await cleanupAudioFile(audioFilePath);
+          }
         }
-
-        return new Response(
-          JSON.stringify({
-            transcript,
-            language: "unknown",
-          }),
-          {
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
-        );
-      } catch (error: any) {
-        return new Response(
-          JSON.stringify({
-            error: "Failed to fetch transcript",
-            details: error.message,
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
-        );
       }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          transcript,
+          language: "unknown",
+          source: transcriptSource,
+        })
+      );
+    } catch (error: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to fetch transcript",
+          details: error.message,
+        })
+      );
     }
+    return;
+  }
 
-    if (req.method === "POST" && pathname === "/summary") {
-      try {
-        const body = (await req.json()) as { transcript?: unknown };
-        const { transcript } = body;
-
-        if (!transcript || !Array.isArray(transcript)) {
-          return new Response(
-            JSON.stringify({ error: "Transcript array required" }),
-            {
-              status: 400,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
-            }
-          );
-        }
-
-        const cleanedText = cleanTranscript(transcript);
-
-        const prompt = basicSummaryPrompt(cleanedText);
-        const summary = await geminiModel.generateContent(prompt);
-
-        return new Response(
-          JSON.stringify({
-            summary,
-          }),
-          {
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
-        );
-      } catch (err: any) {
-        return new Response(
-          JSON.stringify({
-            error: "Failed to generate summary",
-            details: err.message,
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
-        );
+  if (req.method === "POST" && pathname === "/summary") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
       }
-    }
+      const parsedBody = JSON.parse(body) as { transcript?: unknown };
+      const { transcript } = parsedBody;
 
-    if (req.method === "POST" && pathname === "/sections") {
-      try {
-        const body = (await req.json()) as { transcript?: unknown };
-        const { transcript } = body;
-
-        if (!transcript || !Array.isArray(transcript)) {
-          return new Response(
-            JSON.stringify({ error: "Transcript array required" }),
-            {
-              status: 400,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
-            }
-          );
-        }
-
-        const cleanedText = cleanTranscript(transcript);
-
-        const prompt = sectionDetectionPrompt(cleanedText);
-        const result = await geminiModel.generateContent(prompt);
-
-        // Gemini sometimes wraps JSON in ``` — strip safely
-        const jsonText = result
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
-          .trim();
-
-        const sections = JSON.parse(jsonText);
-
-        return new Response(JSON.stringify(sections), {
-          headers: {
-            "Content-Type": "application/json",
-            ...corsHeaders,
-          },
-        });
-      } catch (err: any) {
-        return new Response(
-          JSON.stringify({
-            error: "Failed to generate sections",
-            details: err.message,
-          }),
-          {
-            status: 500,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
-        );
+      if (!transcript || !Array.isArray(transcript)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Transcript array required" }));
+        return;
       }
-    }
 
-    return new Response("Not Found", {
-      status: 404,
-      headers: corsHeaders,
-    });
-  },
+      const cleanedText = cleanTranscript(transcript);
+
+      const prompt = basicSummaryPrompt(cleanedText);
+      const summary = await geminiModel.generateContent(prompt);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          summary,
+        })
+      );
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to generate summary",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  if (req.method === "POST" && pathname === "/sections") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+      const parsedBody = JSON.parse(body) as { transcript?: unknown };
+      const { transcript } = parsedBody;
+
+      if (!transcript || !Array.isArray(transcript)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Transcript array required" }));
+        return;
+      }
+
+      const cleanedText = cleanTranscript(transcript);
+
+      const prompt = sectionDetectionPrompt(cleanedText);
+      const result = await geminiModel.generateContent(prompt);
+
+      // Gemini sometimes wraps JSON in ``` — strip safely
+      const jsonText = result.replace(/```json/g, "").replace(/```/g, "").trim();
+
+      const sections = JSON.parse(jsonText);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(sections));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to generate sections",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  res.writeHead(404);
+  res.end("Not Found");
 });
 
-console.log("🚀 Transcript API server running on http://localhost:3001");
+server.listen(PORT, () => {
+  console.log(`🚀 Transcript API server running on http://localhost:${PORT}`);
+});

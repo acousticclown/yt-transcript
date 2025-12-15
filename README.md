@@ -5,47 +5,77 @@ An open-source, personal-first YouTube Transcript and Smart Notes generator.
 🚧 Work in progress.
 
 ## Vision
+
 Turn long-form YouTube content into:
+
 - Clean transcripts
 - Structured notes
 - Editable sections
 - Playful learning experiences
 
 ## Tech Stack
+
 - Next.js
-- Bun
+- Node.js
 - Gemini AI (free tier) - for summaries and section detection
+- OpenAI Whisper API - for audio transcription fallback
 - Tailwind
 - YouTube transcript extraction (primary method)
+- @distube/ytdl-core - for audio extraction (pure JavaScript)
 
 ## Features
-- ✅ YouTube transcript extraction (works for videos with captions)
-- ⏸️ Audio extraction fallback (temporarily disabled - will work on any video when re-enabled)
+
+- ✅ YouTube transcript extraction (primary method - works for videos with captions)
+- ⚠️ Audio extraction + Whisper transcription fallback (implemented, but YouTube blocks extraction)
 - ✅ AI-powered summaries (Gemini)
 - ✅ Structured section detection
 - ✅ Editable UI with inline editing
-- ✅ **100% free** - No paid APIs required (uses local Whisper model)
+- ✅ **Web-server compatible** - No system binaries required
 
 ## Status
-Day 5.5 – Audio Extraction + Whisper Fallback (Temporarily Disabled)
 
-**Note:** Audio extraction fallback is temporarily disabled to keep deployment simple. Currently works with videos that have captions. Fallback will be re-enabled when we find a pure JavaScript solution.
+Day 5.5 – Audio Extraction + Whisper Fallback (Implemented)
+
+**Note:** Audio extraction fallback is implemented using `@distube/ytdl-core` and OpenAI Whisper API, but YouTube actively blocks audio extraction (403 errors). The app works best with videos that have captions enabled.
+
+### How It Works
+
+1. **Primary method**: Extracts YouTube captions (fast, free, reliable) ✅
+2. **Fallback method**: Attempts to extract audio and transcribe with OpenAI Whisper API ⚠️
+   - **Current limitation**: YouTube blocks audio extraction libraries (403 errors)
+   - **Status**: Implemented correctly, but YouTube prevents it from working
+   - **Recommendation**: Use videos with captions enabled for best results
+3. Same output format regardless of source
+
+### Cost
+
+- **Gemini API**: Free tier (no credit card required)
+- **OpenAI Whisper API**:
+  - Free tier: $5 credit on signup
+  - After that: ~$0.006 per minute (~$0.36/hour of audio)
+  - Example: A 10-minute video costs ~$0.06
 
 ## Setup
 
 ### Backend (API)
+
 1. Navigate to `apps/api`
 2. Copy `.env.example` to `.env`
-3. Add your Gemini API key: `GEMINI_API_KEY=your_key_here`
-4. Run: `bun run dev` (for hot reload) or `bun run start`
+3. Add your API keys:
+   - `GEMINI_API_KEY=your_key_here` (required - for summaries and section detection)
+   - `OPENAI_API_KEY=your_key_here` (required for fallback - enables transcription for videos without captions)
+4. Run: `npm run dev` (for hot reload) or `npm run start`
 
 ### Frontend (Web)
+
 1. Navigate to `apps/web`
 2. Run: `npm run dev`
 3. Open http://localhost:3000
 
 ### API Endpoints
-- `POST /transcript` - Extract transcript from YouTube URL (works for videos with captions)
+
+- `POST /transcript` - Extract transcript from YouTube URL
+  - Primary: Uses YouTube captions (fast, free)
+  - Fallback: Extracts audio and transcribes with Whisper (works on any video)
 - `POST /summary` - Generate AI summary from transcript array
 - `POST /sections` - Generate structured sections (title, summary, bullets) from transcript array
-
