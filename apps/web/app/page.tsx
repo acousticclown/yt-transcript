@@ -9,15 +9,27 @@ type Section = {
   bullets: string[];
 };
 
+const loadingMessages = [
+  "🧠 Listening to the video…",
+  "✍️ Writing clean notes…",
+  "🧩 Organizing thoughts…",
+  "🎨 Making it readable…",
+];
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
 
   async function generateNotes() {
     setLoading(true);
     setSections([]);
+    // Random loading message for micro-playfulness
+    setLoadingMessage(
+      loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
+    );
 
     try {
       // 1. Fetch transcript
@@ -59,12 +71,12 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">YT-Transcript</h1>
+    <main className="max-w-3xl mx-auto p-6 space-y-8">
+      <h1 className="text-4xl font-bold text-gray-900">YT-Transcript</h1>
 
-      <div className="flex gap-2">
+      <div className="flex gap-3">
         <input
-          className="flex-1 border rounded px-3 py-2"
+          className="flex-1 border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
           placeholder="Paste YouTube URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -77,14 +89,14 @@ export default function Home() {
         <button
           onClick={generateNotes}
           disabled={loading || !url.trim()}
-          className="bg-black text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-black text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
         >
-          Generate
+          Generate Notes
         </button>
       </div>
 
       {sections.length > 0 && (
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={async () => {
               if (sections.length === 0) {
@@ -122,9 +134,9 @@ export default function Home() {
               }
             }}
             disabled={saving || sections.length === 0}
-            className="border px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border border-gray-300 px-5 py-2.5 rounded-lg font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
-            {saving ? "Saving..." : "Save Notes"}
+            {saving ? "Saving..." : "Save to Library"}
           </button>
           <button
             onClick={async () => {
@@ -166,16 +178,27 @@ export default function Home() {
               }
             }}
             disabled={sections.length === 0}
-            className="border px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+            className="border border-gray-300 px-5 py-2.5 rounded-lg font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
           >
-            Export Markdown
+            Export as Markdown
           </button>
         </div>
       )}
 
-      {loading && <p>🧠 Generating notes…</p>}
+      {loading && (
+        <div className="text-center py-8">
+          <p className="text-gray-600 text-lg">{loadingMessage}</p>
+        </div>
+      )}
 
-      <section className="space-y-4">
+      {!loading && sections.length === 0 && (
+        <div className="text-center py-16 px-4">
+          <p className="text-gray-500 text-lg mb-2">👋 Paste a YouTube link to begin.</p>
+          <p className="text-gray-400 text-sm">Your notes will appear here, fully editable.</p>
+        </div>
+      )}
+
+      <section className="space-y-5">
         {sections.map((section, idx) => (
           <SectionCard
             key={idx}
