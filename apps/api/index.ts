@@ -1,10 +1,16 @@
 import { serve } from "bun";
 import { YoutubeTranscript } from "youtube-transcript";
+import { cleanTranscript } from "./utils/cleanTranscript";
+import { geminiModel } from "./ai/gemini";
+import { basicSummaryPrompt } from "../../packages/prompts/basicSummary";
 
 serve({
   port: 3001,
   async fetch(req) {
-    if (req.method === "POST" && new URL(req.url).pathname === "/transcript") {
+    const url = new URL(req.url);
+    const pathname = url.pathname;
+
+    if (req.method === "POST" && pathname === "/transcript") {
       try {
         const body = await req.json();
         const { url } = body;
@@ -68,6 +74,48 @@ serve({
           JSON.stringify({
             error: "Failed to fetch transcript",
             details: error.message,
+          }),
+          { 
+            status: 500,
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      }
+    }
+
+    if (req.method === "POST" && pathname === "/summary") {
+      try {
+        const body = await req.json();
+        const { transcript } = body;
+
+        if (!transcript || !Array.isArray(transcript)) {
+          return new Response(
+            JSON.stringify({ error: "Transcript array required" }),
+            { 
+              status: 400,
+              headers: { "Content-Type": "application/json" }
+            }
+          );
+        }
+
+        const cleanedText = cleanTranscript(transcript);
+
+        const prompt = basicSummaryPrompt(cleanedText);
+        const summary = await geminiModel.generateContent(prompt);
+
+        return new Response(
+          JSON.stringify({
+            summary,
+          }),
+          { 
+            headers: { "Content-Type": "application/json" }
+          }
+        );
+      } catch (err: any) {
+        return new Response(
+          JSON.stringify({ 
+            error: "Failed to generate summary",
+            details: err.message 
           }),
           { 
             status: 500,

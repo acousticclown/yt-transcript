@@ -18,5 +18,17 @@ Turn long-form YouTube content into:
 - Tailwind
 
 ## Status
-Day 1 – Project foundation
+Day 3 – Transcript cleaning + Basic AI summary
+
+## Setup
+
+### Backend (API)
+1. Navigate to `apps/api`
+2. Copy `.env.example` to `.env`
+3. Add your Gemini API key: `GEMINI_API_KEY=your_key_here`
+4. Run: `bun run index.ts`
+
+### API Endpoints
+- `POST /transcript` - Extract transcript from YouTube URL
+- `POST /summary` - Generate AI summary from transcript array
 

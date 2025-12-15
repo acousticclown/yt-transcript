@@ -24,6 +24,8 @@ build/
 .env.development.local
 .env.test.local
 .env.production.local
+# But keep .env.example files (they're templates)
+!.env.example
 
 # Debug
 npm-debug.log*
