@@ -51,11 +51,23 @@ Thumbs.db
 # Bun
 apps/api/.bun
 apps/api/bun.lockb
+.bun/
 
 # TypeScript
 *.tsbuildinfo
 
+# Next.js (additional)
+apps/web/.swc/
+
+# Storage/Data (for future phases)
+*.db
+*.sqlite
+*.sqlite3
+data/
+storage/
+
 # Temporary files
 *.tmp
 *.temp
+.cache/
 
