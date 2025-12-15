@@ -15,6 +15,7 @@ import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
 import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
 import { regenerateSectionPrompt } from "../../packages/prompts/regenerateSection.ts";
+import { languageTransformPrompt } from "../../packages/prompts/languageTransform.ts";
 
 // Storage & Export
 import { saveNote } from "./storage/saveNote";
@@ -532,8 +533,109 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  res.writeHead(404);
-  res.end("Not Found");
+  // ============================================
+  // POST /ai/transform-language - Transform section to different language
+  // ============================================
+  if (req.method === "POST" && pathname === "/ai/transform-language") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        target?: "english" | "hindi" | "hinglish";
+        section?: {
+          title: string;
+          summary: string;
+          bullets: string[];
+        };
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { target, section } = parsedBody;
+
+      if (!target || !section) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            error: "Target language and section are required",
+          })
+        );
+        return;
+      }
+
+      if (!["english", "hindi", "hinglish"].includes(target)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid target language" }));
+        return;
+      }
+
+      // Validate section structure
+      if (
+        typeof section.title !== "string" ||
+        typeof section.summary !== "string" ||
+        !Array.isArray(section.bullets)
+      ) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Invalid section structure for transformation" })
+        );
+        return;
+      }
+
+      // Generate transformed section
+      const prompt = languageTransformPrompt(target, section);
+      const result = await geminiModel.generateContent(prompt);
+
+      // Gemini sometimes wraps JSON in markdown code blocks - strip safely
+      const jsonText = result
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      const transformed = JSON.parse(jsonText);
+
+      // Basic validation for transformed content
+      if (
+        typeof transformed.title !== "string" ||
+        typeof transformed.summary !== "string" ||
+        !Array.isArray(transformed.bullets)
+      ) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            error: "AI returned invalid section format",
+            details:
+              "Expected {title: string, summary: string, bullets: string[]}",
+          })
+        );
+        return;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(transformed));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to transform language. Please try again.",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  res.writeHead(404, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({ error: "Not Found" }));
 });
 
 server.listen(PORT, () => {
