@@ -346,6 +346,13 @@ Structured sections (title, summary, bullets)
 [Optional] POST /ai/inline → Contextual text improvement
 [Optional] POST /ai/regenerate-section → Regenerate one section
 [Optional] POST /ai/transform-language → Transform section to different language
+
+**Language Switching Strategy:**
+- Each section maintains `source` (English) and `current` (displayed content)
+- Language switching transforms `source` → `current` (doesn't regenerate from transcript)
+- Switching back to English restores from `source` instantly
+- User edits affect `current` only, preserving `source` as stable base
+- This prevents data loss and allows safe experimentation
 ```
 
 ---

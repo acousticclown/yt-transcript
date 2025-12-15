@@ -87,11 +87,7 @@ export default function Home() {
       // source = always English (stable, editable)
       // current = what user sees & edits
       const sectionsWithIds = (sectionsData.sections || []).map(
-        (section: {
-          title: string;
-          summary: string;
-          bullets: string[];
-        }) => ({
+        (section: { title: string; summary: string; bullets: string[] }) => ({
           id: crypto.randomUUID(),
           source: section, // Always English from backend
           current: section, // Initially same as source

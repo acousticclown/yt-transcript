@@ -54,8 +54,21 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Visual grouping improvements
 - [x] Final micro-copy pass
 
-### Day 14 (Planned)
-- Pause, refine, cut excess
+### Day 14 ✅ (Complete)
+- [x] Language transformation prompt (English, Hindi, Hinglish)
+- [x] POST /ai/transform-language endpoint
+- [x] Hinglish designed to sound natural (not robotic)
+- [x] Foundation for multilingual support
+
+### Day 15 ✅ (Complete)
+- [x] Section type with source, current, language
+- [x] Per-section language selector
+- [x] Language switching without data loss
+- [x] English always recoverable
+- [x] Editing works correctly (edits current, not source)
+
+### Day 16 (Planned)
+- Inline language switch (per section)
 
 ### Future Week 2 Features
 - Multilingual Support

@@ -17,6 +17,7 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 - ✅ **Focus mode** - Distraction-free editing by dimming other sections
 - ✅ **Dark mode** - System-based dark theme support
 - ✅ **Visual polish** - Clear hierarchy, typography discipline, intentional design
+- ✅ **Section-level language switching** - Switch each section to English, Hindi, or Hinglish independently
 
 ## Tech Stack
 
@@ -51,6 +52,10 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 - Day 11: Partial Regeneration ✅
 - Day 12: Drag, Reorder & Focus Mode ✅
 - Day 13: Visual Hierarchy, Themes & Finishing Touches ✅
+
+**Week 3 Progress** (In Progress)
+- Day 14: Language Foundations & Hinglish Philosophy ✅
+- Day 15: Section-Level Language Switching ✅
 
 **Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
 
