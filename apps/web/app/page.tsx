@@ -29,7 +29,7 @@ export default function Home() {
       const transcriptData = await transcriptRes.json();
 
       if (transcriptData.error) {
-        alert(transcriptData.error);
+        alert(`⚠️ ${transcriptData.error}`);
         setLoading(false);
         return;
       }
@@ -43,15 +43,14 @@ export default function Home() {
       const sectionsData = await sectionsRes.json();
 
       if (sectionsData.error) {
-        alert(sectionsData.error);
+        alert(`⚠️ ${sectionsData.error}`);
         setLoading(false);
         return;
       }
 
       setSections(sectionsData.sections || []);
-    } catch (error) {
-      console.error("Error generating notes:", error);
-      alert("Failed to generate notes. Make sure the API server is running.");
+    } catch {
+      alert("⚠️ Failed to generate notes. Make sure the API server is running on port 3001.");
     } finally {
       setLoading(false);
     }
@@ -112,10 +111,9 @@ export default function Home() {
                 } else {
                   alert("Notes saved!");
                 }
-              } catch (error) {
-                console.error("Error saving notes:", error);
+              } catch {
                 alert(
-                  "Failed to save notes. Make sure the API server is running."
+                  "⚠️ Failed to save notes. Make sure the API server is running."
                 );
               } finally {
                 setSaving(false);
@@ -159,10 +157,9 @@ export default function Home() {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(downloadUrl);
-              } catch (error) {
-                console.error("Error exporting notes:", error);
+              } catch {
                 alert(
-                  "Failed to export notes. Make sure the API server is running."
+                  "⚠️ Failed to export notes. Make sure the API server is running."
                 );
               }
             }}

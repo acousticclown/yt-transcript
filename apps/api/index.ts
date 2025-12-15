@@ -1,13 +1,20 @@
+// Environment & Core
 import "dotenv/config";
 import http from "http";
 import { randomUUID } from "crypto";
+
+// YouTube & Transcript
 import { getSubtitles } from "youtube-caption-extractor";
+import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
+import { transcribeAudio } from "./utils/whisperTranscription";
 import { cleanTranscript } from "./utils/cleanTranscript";
+
+// AI
 import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
-import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
-import { transcribeAudio } from "./utils/whisperTranscription";
+
+// Storage & Export
 import { saveNote } from "./storage/saveNote";
 import { toMarkdown } from "./utils/toMarkdown";
 
@@ -36,6 +43,12 @@ const server = http.createServer(async (req, res) => {
     res.setHeader(key, value);
   });
 
+  // ============================================
+  // POST /transcript - Extract transcript from YouTube
+  // ============================================
+  // Step 1: Try YouTube captions (fast, free)
+  // Step 2: Fallback to audio extraction + Whisper (if captions unavailable)
+  // ============================================
   if (req.method === "POST" && pathname === "/transcript") {
     try {
       let body = "";
@@ -95,11 +108,7 @@ const server = http.createServer(async (req, res) => {
           duration: parseFloat(sub.dur) || 0,
         }));
 
-        console.log(
-          `Fetched transcript from YouTube: ${transcript.length} segments`
-        );
       } catch (error: any) {
-        console.log(`YouTube captions not available (en): ${error.message}`);
         // Try without language specification (auto-detect)
         try {
           const subtitles = await getSubtitles({
@@ -110,35 +119,24 @@ const server = http.createServer(async (req, res) => {
             start: parseFloat(sub.start) || 0,
             duration: parseFloat(sub.dur) || 0,
           }));
-          console.log(
-            `Fetched transcript (auto language): ${transcript.length} segments`
-          );
         } catch (err2: any) {
-          console.log(`YouTube captions not available: ${err2.message}`);
-          // Will fall back to audio extraction
+          // Captions not available - will fall back to audio extraction
         }
       }
 
-      // Fallback: If no captions, try audio extraction + Whisper
+      // Step 2: Fallback to audio extraction + Whisper (if captions unavailable)
+      // Note: YouTube often blocks audio extraction (403), so this may fail
       if (transcript.length === 0) {
-        console.log("Attempting audio extraction + Whisper fallback...");
         let audioFilePath: string | null = null;
 
         try {
-          // Extract audio (using service-based approach)
+          // Extract audio from YouTube video
           audioFilePath = await extractAudio(url);
-          console.log(`Audio extracted to: ${audioFilePath}`);
 
-          // Transcribe with Whisper API
+          // Transcribe with OpenAI Whisper API
           transcript = await transcribeAudio(audioFilePath);
           transcriptSource = "whisper";
-          console.log(
-            `Whisper transcription complete: ${transcript.length} segments`
-          );
         } catch (error: any) {
-          console.error(
-            `Audio extraction/transcription failed: ${error.message}`
-          );
 
           // Clean up audio file if it exists
           if (audioFilePath) {
@@ -152,20 +150,15 @@ const server = http.createServer(async (req, res) => {
             error.message.includes("decipher function") ||
             error.message.includes("blocking audio extraction");
 
+          // Return user-friendly error message
           res.writeHead(200, { "Content-Type": "application/json" });
           res.end(
             JSON.stringify({
-              error:
-                "Transcript not available. This video doesn't have captions, and audio transcription failed.",
-              details: error.message,
+              error: isYouTubeBlocked
+                ? "This video doesn't have captions, and YouTube is blocking audio extraction. Try a video with captions enabled."
+                : "Transcript not available for this video. This video may not have captions enabled.",
               transcript: [],
               language: "unknown",
-              note: isYouTubeBlocked
-                ? "YouTube is blocking audio extraction (403). Your OpenAI API key is configured correctly, but we can't get the audio file to transcribe. This is a YouTube limitation, not an API issue. Try a video with captions enabled - those work perfectly!"
-                : error.message.includes("OPENAI_API_KEY") ||
-                  error.message.includes("API key")
-                ? "OpenAI API key issue: " + error.message
-                : "Audio extraction failed: " + error.message,
             })
           );
           return;
@@ -189,14 +182,19 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to fetch transcript",
-          details: error.message,
+          error: "Failed to fetch transcript. Please try again.",
         })
       );
     }
     return;
   }
 
+  // ============================================
+  // POST /summary - Generate AI summary
+  // ============================================
+  // Step 1: Clean transcript (non-AI, deterministic)
+  // Step 2: Run AI for summarization
+  // ============================================
   if (req.method === "POST" && pathname === "/summary") {
     try {
       let body = "";
@@ -212,8 +210,10 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Clean transcript (deterministic, no AI)
       const cleanedText = cleanTranscript(transcript);
 
+      // Generate summary using AI
       const prompt = basicSummaryPrompt(cleanedText);
       const summary = await geminiModel.generateContent(prompt);
 
@@ -227,14 +227,19 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to generate summary",
-          details: err.message,
+          error: "Failed to generate summary. Please try again.",
         })
       );
     }
     return;
   }
 
+  // ============================================
+  // POST /sections - Generate structured sections
+  // ============================================
+  // Step 1: Clean transcript (non-AI, deterministic)
+  // Step 2: Run AI for section detection and structuring
+  // ============================================
   if (req.method === "POST" && pathname === "/sections") {
     try {
       let body = "";
@@ -250,12 +255,14 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
+      // Clean transcript (deterministic, no AI)
       const cleanedText = cleanTranscript(transcript);
 
+      // Generate structured sections using AI
       const prompt = sectionDetectionPrompt(cleanedText);
       const result = await geminiModel.generateContent(prompt);
 
-      // Gemini sometimes wraps JSON in ``` — strip safely
+      // Gemini sometimes wraps JSON in markdown code blocks - strip safely
       const jsonText = result
         .replace(/```json/g, "")
         .replace(/```/g, "")
@@ -269,14 +276,16 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to generate sections",
-          details: err.message,
+          error: "Failed to generate sections. Please try again.",
         })
       );
     }
     return;
   }
 
+  // ============================================
+  // POST /save - Save notes to local storage
+  // ============================================
   if (req.method === "POST" && pathname === "/save") {
     try {
       let body = "";
@@ -344,14 +353,16 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to save note",
-          details: err.message,
+          error: "Failed to save note. Please try again.",
         })
       );
     }
     return;
   }
 
+  // ============================================
+  // POST /export/markdown - Export notes as Markdown
+  // ============================================
   if (req.method === "POST" && pathname === "/export/markdown") {
     try {
       let body = "";
@@ -394,8 +405,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to export markdown",
-          details: err.message,
+          error: "Failed to export markdown. Please try again.",
         })
       );
     }

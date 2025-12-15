@@ -1,83 +1,127 @@
 # YT-Transcript
 
-An open-source, personal-first YouTube Transcript and Smart Notes generator.
-
-🚧 Work in progress.
-
-## Vision
-
-Turn long-form YouTube content into:
-
-- Clean transcripts
-- Structured notes
-- Editable sections
-- Playful learning experiences
-
-## Tech Stack
-
-- Next.js
-- Node.js
-- Gemini AI (free tier) - for summaries and section detection
-- OpenAI Whisper API - for audio transcription fallback
-- Tailwind
-- youtube-caption-extractor - for YouTube transcript extraction (primary method)
-- @distube/ytdl-core - for audio extraction (pure JavaScript, fallback)
+YT-Transcript is a personal-first, open-source web app that converts YouTube videos into clean transcripts, structured notes, and editable summaries.
 
 ## Features
 
-- ✅ YouTube transcript extraction (primary method - works for videos with captions) ✅ **NOW WORKING!**
-- ⚠️ Audio extraction + Whisper transcription fallback (implemented, but YouTube blocks extraction)
-- ✅ AI-powered summaries (Gemini)
-- ✅ Structured section detection
-- ✅ Editable UI with inline editing
-- ✅ **Web-server compatible** - No system binaries required
+- ✅ **YouTube transcript extraction** - Fast, reliable caption extraction
+- ✅ **AI-powered summaries** - Generate concise summaries using Gemini AI
+- ✅ **Structured section detection** - Automatically break content into logical sections
+- ✅ **Editable note blocks** - Inline editing for titles, summaries, and bullets
+- ✅ **Local saving** - Save notes as JSON files
+- ✅ **Markdown export** - Export notes as Markdown files
+
+## Tech Stack
+
+- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS
+- **Backend:** Node.js, TypeScript
+- **AI:** Google Gemini (free tier) - for summaries and section detection
+- **Transcription:** OpenAI Whisper API (fallback) - for videos without captions
+- **YouTube:** `youtube-caption-extractor` - for transcript extraction
+
+## Philosophy
+
+- **Incremental development** - Build day-by-day, feature-by-feature
+- **Free tools first** - Use free tiers and open-source tools
+- **Replaceable AI providers** - AI logic is modular and swappable
+- **Playful but focused UX** - Delightful without being distracting
+- **Personal-first** - Built for daily use, open-source for community
 
 ## Status
 
-Day 5.5 – Transcript Extraction Fixed + Whisper Fallback (Implemented)
+**Week 1 MVP Complete** ✅
 
-**Update:** Switched from `youtube-transcript` to `youtube-caption-extractor` - transcript extraction is now working! ✅
+The core functionality is working:
+- Transcript extraction (primary method working)
+- AI-powered structuring
+- Editable UI
+- Save and export
 
-**Note:** Transcript extraction is now working using `youtube-caption-extractor`! Audio extraction fallback is implemented but YouTube blocks it (403 errors). The app works great with videos that have captions enabled.
-
-### How It Works
-
-1. **Primary method**: Extracts YouTube captions using `youtube-caption-extractor` (fast, free, reliable) ✅ **WORKING!**
-2. **Fallback method**: Attempts to extract audio and transcribe with OpenAI Whisper API ⚠️
-   - **Current limitation**: YouTube blocks audio extraction libraries (403 errors)
-   - **Status**: Implemented correctly, but YouTube prevents it from working
-   - **Recommendation**: Use videos with captions enabled for best results
-3. Same output format regardless of source
-
-### Cost
-
-- **Gemini API**: Free tier (no credit card required)
-- **OpenAI Whisper API**:
-  - Free tier: $5 credit on signup
-  - After that: ~$0.006 per minute (~$0.36/hour of audio)
-  - Example: A 10-minute video costs ~$0.06
+**Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
 
 ## Setup
+
+### Prerequisites
+
+- Node.js 20+
+- npm or yarn
+- API keys:
+  - Gemini API key (free tier, no credit card required)
+  - OpenAI API key (optional, for fallback transcription)
 
 ### Backend (API)
 
 1. Navigate to `apps/api`
 2. Copy `.env.example` to `.env`
 3. Add your API keys:
-   - `GEMINI_API_KEY=your_key_here` (required - for summaries and section detection)
-   - `OPENAI_API_KEY=your_key_here` (required for fallback - enables transcription for videos without captions)
-4. Run: `npm run dev` (for hot reload) or `npm run start`
+   ```bash
+   GEMINI_API_KEY=your_key_here
+   OPENAI_API_KEY=your_key_here  # Optional, for fallback
+   ```
+4. Install dependencies: `npm install`
+5. Run: `npm run dev` (for hot reload) or `npm run start`
 
 ### Frontend (Web)
 
 1. Navigate to `apps/web`
-2. Run: `npm run dev`
-3. Open http://localhost:3000
+2. Install dependencies: `npm install`
+3. Run: `npm run dev`
+4. Open http://localhost:3000
 
-### API Endpoints
+## Usage
+
+1. Paste a YouTube URL in the input field
+2. Click "Generate" to extract transcript and generate structured notes
+3. Edit sections inline (titles, summaries, bullets)
+4. Click "Save Notes" to save locally
+5. Click "Export Markdown" to download as `.md` file
+
+## API Endpoints
+
+See [docs/api.md](./docs/api.md) for detailed API documentation.
 
 - `POST /transcript` - Extract transcript from YouTube URL
-  - Primary: Uses YouTube captions via `youtube-caption-extractor` (fast, free, working!) ✅
-  - Fallback: Extracts audio and transcribes with Whisper (blocked by YouTube 403) ⚠️
-- `POST /summary` - Generate AI summary from transcript array
-- `POST /sections` - Generate structured sections (title, summary, bullets) from transcript array
+- `POST /summary` - Generate AI summary from transcript
+- `POST /sections` - Generate structured sections
+- `POST /save` - Save notes to local storage
+- `POST /export/markdown` - Export notes as Markdown
+
+## Cost
+
+- **Gemini API:** Free tier (no credit card required)
+- **OpenAI Whisper API:** 
+  - Free tier: $5 credit on signup
+  - After that: ~$0.006 per minute (~$0.36/hour of audio)
+  - Example: A 10-minute video costs ~$0.06
+
+## Project Structure
+
+```
+yt-transcript/
+├── apps/
+│   ├── web/          # Next.js frontend
+│   └── api/           # Node.js backend
+├── packages/
+│   └── prompts/       # AI prompts (versioned as code)
+├── docs/              # Documentation
+│   ├── api.md         # API flow documentation
+│   ├── roadmap.md     # Feature roadmap
+│   └── vision.md      # Product vision
+└── README.md
+```
+
+## Roadmap
+
+See [docs/roadmap.md](./docs/roadmap.md) for planned features.
+
+## Contributing
+
+This is an open-source project. Contributions are welcome!
+
+## License
+
+[Add your license here]
+
+---
+
+**Built with intention, one day at a time.** 🚀
