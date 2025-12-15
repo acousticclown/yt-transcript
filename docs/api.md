@@ -277,6 +277,57 @@ The speaker introduces...
 
 ---
 
+### POST /ai/transform-language
+
+**Purpose:** Transform a section to a different language (English, Hindi, Hinglish) while preserving meaning and structure.
+
+**Input:**
+```json
+{
+  "target": "english" | "hindi" | "hinglish",
+  "section": {
+    "title": "Introduction",
+    "summary": "...",
+    "bullets": ["..."]
+  }
+}
+```
+
+**Output:**
+```json
+{
+  "title": "Transformed title",
+  "summary": "Transformed summary",
+  "bullets": ["Bullet 1", "Bullet 2"]
+}
+```
+
+**Flow:**
+1. Takes existing section and target language
+2. Sends to Gemini AI with language transformation prompt
+3. Returns transformed section (title, summary, bullets)
+4. Preserves exact meaning and structure
+5. Does NOT regenerate from transcript (much cheaper, safer)
+
+**Languages:**
+- `english` - Clear, simple English
+- `hindi` - Natural Hindi in Devanagari script (conversational, not overly formal)
+- `hinglish` - Natural Indian Hinglish (mixes Hindi and English naturally, like spoken in India)
+
+**Hinglish Philosophy:**
+- NOT word-by-word translation
+- Sounds like an Indian speaker explaining to a friend
+- Technical terms stay in English when appropriate
+- Example: "Is section me hum dekhte hain ki load balancer kyu zaroori hota hai"
+
+**Use Cases:**
+- Switch language without regenerating everything
+- Preserve user edits while changing language
+- Make content accessible in multiple languages
+- Natural Hinglish for Indian users
+
+---
+
 ## Data Flow
 
 ```
@@ -294,6 +345,7 @@ Structured sections (title, summary, bullets)
 [Optional] POST /export/markdown → Markdown download
 [Optional] POST /ai/inline → Contextual text improvement
 [Optional] POST /ai/regenerate-section → Regenerate one section
+[Optional] POST /ai/transform-language → Transform section to different language
 ```
 
 ---
