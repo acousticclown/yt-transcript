@@ -17,7 +17,7 @@ Turn long-form YouTube content into:
 - Gemini AI (free tier) - for summaries and section detection
 - Tailwind
 - @xenova/transformers - local Whisper model (free, no API needed)
-- @distube/ytdl-core - audio extraction from YouTube
+- yt-dlp-exec - audio extraction from YouTube (requires yt-dlp binary)
 
 ## Features
 - ✅ YouTube transcript extraction (primary method)
