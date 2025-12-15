@@ -46,8 +46,13 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Focus mode (distraction-free editing)
 - [x] Dim other sections when focused
 
-### Day 13 (Planned)
-- Visual hierarchy + themes
+### Day 13 ✅ (Complete)
+- [x] Visual hierarchy locked (top to bottom importance)
+- [x] Typography discipline (3 sizes max)
+- [x] Color restraint (one accent color)
+- [x] System-based dark mode
+- [x] Visual grouping improvements
+- [x] Final micro-copy pass
 
 ### Day 14 (Planned)
 - Pause, refine, cut excess

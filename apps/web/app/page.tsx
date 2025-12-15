@@ -278,7 +278,9 @@ export default function Home() {
                     }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={dimmed ? "pointer-events-none" : "pointer-events-auto"}
+                    className={
+                      dimmed ? "pointer-events-none" : "pointer-events-auto"
+                    }
                   >
                     <SortableSectionCard
                       section={section}
