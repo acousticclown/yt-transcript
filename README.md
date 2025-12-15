@@ -10,6 +10,9 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 - ✅ **Editable note blocks** - Inline editing for titles, summaries, and bullets
 - ✅ **Local saving** - Save notes as JSON files
 - ✅ **Markdown export** - Export notes as Markdown files
+- ✅ **Inline AI actions** - Simplify, expand, or add examples to text (contextual, on hover)
+- ✅ **Partial regeneration** - Regenerate one section at a time without affecting others
+- ✅ **Smooth animations** - Subtle, premium feel with Framer Motion
 
 ## Tech Stack
 
@@ -29,13 +32,19 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 
 ## Status
 
-**Week 1 MVP Complete** ✅
+**Week 2 In Progress** 🚀
 
-The core functionality is working:
+**Week 1 MVP Complete** ✅
 - Transcript extraction (primary method working)
 - AI-powered structuring
 - Editable UI
 - Save and export
+
+**Week 2 Progress** ✅
+- Day 8: UX Polish & Micro-Playfulness ✅
+- Day 9: Playful Animations with Framer Motion ✅
+- Day 10: Inline AI Actions ✅
+- Day 11: Partial Regeneration ✅
 
 **Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
 
@@ -85,6 +94,8 @@ See [docs/api.md](./docs/api.md) for detailed API documentation.
 - `POST /sections` - Generate structured sections
 - `POST /save` - Save notes to local storage
 - `POST /export/markdown` - Export notes as Markdown
+- `POST /ai/inline` - Inline AI actions (simplify, expand, example)
+- `POST /ai/regenerate-section` - Regenerate one section surgically
 
 ## Cost
 

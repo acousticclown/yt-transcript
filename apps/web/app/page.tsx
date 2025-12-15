@@ -20,7 +20,9 @@ const loadingMessages = [
 export default function Home() {
   const [url, setUrl] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
-  const [transcript, setTranscript] = useState<Array<{ text: string; start: number; duration: number }>>([]);
+  const [transcript, setTranscript] = useState<
+    Array<{ text: string; start: number; duration: number }>
+  >([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);

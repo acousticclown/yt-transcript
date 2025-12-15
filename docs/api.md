@@ -203,6 +203,80 @@ The speaker introduces...
 
 ---
 
+### POST /ai/inline
+
+**Purpose:** Inline AI actions for contextual text improvement (simplify, expand, add example).
+
+**Input:**
+```json
+{
+  "action": "simplify" | "expand" | "example",
+  "text": "Text to process..."
+}
+```
+
+**Output:**
+```json
+{
+  "text": "Rewritten text..."
+}
+```
+
+**Flow:**
+1. Takes existing text and action type
+2. Sends to Gemini AI with specific instruction
+3. Returns replacement text only (no markdown, no emojis)
+
+**Actions:**
+- `simplify` - Rewrite in simpler, clearer language
+- `expand` - Expand with more detail, without adding new topics
+- `example` - Add a short real-world example
+
+**Use Cases:**
+- Applied to section summaries
+- Applied to individual bullet points
+- Appears on hover (contextual, not intrusive)
+
+---
+
+### POST /ai/regenerate-section
+
+**Purpose:** Regenerate one section surgically (title, summary, bullets) without affecting other sections.
+
+**Input:**
+```json
+{
+  "section": {
+    "title": "Introduction",
+    "summary": "...",
+    "bullets": ["..."]
+  },
+  "transcript": "Full cleaned transcript text..."
+}
+```
+
+**Output:**
+```json
+{
+  "title": "Regenerated title",
+  "summary": "Regenerated summary",
+  "bullets": ["Bullet 1", "Bullet 2"]
+}
+```
+
+**Flow:**
+1. Takes current section and full transcript
+2. Sends to Gemini AI with regeneration prompt
+3. Returns regenerated section (title, summary, bullets)
+4. Only affects the requested section
+
+**Use Cases:**
+- Fix AI mistakes in one section
+- Polish notes iteratively
+- Regenerate without affecting other sections
+
+---
+
 ## Data Flow
 
 ```
@@ -218,6 +292,8 @@ Structured sections (title, summary, bullets)
     ↓
 [Optional] POST /save → Local JSON file
 [Optional] POST /export/markdown → Markdown download
+[Optional] POST /ai/inline → Contextual text improvement
+[Optional] POST /ai/regenerate-section → Regenerate one section
 ```
 
 ---

@@ -21,20 +21,24 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Intentional editing feel
 - [x] Empty states & loading messages
 
-### Day 9 (Planned)
-- Animations with Framer Motion
-- Smooth transitions
-- Micro-interactions
+### Day 9 ✅ (Complete)
+- [x] Animations with Framer Motion
+- [x] Smooth transitions (fade + slide)
+- [x] Micro-interactions (button taps, hover)
+- [x] Section cards animate in smoothly
 
-### Day 10 (Planned)
-- Inline AI Actions
-- Simplify text
-- Expand sections
-- Regenerate specific sections
-- Add context
+### Day 10 ✅ (Complete)
+- [x] Inline AI Actions
+- [x] Simplify text
+- [x] Expand sections
+- [x] Add example
+- [x] Contextual hover toolbars
 
-### Day 11 (Planned)
-- Partial regeneration (per section)
+### Day 11 ✅ (Complete)
+- [x] Partial regeneration (per section)
+- [x] Regenerate one section at a time
+- [x] Preserves other sections
+- [x] Surgical AI - no chaos
 
 ### Day 12 (Planned)
 - Drag, reorder & focus mode
