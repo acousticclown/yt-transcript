@@ -18,7 +18,7 @@ Turn long-form YouTube content into:
 - Tailwind
 
 ## Status
-Day 3 – Transcript cleaning + Basic AI summary
+Day 4 – Section & Topic Detection
 
 ## Setup
 
@@ -31,4 +31,5 @@ Day 3 – Transcript cleaning + Basic AI summary
 ### API Endpoints
 - `POST /transcript` - Extract transcript from YouTube URL
 - `POST /summary` - Generate AI summary from transcript array
+- `POST /sections` - Generate structured sections (title, summary, bullets) from transcript array
 

@@ -3,6 +3,7 @@ import { YoutubeTranscript } from "youtube-transcript";
 import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary";
+import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection";
 
 serve({
   port: 3001,
@@ -12,30 +13,29 @@ serve({
 
     if (req.method === "POST" && pathname === "/transcript") {
       try {
-        const body = await req.json();
+        const body = (await req.json()) as { url?: string };
         const { url } = body;
 
         if (!url) {
           return new Response(
             JSON.stringify({ error: "YouTube URL is required" }),
-            { 
+            {
               status: 400,
-              headers: { "Content-Type": "application/json" }
+              headers: { "Content-Type": "application/json" },
             }
           );
         }
 
         // Basic URL validation
-        const isValidYouTubeUrl = 
-          url.includes("youtube.com/watch") || 
-          url.includes("youtu.be/");
+        const isValidYouTubeUrl =
+          url.includes("youtube.com/watch") || url.includes("youtu.be/");
 
         if (!isValidYouTubeUrl) {
           return new Response(
             JSON.stringify({ error: "Invalid YouTube URL" }),
-            { 
+            {
               status: 400,
-              headers: { "Content-Type": "application/json" }
+              headers: { "Content-Type": "application/json" },
             }
           );
         }
@@ -53,9 +53,9 @@ serve({
               transcript: [],
               language: "unknown",
             }),
-            { 
+            {
               status: 200,
-              headers: { "Content-Type": "application/json" }
+              headers: { "Content-Type": "application/json" },
             }
           );
         }
@@ -65,8 +65,8 @@ serve({
             transcript,
             language: "unknown",
           }),
-          { 
-            headers: { "Content-Type": "application/json" }
+          {
+            headers: { "Content-Type": "application/json" },
           }
         );
       } catch (error: any) {
@@ -75,9 +75,9 @@ serve({
             error: "Failed to fetch transcript",
             details: error.message,
           }),
-          { 
+          {
             status: 500,
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
           }
         );
       }
@@ -85,15 +85,15 @@ serve({
 
     if (req.method === "POST" && pathname === "/summary") {
       try {
-        const body = await req.json();
+        const body = (await req.json()) as { transcript?: unknown };
         const { transcript } = body;
 
         if (!transcript || !Array.isArray(transcript)) {
           return new Response(
             JSON.stringify({ error: "Transcript array required" }),
-            { 
+            {
               status: 400,
-              headers: { "Content-Type": "application/json" }
+              headers: { "Content-Type": "application/json" },
             }
           );
         }
@@ -107,19 +107,64 @@ serve({
           JSON.stringify({
             summary,
           }),
-          { 
-            headers: { "Content-Type": "application/json" }
+          {
+            headers: { "Content-Type": "application/json" },
           }
         );
       } catch (err: any) {
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: "Failed to generate summary",
-            details: err.message 
+            details: err.message,
           }),
-          { 
+          {
             status: 500,
-            headers: { "Content-Type": "application/json" }
+            headers: { "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
+    if (req.method === "POST" && pathname === "/sections") {
+      try {
+        const body = (await req.json()) as { transcript?: unknown };
+        const { transcript } = body;
+
+        if (!transcript || !Array.isArray(transcript)) {
+          return new Response(
+            JSON.stringify({ error: "Transcript array required" }),
+            {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+        }
+
+        const cleanedText = cleanTranscript(transcript);
+
+        const prompt = sectionDetectionPrompt(cleanedText);
+        const result = await geminiModel.generateContent(prompt);
+
+        // Gemini sometimes wraps JSON in ``` — strip safely
+        const jsonText = result
+          .replace(/```json/g, "")
+          .replace(/```/g, "")
+          .trim();
+
+        const sections = JSON.parse(jsonText);
+
+        return new Response(JSON.stringify(sections), {
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (err: any) {
+        return new Response(
+          JSON.stringify({
+            error: "Failed to generate sections",
+            details: err.message,
+          }),
+          {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
           }
         );
       }
