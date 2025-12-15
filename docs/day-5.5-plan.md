@@ -16,9 +16,10 @@ Implement a fallback system:
 - Clean up after transcription
 
 ### Step 2: Whisper Integration
-- Use OpenAI Whisper API (free tier) or local Whisper model
+- Use @xenova/transformers to run Whisper locally (completely free, no API needed)
 - Transcribe audio to text with timestamps
 - Convert to same format as YouTube transcript (array of {text, start, duration})
+- Model downloads automatically on first use (one-time setup)
 
 ### Step 3: Fallback Logic
 - Try YouTube captions first
@@ -28,7 +29,9 @@ Implement a fallback system:
 ## Why This Matters
 - **Works on every video** - not limited by caption availability
 - **More reliable** - doesn't depend on YouTube's caption system
-- **Still free** - Whisper is open-source, can run locally or use API
+- **Completely free** - Uses local Whisper model via @xenova/transformers (no API costs)
+- **Privacy-first** - Audio never leaves your server
+- **No rate limits** - Process as many videos as needed
 
 ## Trade-offs
 - **Slower** - audio download + transcription takes longer

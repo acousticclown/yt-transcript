@@ -4,6 +4,8 @@ import { cleanTranscript } from "./utils/cleanTranscript";
 import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection";
+import { extractAudio, cleanupAudioFile } from "./utils/audioExtraction";
+import { transcribeAudio } from "./utils/whisperTranscription";
 
 serve({
   port: 3001,
@@ -65,33 +67,68 @@ serve({
           );
         }
 
-        const transcript = await YoutubeTranscript.fetchTranscript(url);
+        // Try YouTube captions first (fast path)
+        let transcript: Array<{ text: string; start: number; duration: number }> = [];
+        let transcriptSource = "youtube_captions";
+        let audioFilePath: string | null = null;
 
-        // Log transcript length for debugging
-        console.log(`Fetched transcript: ${transcript.length} segments`);
+        try {
+          transcript = await YoutubeTranscript.fetchTranscript(url);
+          console.log(`Fetched transcript from YouTube: ${transcript.length} segments`);
+        } catch (error: any) {
+          console.log(`YouTube captions not available: ${error.message}`);
+          // Will fall back to audio extraction
+        }
 
-        // If transcript is empty, the video likely doesn't have captions
+        // Fallback: If no captions or empty, use audio extraction + Whisper
         if (transcript.length === 0) {
-          return new Response(
-            JSON.stringify({
-              error: "Transcript not available yet",
-              transcript: [],
-              language: "unknown",
-            }),
-            {
-              status: 200,
-              headers: {
-                "Content-Type": "application/json",
-                ...corsHeaders,
-              },
+          console.log("Attempting audio extraction + Whisper fallback...");
+          
+          try {
+            // Extract audio
+            audioFilePath = await extractAudio(url);
+            console.log(`Audio extracted to: ${audioFilePath}`);
+
+            // Transcribe with Whisper
+            transcript = await transcribeAudio(audioFilePath);
+            transcriptSource = "whisper";
+            console.log(`Whisper transcription complete: ${transcript.length} segments`);
+          } catch (error: any) {
+            console.error(`Audio extraction/transcription failed: ${error.message}`);
+            
+            // Clean up audio file if it exists
+            if (audioFilePath) {
+              await cleanupAudioFile(audioFilePath);
             }
-          );
+
+            return new Response(
+              JSON.stringify({
+                error: "Failed to get transcript. Video may not have captions and audio transcription failed.",
+                details: error.message,
+                transcript: [],
+                language: "unknown",
+              }),
+              {
+                status: 500,
+                headers: {
+                  "Content-Type": "application/json",
+                  ...corsHeaders,
+                },
+              }
+            );
+          } finally {
+            // Always clean up audio file
+            if (audioFilePath) {
+              await cleanupAudioFile(audioFilePath);
+            }
+          }
         }
 
         return new Response(
           JSON.stringify({
             transcript,
             language: "unknown",
+            source: transcriptSource, // For debugging
           }),
           {
             headers: {
