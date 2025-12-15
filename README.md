@@ -16,19 +16,20 @@ Turn long-form YouTube content into:
 - Bun
 - Gemini AI (free tier) - for summaries and section detection
 - Tailwind
-- @xenova/transformers - local Whisper model (free, no API needed)
-- yt-dlp-exec - audio extraction from YouTube (requires yt-dlp binary)
+- YouTube transcript extraction (primary method)
 
 ## Features
-- ✅ YouTube transcript extraction (primary method)
-- ✅ Audio extraction + local Whisper transcription (fallback for videos without captions)
+- ✅ YouTube transcript extraction (works for videos with captions)
+- ⏸️ Audio extraction fallback (temporarily disabled - will work on any video when re-enabled)
 - ✅ AI-powered summaries (Gemini)
 - ✅ Structured section detection
 - ✅ Editable UI with inline editing
 - ✅ **100% free** - No paid APIs required (uses local Whisper model)
 
 ## Status
-Day 5.5 – Audio Extraction + Whisper Fallback (Local, Free)
+Day 5.5 – Audio Extraction + Whisper Fallback (Temporarily Disabled)
+
+**Note:** Audio extraction fallback is temporarily disabled to keep deployment simple. Currently works with videos that have captions. Fallback will be re-enabled when we find a pure JavaScript solution.
 
 ## Setup
 
@@ -36,12 +37,7 @@ Day 5.5 – Audio Extraction + Whisper Fallback (Local, Free)
 1. Navigate to `apps/api`
 2. Copy `.env.example` to `.env`
 3. Add your Gemini API key: `GEMINI_API_KEY=your_key_here`
-4. **Install yt-dlp** (required for audio extraction fallback):
-   - macOS: `brew install yt-dlp`
-   - Linux: `pip install yt-dlp` or use your package manager
-   - Windows: `pip install yt-dlp` or download from [yt-dlp releases](https://github.com/yt-dlp/yt-dlp/releases)
-5. Run: `bun run dev` (for hot reload) or `bun run start`
-6. **Note**: First Whisper transcription will download the model (~75MB) - this is one-time only
+4. Run: `bun run dev` (for hot reload) or `bun run start`
 
 ### Frontend (Web)
 1. Navigate to `apps/web`
@@ -49,7 +45,7 @@ Day 5.5 – Audio Extraction + Whisper Fallback (Local, Free)
 3. Open http://localhost:3000
 
 ### API Endpoints
-- `POST /transcript` - Extract transcript from YouTube URL (tries captions first, falls back to audio + Whisper)
+- `POST /transcript` - Extract transcript from YouTube URL (works for videos with captions)
 - `POST /summary` - Generate AI summary from transcript array
 - `POST /sections` - Generate structured sections (title, summary, bullets) from transcript array
 

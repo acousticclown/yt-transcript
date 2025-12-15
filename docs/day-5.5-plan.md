@@ -1,12 +1,23 @@
-# Day 5.5 - Audio Extraction + Whisper Fallback
+# Day 5.5 - Audio Extraction + Whisper Fallback (Temporarily Disabled)
 
 ## Problem
 YouTube transcript libraries (`youtube-transcript`) only work when videos have captions available. Many videos don't have captions, limiting our app's usefulness.
 
-## Solution
+## Solution (Planned)
 Implement a fallback system:
-1. **Primary**: Try YouTube captions (fast, free) - already implemented
-2. **Fallback**: Extract audio → transcribe with Whisper (works on any video)
+1. **Primary**: Try YouTube captions (fast, free) - ✅ implemented
+2. **Fallback**: Extract audio → transcribe with Whisper (works on any video) - ⏸️ temporarily disabled
+
+## Current Status
+**Audio extraction fallback is temporarily disabled** because:
+- Requires system binary (`yt-dlp`) which doesn't work on all web servers
+- Need to find a pure JavaScript solution that works with Bun
+- Want to keep deployment simple and serverless-friendly
+
+**Current behavior:**
+- Videos with captions: ✅ Works perfectly
+- Videos without captions: Returns clear error message
+- Fallback will be re-enabled when we find a pure JS solution
 
 ## Implementation Plan
 

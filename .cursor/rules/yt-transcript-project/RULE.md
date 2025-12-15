@@ -87,12 +87,12 @@ Backend:
 • Bun
 • Simple REST APIs
 • No framework-heavy solutions unless justified
-• Audio extraction: yt-dlp-exec (for Day 5.5+, requires yt-dlp binary installed)
-• Speech-to-text: @xenova/transformers with Whisper (local, free, no API needed)
+• Audio extraction: Temporarily disabled (Day 5.5) - need pure JS solution
+• Speech-to-text: Will be added when audio extraction is re-enabled
 
 AI:
 • Google Gemini (free tier) - for summaries and section detection
-• @xenova/transformers with Whisper (local, free) - for audio transcription fallback
+• Audio transcription fallback: Temporarily disabled (Day 5.5) - will be re-enabled with pure JS solution
 • AI provider must be swappable
 • Prompts are treated as versioned code
 
