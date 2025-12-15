@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { InlineAIButton } from "./InlineAIButton";
 
 type Section = {
+  id: string;
   title: string;
   summary: string;
   bullets: string[];
@@ -23,11 +24,17 @@ function cleanTranscript(
 export function SectionCard({
   section,
   transcript,
+  isFocused,
   onChange,
+  onFocus,
+  onBlurFocus,
 }: {
   section: Section;
   transcript: Array<{ text: string; start: number; duration: number }>;
+  isFocused?: boolean;
   onChange: (section: Section) => void;
+  onFocus?: () => void;
+  onBlurFocus?: () => void;
 }) {
   const [loadingSummary, setLoadingSummary] = useState<string | null>(null);
   const [loadingBullets, setLoadingBullets] = useState<Record<number, string>>({});
@@ -80,43 +87,61 @@ export function SectionCard({
             onChange({ ...section, title: e.target.value })
           }
         />
-        <button
-          onClick={async () => {
-            if (transcript.length === 0) {
-              alert("⚠️ Transcript not available for regeneration.");
-              return;
-            }
-            setRegenerating(true);
-            try {
-              const cleanedTranscript = cleanTranscript(transcript);
-              const res = await fetch("http://localhost:3001/ai/regenerate-section", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  section,
-                  transcript: cleanedTranscript,
-                }),
-              });
-
-              if (!res.ok) {
-                const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
-                alert(`⚠️ ${errorData.error || "Failed to regenerate section"}`);
+        <div className="flex gap-2">
+          {onFocus && !isFocused && (
+            <button
+              onClick={onFocus}
+              className="text-xs text-gray-500 hover:text-gray-900 font-medium transition-colors"
+            >
+              🎯 Focus
+            </button>
+          )}
+          {onBlurFocus && isFocused && (
+            <button
+              onClick={onBlurFocus}
+              className="text-xs text-gray-500 hover:text-gray-900 font-medium transition-colors"
+            >
+              Exit Focus
+            </button>
+          )}
+          <button
+            onClick={async () => {
+              if (transcript.length === 0) {
+                alert("⚠️ Transcript not available for regeneration.");
                 return;
               }
+              setRegenerating(true);
+              try {
+                const cleanedTranscript = cleanTranscript(transcript);
+                const res = await fetch("http://localhost:3001/ai/regenerate-section", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    section,
+                    transcript: cleanedTranscript,
+                  }),
+                });
 
-              const data = await res.json();
-              onChange(data);
-            } catch {
-              alert("⚠️ Failed to regenerate section. Make sure the API server is running.");
-            } finally {
-              setRegenerating(false);
-            }
-          }}
-          disabled={regenerating || transcript.length === 0}
-          className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
-        >
-          {regenerating ? "..." : "🔁 Regenerate"}
-        </button>
+                if (!res.ok) {
+                  const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+                  alert(`⚠️ ${errorData.error || "Failed to regenerate section"}`);
+                  return;
+                }
+
+                const data = await res.json();
+                onChange({ ...data, id: section.id });
+              } catch {
+                alert("⚠️ Failed to regenerate section. Make sure the API server is running.");
+              } finally {
+                setRegenerating(false);
+              }
+            }}
+            disabled={regenerating || transcript.length === 0}
+            className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          >
+            {regenerating ? "..." : "🔁 Regenerate"}
+          </button>
+        </div>
       </div>
 
       {/* Summary - Subtle background, looks like a note */}

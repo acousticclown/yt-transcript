@@ -2,9 +2,20 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { SectionCard } from "../components/SectionCard";
+import {
+  DndContext,
+  closestCenter,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { SortableSectionCard } from "../components/SortableSectionCard";
 
 type Section = {
+  id: string;
   title: string;
   summary: string;
   bullets: string[];
@@ -26,6 +37,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
+  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
 
   async function generateNotes() {
     setLoading(true);
@@ -67,7 +79,12 @@ export default function Home() {
         return;
       }
 
-      setSections(sectionsData.sections || []);
+      // Add stable IDs to sections for drag & drop
+      const sectionsWithIds = (sectionsData.sections || []).map((section: Omit<Section, "id">) => ({
+        ...section,
+        id: crypto.randomUUID(),
+      }));
+      setSections(sectionsWithIds);
     } catch {
       alert(
         "⚠️ Failed to generate notes. Make sure the API server is running on port 3001."
@@ -223,29 +240,62 @@ export default function Home() {
         </div>
       )}
 
-      <AnimatePresence>
-        <section className="space-y-5">
-          {sections.map((section, idx) => (
-            <motion.div
-              key={idx}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25, ease: "easeOut" }}
-            >
-              <SectionCard
-                section={section}
-                transcript={transcript}
-                onChange={(updated) => {
-                  const copy = [...sections];
-                  copy[idx] = updated;
-                  setSections(copy);
-                }}
-              />
-            </motion.div>
-          ))}
-        </section>
-      </AnimatePresence>
+      <DndContext
+        collisionDetection={closestCenter}
+        onDragEnd={(event: DragEndEvent) => {
+          const { active, over } = event;
+          if (over && active.id !== over.id) {
+            setSections((items) => {
+              const oldIndex = items.findIndex((i) => i.id === active.id);
+              const newIndex = items.findIndex((i) => i.id === over.id);
+              return arrayMove(items, oldIndex, newIndex);
+            });
+          }
+        }}
+      >
+        <SortableContext
+          items={sections.map((s) => s.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <AnimatePresence>
+            <section className="space-y-5">
+              {sections.map((section) => {
+                const isFocused = focusedSectionId === section.id;
+                const dimmed = focusedSectionId !== null && !isFocused;
+
+                return (
+                  <motion.div
+                    key={section.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{
+                      opacity: dimmed ? 0.3 : 1,
+                      y: 0,
+                    }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    className={dimmed ? "pointer-events-none" : ""}
+                  >
+                    <SortableSectionCard
+                      section={section}
+                      transcript={transcript}
+                      isFocused={isFocused}
+                      onChange={(updated) => {
+                        setSections((items) =>
+                          items.map((item) =>
+                            item.id === section.id ? updated : item
+                          )
+                        );
+                      }}
+                      onFocus={() => setFocusedSectionId(section.id)}
+                      onBlurFocus={() => setFocusedSectionId(null)}
+                    />
+                  </motion.div>
+                );
+              })}
+            </section>
+          </AnimatePresence>
+        </SortableContext>
+      </DndContext>
     </main>
   );
 }
