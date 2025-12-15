@@ -75,23 +75,25 @@ export function SectionCard({
     <motion.div
       whileHover={{ scale: 1.005 }}
       transition={{ duration: 0.2 }}
-      className="rounded-xl border border-gray-200 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow"
+      className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow"
     >
       {/* Title - Bigger, bolder, calm */}
       <div className="flex items-center gap-2">
+        {/* 3. Section title - Clear hierarchy */}
         <input
-          className="flex-1 text-xl font-semibold outline-none bg-transparent text-gray-900 placeholder-gray-400"
+          className="flex-1 text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           placeholder="Section title..."
           value={section.title}
           onChange={(e) =>
             onChange({ ...section, title: e.target.value })
           }
         />
+        {/* 5. Secondary actions - Regenerate, Focus (smaller, lighter) */}
         <div className="flex gap-2">
           {onFocus && !isFocused && (
             <button
               onClick={onFocus}
-              className="text-xs text-gray-500 hover:text-gray-900 font-medium transition-colors"
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium transition-colors"
             >
               🎯 Focus
             </button>
@@ -99,7 +101,7 @@ export function SectionCard({
           {onBlurFocus && isFocused && (
             <button
               onClick={onBlurFocus}
-              className="text-xs text-gray-500 hover:text-gray-900 font-medium transition-colors"
+              className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium transition-colors"
             >
               Exit Focus
             </button>
@@ -137,7 +139,7 @@ export function SectionCard({
               }
             }}
             disabled={regenerating || transcript.length === 0}
-            className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+            className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
           >
             {regenerating ? "..." : "🔁 Regenerate"}
           </button>
@@ -147,14 +149,15 @@ export function SectionCard({
       {/* Summary - Subtle background, looks like a note */}
       <div className="relative group">
         <textarea
-          className="w-full bg-gray-50 rounded-lg p-3 resize-none outline-none text-gray-700 placeholder-gray-400 min-h-[60px]"
+          className="w-full bg-gray-50 dark:bg-gray-800 rounded-lg p-3 resize-none outline-none text-base text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[60px]"
           placeholder="Summary..."
           value={section.summary}
           onChange={(e) =>
             onChange({ ...section, summary: e.target.value })
           }
         />
-        <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
+              {/* 4. Inline actions - Appear on hover, contextual */}
+              <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
           <InlineAIButton
             label="✨ Simplify"
             loading={loadingSummary === "simplify"}
@@ -198,10 +201,10 @@ export function SectionCard({
       <ul className="space-y-2">
         {section.bullets.map((bullet, i) => (
           <li key={i} className="flex items-start gap-2 group/bullet">
-            <span className="mt-1 text-gray-400">•</span>
+            <span className="mt-1 text-gray-400 dark:text-gray-500">•</span>
             <div className="flex-1 relative">
               <input
-                className="w-full outline-none bg-transparent text-gray-700 placeholder-gray-400"
+                className="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
                 placeholder="Bullet point..."
                 value={bullet}
                 onChange={(e) => {

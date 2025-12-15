@@ -43,7 +43,7 @@ export function SortableSectionCard({
     <div ref={setNodeRef} style={style} {...attributes}>
       <div
         {...listeners}
-        className="cursor-grab active:cursor-grabbing text-xs text-gray-400 mb-1 select-none"
+        className="cursor-grab active:cursor-grabbing text-xs text-gray-400 dark:text-gray-500 mb-1 select-none"
       >
         ⠿ Drag
       </div>

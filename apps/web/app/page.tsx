@@ -94,11 +94,15 @@ export default function Home() {
 
   return (
     <main className="max-w-3xl mx-auto p-6 space-y-8">
-      <h1 className="text-4xl font-bold text-gray-900">YT-Transcript</h1>
+      {/* 1. Page title - Most important */}
+      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        YT-Transcript
+      </h1>
 
+      {/* 2. Primary action - Generate Notes */}
       <div className="flex gap-3">
         <input
-          className="flex-1 border border-gray-300 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+          className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-gray-400 focus:border-transparent"
           placeholder="Paste YouTube URL"
           value={url}
           onChange={(e) => setUrl(e.target.value)}
@@ -114,14 +118,15 @@ export default function Home() {
           whileTap={{ scale: 0.97 }}
           whileHover={{ scale: 1.01 }}
           transition={{ duration: 0.15 }}
-          className="bg-black text-white px-6 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 transition-colors"
+          className="bg-black dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
         >
           Generate Notes
         </motion.button>
       </div>
 
+      {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
       {sections.length > 0 && (
-        <div className="flex gap-3">
+        <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-800">
           <motion.button
             onClick={async () => {
               if (sections.length === 0) {
@@ -162,7 +167,7 @@ export default function Home() {
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.15 }}
-            className="border border-gray-300 px-5 py-2.5 rounded-lg font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             {saving ? "Saving..." : "Save to Library"}
           </motion.button>
@@ -209,7 +214,7 @@ export default function Home() {
             whileTap={{ scale: 0.97 }}
             whileHover={{ scale: 1.01 }}
             transition={{ duration: 0.15 }}
-            className="border border-gray-300 px-5 py-2.5 rounded-lg font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
           >
             Export as Markdown
           </motion.button>
@@ -221,18 +226,20 @@ export default function Home() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}
-          className="text-center py-8"
+          className="text-center py-12"
         >
-          <p className="text-gray-600 text-lg">{loadingMessage}</p>
+          <p className="text-base text-gray-600 dark:text-gray-400">
+            {loadingMessage}
+          </p>
         </motion.div>
       )}
 
       {!loading && sections.length === 0 && (
-        <div className="text-center py-16 px-4">
-          <p className="text-gray-500 text-lg mb-2">
+        <div className="text-center py-20 px-4">
+          <p className="text-base text-gray-500 dark:text-gray-400 mb-2">
             👋 Paste a YouTube link to begin.
           </p>
-          <p className="text-gray-400 text-sm">
+          <p className="text-sm text-gray-400 dark:text-gray-500">
             Your notes will appear here, fully editable.
           </p>
         </div>
@@ -271,7 +278,7 @@ export default function Home() {
                     }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.25, ease: "easeOut" }}
-                    className={dimmed ? "pointer-events-none" : ""}
+                    className={dimmed ? "pointer-events-none" : "pointer-events-auto"}
                   >
                     <SortableSectionCard
                       section={section}
