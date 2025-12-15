@@ -193,8 +193,12 @@ export default function Home() {
 
       {!loading && sections.length === 0 && (
         <div className="text-center py-16 px-4">
-          <p className="text-gray-500 text-lg mb-2">👋 Paste a YouTube link to begin.</p>
-          <p className="text-gray-400 text-sm">Your notes will appear here, fully editable.</p>
+          <p className="text-gray-500 text-lg mb-2">
+            👋 Paste a YouTube link to begin.
+          </p>
+          <p className="text-gray-400 text-sm">
+            Your notes will appear here, fully editable.
+          </p>
         </div>
       )}
 

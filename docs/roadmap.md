@@ -13,23 +13,43 @@ This document outlines the planned features and improvements for YT-Transcript.
 
 ---
 
-## Week 2 (Planned)
+## Week 2 (In Progress)
 
-### Multilingual Support
-- Hinglish / Hindi output
-- Language detection
-- Translation options
+### Day 8 ✅ (Complete)
+- [x] UX Polish & Micro-Playfulness
+- [x] Visual hierarchy improvements
+- [x] Intentional editing feel
+- [x] Empty states & loading messages
 
-### Inline AI Actions
+### Day 9 (Planned)
+- Animations with Framer Motion
+- Smooth transitions
+- Micro-interactions
+
+### Day 10 (Planned)
+- Inline AI Actions
 - Simplify text
 - Expand sections
 - Regenerate specific sections
 - Add context
 
-### Playful Animations
-- Smooth transitions
-- Loading states
-- Micro-interactions
+### Day 11 (Planned)
+- Partial regeneration (per section)
+
+### Day 12 (Planned)
+- Drag, reorder & focus mode
+
+### Day 13 (Planned)
+- Visual hierarchy + themes
+
+### Day 14 (Planned)
+- Pause, refine, cut excess
+
+### Future Week 2 Features
+- Multilingual Support
+- Hinglish / Hindi output
+- Language detection
+- Translation options
 
 ---
 
