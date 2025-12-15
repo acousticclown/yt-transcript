@@ -14,6 +14,7 @@ import { geminiModel } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
 import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
+import { regenerateSectionPrompt } from "../../packages/prompts/regenerateSection.ts";
 
 // Storage & Export
 import { saveNote } from "./storage/saveNote";
@@ -463,6 +464,68 @@ const server = http.createServer(async (req, res) => {
       res.end(
         JSON.stringify({
           error: "Failed to process inline AI action",
+        })
+      );
+    }
+    return;
+  }
+
+  // ============================================
+  // POST /ai/regenerate-section - Regenerate one section surgically
+  // ============================================
+  if (req.method === "POST" && pathname === "/ai/regenerate-section") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        section?: {
+          title: string;
+          summary: string;
+          bullets: string[];
+        };
+        transcript?: string;
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { section, transcript } = parsedBody;
+
+      if (!section || !transcript) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Section and transcript are required" })
+        );
+        return;
+      }
+
+      // Generate regenerated section
+      const prompt = regenerateSectionPrompt(section, transcript);
+      const result = await geminiModel.generateContent(prompt);
+
+      // Gemini sometimes wraps JSON in markdown code blocks - strip safely
+      const jsonText = result
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      const regenerated = JSON.parse(jsonText);
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(regenerated));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to regenerate section. Please try again.",
         })
       );
     }

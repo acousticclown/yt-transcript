@@ -20,6 +20,7 @@ const loadingMessages = [
 export default function Home() {
   const [url, setUrl] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
+  const [transcript, setTranscript] = useState<Array<{ text: string; start: number; duration: number }>>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
@@ -46,6 +47,9 @@ export default function Home() {
         setLoading(false);
         return;
       }
+
+      // Store transcript for regeneration
+      setTranscript(transcriptData.transcript || []);
 
       // 2. Fetch sections
       const sectionsRes = await fetch("http://localhost:3001/sections", {
@@ -229,6 +233,7 @@ export default function Home() {
             >
               <SectionCard
                 section={section}
+                transcript={transcript}
                 onChange={(updated) => {
                   const copy = [...sections];
                   copy[idx] = updated;

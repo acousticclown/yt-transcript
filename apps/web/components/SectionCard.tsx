@@ -10,15 +10,28 @@ type Section = {
   bullets: string[];
 };
 
+function cleanTranscript(
+  chunks: Array<{ text: string; start: number; duration: number }>
+): string {
+  return chunks
+    .map((c) => c.text.trim())
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function SectionCard({
   section,
+  transcript,
   onChange,
 }: {
   section: Section;
+  transcript: Array<{ text: string; start: number; duration: number }>;
   onChange: (section: Section) => void;
 }) {
   const [loadingSummary, setLoadingSummary] = useState<string | null>(null);
   const [loadingBullets, setLoadingBullets] = useState<Record<number, string>>({});
+  const [regenerating, setRegenerating] = useState(false);
 
   async function runInlineAI(
     action: "simplify" | "expand" | "example",
@@ -58,14 +71,53 @@ export function SectionCard({
       className="rounded-xl border border-gray-200 bg-white p-5 space-y-4 shadow-sm hover:shadow-md transition-shadow"
     >
       {/* Title - Bigger, bolder, calm */}
-      <input
-        className="w-full text-xl font-semibold outline-none bg-transparent text-gray-900 placeholder-gray-400"
-        placeholder="Section title..."
-        value={section.title}
-        onChange={(e) =>
-          onChange({ ...section, title: e.target.value })
-        }
-      />
+      <div className="flex items-center gap-2">
+        <input
+          className="flex-1 text-xl font-semibold outline-none bg-transparent text-gray-900 placeholder-gray-400"
+          placeholder="Section title..."
+          value={section.title}
+          onChange={(e) =>
+            onChange({ ...section, title: e.target.value })
+          }
+        />
+        <button
+          onClick={async () => {
+            if (transcript.length === 0) {
+              alert("⚠️ Transcript not available for regeneration.");
+              return;
+            }
+            setRegenerating(true);
+            try {
+              const cleanedTranscript = cleanTranscript(transcript);
+              const res = await fetch("http://localhost:3001/ai/regenerate-section", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  section,
+                  transcript: cleanedTranscript,
+                }),
+              });
+
+              if (!res.ok) {
+                const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+                alert(`⚠️ ${errorData.error || "Failed to regenerate section"}`);
+                return;
+              }
+
+              const data = await res.json();
+              onChange(data);
+            } catch {
+              alert("⚠️ Failed to regenerate section. Make sure the API server is running.");
+            } finally {
+              setRegenerating(false);
+            }
+          }}
+          disabled={regenerating || transcript.length === 0}
+          className="text-xs text-gray-500 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+        >
+          {regenerating ? "..." : "🔁 Regenerate"}
+        </button>
+      </div>
 
       {/* Summary - Subtle background, looks like a note */}
       <div className="relative group">
