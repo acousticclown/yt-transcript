@@ -306,12 +306,17 @@ export function SectionCard({
                 }
 
                 const data = await res.json();
-                // Regeneration updates both source and current
+                // Regeneration updates source, variants.english, and current
                 onChange({
                   ...section,
                   source: data,
+                  variants: {
+                    ...section.variants,
+                    english: data, // Update English cache
+                  },
                   current: data,
                   language: "english", // Reset to English after regeneration
+                  hinglishTone: undefined,
                 });
               } catch {
                 // Keep existing section, show clear error
