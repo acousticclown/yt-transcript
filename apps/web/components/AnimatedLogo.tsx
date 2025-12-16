@@ -158,46 +158,65 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
-          {/* Pen as "l" + "y" */}
-          <div className="flex items-end">
-            {/* Pen SVG as the "l" */}
-            <motion.div
-              className="flex items-end"
-              initial={{ opacity: 0, scale: 0, rotate: -45 }}
-              animate={{ 
-                opacity: 1,
-                scale: 1,
-                rotate: 0,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 200,
-                damping: 15,
-                delay: 1.1,
-              }}
-            >
-              <svg 
-                viewBox="0 0 24 48" 
-                className="w-6 h-12 sm:w-8 sm:h-16 md:w-10 md:h-20 -mr-1"
+          {/* Pen transforms into "l" + "y" */}
+          <div className="flex items-end relative">
+            {/* Pen that morphs into "l" */}
+            <div className="relative">
+              {/* Pen SVG - fades out */}
+              <motion.svg 
+                viewBox="0 0 24 24" 
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 absolute bottom-0 left-0"
                 fill="none"
+                initial={{ opacity: 0, scale: 0, rotate: -135 }}
+                animate={{ 
+                  opacity: [0, 1, 1, 0],
+                  scale: [0, 1.2, 1, 0.5],
+                  rotate: [-135, -45, 0, 0],
+                }}
+                transition={{
+                  duration: 1.2,
+                  delay: 1.0,
+                  times: [0, 0.3, 0.7, 1],
+                  ease: "easeInOut",
+                }}
               >
-                {/* Pen body as "l" shape */}
-                <rect
-                  x="8" y="0" width="8" height="40" rx="2"
+                <path
+                  d="M3 21l1.5-4.5L17.5 3.5a2.12 2.12 0 013 3L7.5 19.5 3 21z"
                   className="fill-[var(--color-primary)]"
                 />
-                {/* Pen tip */}
                 <path
-                  d="M8 40L12 48L16 40"
-                  className="fill-[var(--color-primary-dark)]"
+                  d="M15 5l4 4"
+                  className="stroke-[var(--color-primary-dark)]"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
                 />
-                {/* Pen top */}
-                <rect
-                  x="6" y="0" width="12" height="4" rx="1"
-                  className="fill-[var(--color-primary-dark)]"
-                />
-              </svg>
-            </motion.div>
+              </motion.svg>
+
+              {/* "l" letter - fades in as pen fades out */}
+              <motion.span
+                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+                style={{
+                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                  letterSpacing: "-0.03em",
+                }}
+                initial={{ 
+                  opacity: 0,
+                  scale: 0.5,
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15,
+                  delay: 1.9,
+                }}
+              >
+                l
+              </motion.span>
+            </div>
 
             {/* "y" */}
             <motion.span
@@ -218,7 +237,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 type: "spring",
                 stiffness: 250,
                 damping: 18,
-                delay: 1.3,
+                delay: 2.1,
               }}
             >
               {yLetter}
