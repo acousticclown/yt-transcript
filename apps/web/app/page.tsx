@@ -160,30 +160,36 @@ export default function Home() {
         })
       );
 
-      // 3. Detect categories for all sections
+      // 3. Detect categories and section types for all sections
       try {
-        const categoryRes = await fetch("http://localhost:3001/ai/detect-categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sections: sectionsWithIds.map((s) => s.current),
+        const [categoryRes, typeRes] = await Promise.all([
+          fetch("http://localhost:3001/ai/detect-categories", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sections: sectionsWithIds.map((s) => s.current),
+            }),
           }),
-        });
+          fetch("http://localhost:3001/ai/section-types", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              sections: sectionsWithIds.map((s) => s.current),
+            }),
+          }),
+        ]);
 
-        if (categoryRes.ok) {
-          const categoryData = await categoryRes.json();
-          // Apply same category to all sections (video-level categorization)
-          const sectionsWithCategories = sectionsWithIds.map((section) => ({
-            ...section,
-            category: categoryData,
-          }));
-          setSections(sectionsWithCategories);
-        } else {
-          // If category detection fails, just use sections without categories
-          setSections(sectionsWithIds);
-        }
+        const categoryData = categoryRes.ok ? await categoryRes.json() : null;
+        const typeData = typeRes.ok ? await typeRes.json() : null;
+
+        const sectionsWithMetadata = sectionsWithIds.map((section, i) => ({
+          ...section,
+          category: categoryData || null,
+          sectionType: typeData?.types?.[i] || null,
+        }));
+        setSections(sectionsWithMetadata);
       } catch {
-        // If category detection fails, just use sections without categories
+        // If metadata detection fails, just use sections without metadata
         setSections(sectionsWithIds);
       }
     } catch (error) {
