@@ -206,7 +206,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   type: "spring",
                   stiffness: 200,
                   damping: 15,
-                  delay: 1.9,
+                  delay: 1.85,
                 }}
               >
                 l
@@ -227,7 +227,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 }}
                 transition={{
                   duration: 1.2,
-                  delay: 1.8,
+                  delay: 1.0,
                   times: [0, 0.2, 0.7, 1],
                   ease: "easeInOut",
                 }}
@@ -265,7 +265,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   type: "spring",
                   stiffness: 200,
                   damping: 15,
-                  delay: 2.9,
+                  delay: 1.85,
                 }}
               >
                 y
