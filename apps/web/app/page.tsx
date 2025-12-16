@@ -72,6 +72,7 @@ export default function Home() {
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedSectionType, setSelectedSectionType] = useState<string | null>(null);
 
   // Mobile-optimized drag sensors - allow touch drag with delay to prevent conflicts
   const sensors = useSensors(
