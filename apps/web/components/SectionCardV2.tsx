@@ -97,15 +97,17 @@ export function SectionCardV2({
       variant={isFocused ? "elevated" : "default"}
       interactive
       className={cn(
-        "p-0 overflow-hidden",
-        isFocused && "ring-2 ring-indigo-500/50"
+        "p-0 overflow-hidden transition-all duration-300",
+        isFocused && "ring-2 ring-indigo-500/50 shadow-xl",
+        !isFocused && "hover:shadow-lg hover:scale-[1.01]"
       )}
-      whileHover={{ scale: 1.002 }}
-      transition={{ duration: 0.2 }}
+      whileHover={!isFocused ? { scale: 1.01, y: -2 } : {}}
+      whileTap={{ scale: 0.998 }}
+      transition={{ duration: 0.2, ease: "easeOut" }}
     >
       <Stack gap={0} className="h-full">
         {/* Card Header */}
-        <div className="px-5 pt-5 pb-4 border-b border-white/10 dark:border-white/5">
+        <div className="px-5 pt-5 pb-4 border-b border-white/10 dark:border-white/5 hover:bg-white/5 dark:hover:bg-gray-900/5 transition-colors">
           <Stack direction="row" gap={3} align="center" justify="between" className="flex-wrap">
             {/* Title */}
             <input
@@ -378,25 +380,34 @@ export function SectionCardV2({
         {/* Split Layout: Summary (Left) + Bullets (Right) */}
         <div className="flex flex-col md:flex-row flex-1 min-h-0">
           {/* Left: Summary Panel (Scrollable) */}
-          <div className="flex-1 md:w-1/2 border-r-0 md:border-r border-white/10 dark:border-white/5 p-5 overflow-y-auto">
-            <div className="relative group">
-              {section.language !== "english" && (
-                <div className="mb-2 text-xs text-gray-400 dark:text-gray-500">
-                  Viewing in {section.language === "hinglish" ? "Hinglish" : "Hindi"}
-                  {section.current.summary !== section.source.summary &&
-                    section.current.summary.trim() !== "" && (
-                      <span className="ml-2">✏️ Editing {section.language} version</span>
-                    )}
+          <div className="flex-1 md:w-1/2 border-r-0 md:border-r border-white/10 dark:border-white/5 p-5 overflow-y-auto max-h-[500px] md:max-h-none">
+            <div className="relative group h-full flex flex-col">
+              {/* Summary Header */}
+              <div className="flex items-center justify-between mb-2">
+                {section.language !== "english" && (
+                  <div className="text-xs text-gray-400 dark:text-gray-500">
+                    Viewing in {section.language === "hinglish" ? "Hinglish" : "Hindi"}
+                    {section.current.summary !== section.source.summary &&
+                      section.current.summary.trim() !== "" && (
+                        <span className="ml-2">✏️ Editing {section.language} version</span>
+                      )}
+                  </div>
+                )}
+                <div className="text-xs text-gray-400 dark:text-gray-500 ml-auto">
+                  {section.current.summary.length} chars
                 </div>
-              )}
+              </div>
+              
+              {/* Summary Content - Scrollable */}
               <motion.div
                 key={section.language}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 0.15 }}
+                className="flex-1 relative"
               >
                 <textarea
-                  className="w-full bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm rounded-lg p-3 resize-none outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[120px] max-h-[400px]"
+                  className="w-full h-full bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm rounded-lg p-3 resize-none outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[120px] focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
                   placeholder="Summary..."
                   value={section.current.summary}
                   onChange={(e) =>
@@ -407,8 +418,9 @@ export function SectionCardV2({
                   }
                 />
               </motion.div>
+              
               {/* Inline actions - Appear on hover */}
-              <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
+              <div className="absolute top-8 right-2 hidden group-hover:flex gap-1 z-10">
                 <InlineAIButton
                   label="✨ Simplify"
                   loading={loadingSummary === "simplify"}
@@ -462,32 +474,50 @@ export function SectionCardV2({
           </div>
 
           {/* Right: Bullets Panel */}
-          <div className="flex-1 md:w-1/2 p-5 overflow-y-auto">
+          <div className="flex-1 md:w-1/2 p-5 overflow-y-auto max-h-[500px] md:max-h-none">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
+                Key Points
+              </h3>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {section.current.bullets.length} points
+              </span>
+            </div>
             <motion.ul
               key={section.language}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.15 }}
-              className="space-y-3"
+              className="space-y-2"
             >
               {section.current.bullets.map((bullet, i) => (
-                <li key={i} className="flex items-start gap-2 group/bullet">
-                  <span className="mt-1 text-indigo-500 dark:text-indigo-400 text-lg">•</span>
-                  <div className="flex-1 relative">
-                    <input
-                      className="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500"
-                      placeholder="Bullet point..."
-                      value={bullet}
-                      onChange={(e) => {
-                        const bullets = [...section.current.bullets];
-                        bullets[i] = e.target.value;
-                        onChange({
-                          ...section,
-                          current: { ...section.current, bullets },
-                        });
-                      }}
-                    />
-                    <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1">
+                <motion.li
+                  key={i}
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.2, delay: i * 0.05 }}
+                  className="group/bullet"
+                >
+                  <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-900/20 transition-colors">
+                    {/* Bullet Indicator - Visual Bar */}
+                    <div className="flex-shrink-0 mt-1">
+                      <div className="w-1 h-full min-h-[20px] bg-indigo-500 dark:bg-indigo-400 rounded-full opacity-60 group-hover/bullet:opacity-100 transition-opacity" />
+                    </div>
+                    <div className="flex-1 relative min-w-0">
+                      <input
+                        className="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/50 rounded px-2 py-1 -mx-2 -my-1 transition-all"
+                        placeholder="Bullet point..."
+                        value={bullet}
+                        onChange={(e) => {
+                          const bullets = [...section.current.bullets];
+                          bullets[i] = e.target.value;
+                          onChange({
+                            ...section,
+                            current: { ...section.current, bullets },
+                          });
+                        }}
+                      />
+                      <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1 z-10">
                       <InlineAIButton
                         label="✨ Simplify"
                         loading={loadingBullets[i] === "simplify"}
@@ -584,7 +614,7 @@ export function SectionCardV2({
         </div>
 
         {/* Card Footer */}
-        <div className="px-5 py-3 border-t border-white/10 dark:border-white/5 bg-white/20 dark:bg-gray-900/20 backdrop-blur-sm">
+        <div className="px-5 py-3 border-t border-white/10 dark:border-white/5 bg-white/20 dark:bg-gray-900/20 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-900/30 transition-colors">
           <Stack direction="row" gap={2} align="center" justify="between" className="text-xs text-gray-500 dark:text-gray-400">
             <div>
               {section.language !== "english" && (
