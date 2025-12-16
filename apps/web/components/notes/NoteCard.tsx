@@ -92,14 +92,12 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
         <div className="mt-4 flex items-center justify-between">
           <div className="flex gap-1.5 flex-wrap">
             {note.tags.slice(0, 3).map((tag) => (
-              <Link
+              <span
                 key={tag}
-                href={`/notes?tag=${encodeURIComponent(tag)}`}
-                onClick={(e) => e.stopPropagation()}
-                className="text-xs px-2 py-0.5 bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)] hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] transition-colors"
+                className="text-xs px-2 py-0.5 bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)]"
               >
                 #{tag}
-              </Link>
+              </span>
             ))}
           </div>
           <span className="text-xs text-[var(--color-text-subtle)] flex-shrink-0">
