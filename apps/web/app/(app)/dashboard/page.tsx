@@ -32,31 +32,96 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* Welcome */}
+      {/* Hero Section with Illustration */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="relative mb-8 p-6 sm:p-8 bg-gradient-to-br from-[var(--color-primary)]/10 via-[var(--color-secondary)]/5 to-transparent rounded-3xl overflow-hidden"
       >
-        <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-          {getGreeting()}! 👋
-        </h1>
-        <p className="mt-1 text-[var(--color-text-muted)]">
-          What would you like to capture today?
-        </p>
+        {/* Background decoration */}
+        <div className="absolute top-0 right-0 w-64 h-64 opacity-20 pointer-events-none">
+          <svg viewBox="0 0 200 200" className="w-full h-full">
+            <defs>
+              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style={{ stopColor: "var(--color-primary)", stopOpacity: 1 }} />
+                <stop offset="100%" style={{ stopColor: "var(--color-secondary)", stopOpacity: 1 }} />
+              </linearGradient>
+            </defs>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad1)" strokeWidth="2" opacity="0.5" />
+            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#grad1)" strokeWidth="2" opacity="0.3" />
+            <circle cx="100" cy="100" r="40" fill="url(#grad1)" opacity="0.2" />
+          </svg>
+        </div>
+
+        <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+              {getGreeting()}! 👋
+            </h1>
+            <p className="mt-2 text-[var(--color-text-muted)] max-w-md">
+              Capture ideas, transform videos into notes, and let AI help you organize your thoughts.
+            </p>
+          </div>
+          
+          {/* Floating illustration */}
+          <motion.div
+            animate={{ y: [0, -8, 0] }}
+            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="hidden sm:block"
+          >
+            <div className="w-24 h-24 relative">
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                {/* Notebook */}
+                <rect x="20" y="15" width="60" height="70" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
+                <line x1="35" y1="15" x2="35" y2="85" stroke="var(--color-primary)" strokeWidth="2" opacity="0.5" />
+                {/* Lines */}
+                <line x1="42" y1="30" x2="70" y2="30" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
+                <line x1="42" y1="42" x2="65" y2="42" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
+                <line x1="42" y1="54" x2="68" y2="54" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
+                {/* Sparkle */}
+                <circle cx="75" cy="20" r="3" fill="var(--color-primary)" />
+                <circle cx="82" cy="28" r="2" fill="var(--color-secondary)" />
+              </svg>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
 
-      {/* Quick Actions */}
+      {/* Primary Actions - Modern Card Grid */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8"
+        className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10"
       >
-        <QuickAction icon="📝" label="New Note" href="/notes/new" />
-        <QuickAction icon="🎬" label="From YouTube" href="/youtube" />
-        <QuickAction icon="✨" label="AI Generate" href="/notes/new?ai=true" />
-        <QuickAction icon="📁" label="Browse All" href="/notes" />
+        <ActionCard
+          href="/notes/new"
+          icon={<PenIcon />}
+          title="New Note"
+          description="Start writing"
+          color="primary"
+        />
+        <ActionCard
+          href="/youtube"
+          icon={<YouTubeIcon />}
+          title="From YouTube"
+          description="Import video"
+          color="red"
+        />
+        <ActionCard
+          href="/notes/new?ai=true"
+          icon={<SparkleIcon />}
+          title="AI Generate"
+          description="Create with AI"
+          color="purple"
+        />
+        <ActionCard
+          href="/notes"
+          icon={<FolderIcon />}
+          title="Browse All"
+          description={`${notes.length} notes`}
+          color="green"
+        />
       </motion.div>
 
       {/* Recent Notes */}
@@ -67,8 +132,11 @@ export default function DashboardPage() {
       >
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Notes</h2>
-          <Link href="/notes" className="text-sm text-[var(--color-primary)] hover:underline">
+          <Link href="/notes" className="text-sm text-[var(--color-primary)] hover:underline flex items-center gap-1">
             View all
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
           </Link>
         </div>
 
@@ -86,41 +154,138 @@ export default function DashboardPage() {
   );
 }
 
-function QuickAction({ icon, label, href }: { icon: string; label: string; href: string }) {
+// Modern Action Card with icon and gradient
+function ActionCard({
+  href,
+  icon,
+  title,
+  description,
+  color,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: "primary" | "red" | "purple" | "green";
+}) {
+  const colorClasses = {
+    primary: "from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 hover:from-[var(--color-primary)]/30 border-[var(--color-primary)]/20",
+    red: "from-red-500/20 to-red-500/5 hover:from-red-500/30 border-red-500/20",
+    purple: "from-purple-500/20 to-purple-500/5 hover:from-purple-500/30 border-purple-500/20",
+    green: "from-[var(--color-secondary)]/20 to-[var(--color-secondary)]/5 hover:from-[var(--color-secondary)]/30 border-[var(--color-secondary)]/20",
+  };
+
+  const iconColors = {
+    primary: "text-[var(--color-primary)]",
+    red: "text-red-500",
+    purple: "text-purple-500",
+    green: "text-[var(--color-secondary)]",
+  };
+
   return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-2 p-4 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:shadow-md transition-all"
-    >
-      <span className="text-2xl">{icon}</span>
-      <span className="text-sm font-medium text-[var(--color-text)]">{label}</span>
+    <Link href={href}>
+      <motion.div
+        whileHover={{ y: -4, scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={`relative p-5 rounded-2xl bg-gradient-to-br ${colorClasses[color]} border backdrop-blur-sm transition-all cursor-pointer group overflow-hidden`}
+      >
+        {/* Background glow */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl ${
+            color === "primary" ? "bg-[var(--color-primary)]" :
+            color === "red" ? "bg-red-500" :
+            color === "purple" ? "bg-purple-500" :
+            "bg-[var(--color-secondary)]"
+          } opacity-20`} />
+        </div>
+
+        <div className="relative z-10">
+          <div className={`w-10 h-10 rounded-xl bg-[var(--color-surface)] flex items-center justify-center mb-3 ${iconColors[color]}`}>
+            {icon}
+          </div>
+          <h3 className="font-semibold text-[var(--color-text)]">{title}</h3>
+          <p className="text-sm text-[var(--color-text-muted)] mt-0.5">{description}</p>
+        </div>
+      </motion.div>
     </Link>
+  );
+}
+
+// SVG Icons
+function PenIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+    </svg>
+  );
+}
+
+function YouTubeIcon() {
+  return (
+    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+    </svg>
+  );
+}
+
+function SparkleIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+    </svg>
+  );
+}
+
+function FolderIcon() {
+  return (
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+    </svg>
   );
 }
 
 function EmptyState() {
   return (
-    <div className="text-center py-12 px-4 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)]">
-      <span className="text-4xl">📝</span>
-      <h3 className="mt-4 text-lg font-semibold text-[var(--color-text)]">No notes yet</h3>
-      <p className="mt-2 text-[var(--color-text-muted)]">
-        Create your first note or import from YouTube
+    <div className="text-center py-16 px-4 bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)]">
+      {/* Illustration */}
+      <div className="w-32 h-32 mx-auto mb-6">
+        <svg viewBox="0 0 120 120" className="w-full h-full">
+          {/* Stack of papers */}
+          <rect x="25" y="35" width="70" height="55" rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="2" />
+          <rect x="30" y="30" width="70" height="55" rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="2" />
+          <rect x="35" y="25" width="70" height="55" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
+          {/* Plus icon */}
+          <circle cx="70" cy="52" r="15" fill="var(--color-primary)" opacity="0.15" />
+          <line x1="70" y1="45" x2="70" y2="59" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
+          <line x1="63" y1="52" x2="77" y2="52" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
+          {/* Sparkles */}
+          <circle cx="95" cy="30" r="3" fill="var(--color-primary)" />
+          <circle cx="25" cy="45" r="2" fill="var(--color-secondary)" />
+          <circle cx="100" cy="60" r="2" fill="var(--color-secondary)" />
+        </svg>
+      </div>
+      
+      <h3 className="text-xl font-semibold text-[var(--color-text)]">Start your journey</h3>
+      <p className="mt-2 text-[var(--color-text-muted)] max-w-sm mx-auto">
+        Create your first note or import from YouTube to get started
       </p>
-      <div className="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
+      
+      <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
         <Link
           href="/notes/new"
-          className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
         >
+          <PenIcon />
           Create Note
         </Link>
         <Link
           href="/youtube"
-          className="px-4 py-2 bg-[var(--color-bg)] text-[var(--color-text)] rounded-xl font-medium border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-colors"
+          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[var(--color-surface)] text-[var(--color-text)] rounded-xl font-medium border border-[var(--color-border)] hover:border-[var(--color-border-strong)] transition-colors"
         >
+          <YouTubeIcon />
           Import from YouTube
         </Link>
       </div>
     </div>
   );
 }
-
