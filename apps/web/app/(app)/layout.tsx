@@ -14,13 +14,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Main content */}
         <main className="flex-1 min-h-screen">
-          {/* Mobile header */}
-          <header className="sticky top-0 z-30 bg-[var(--color-surface)]/80 backdrop-blur-md border-b border-[var(--color-border)] lg:hidden">
-            <div className="flex items-center justify-center px-4 py-3">
-              <span className="font-bold text-[var(--color-text)]">📝 NotesAI</span>
-            </div>
-          </header>
-
           {/* Page content */}
           <div className="pb-20 lg:pb-0">
             {children}
