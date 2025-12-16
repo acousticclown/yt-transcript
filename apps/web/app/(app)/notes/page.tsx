@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { NoteList, Note } from "../../../components/notes";
 
@@ -17,11 +18,30 @@ type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites";
 
 export default function NotesPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const tagFromUrl = searchParams.get("tag");
+
   const [notes, setNotes] = useState<Note[]>(initialNotes);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
   const [filter, setFilter] = useState<FilterOption>("all");
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(tagFromUrl);
+
+  // Sync tag from URL
+  useEffect(() => {
+    setSelectedTag(tagFromUrl);
+  }, [tagFromUrl]);
+
+  // Update URL when tag changes
+  const handleTagSelect = (tag: string | null) => {
+    setSelectedTag(tag);
+    if (tag) {
+      router.push(`/notes?tag=${encodeURIComponent(tag)}`);
+    } else {
+      router.push("/notes");
+    }
+  };
 
   const handleDelete = (id: string) => {
     setNotes(notes.filter((n) => n.id !== id));
@@ -160,7 +180,7 @@ export default function NotesPage() {
               {allTags.map((tag) => (
                 <button
                   key={tag}
-                  onClick={() => setSelectedTag(selectedTag === tag ? null : tag)}
+                  onClick={() => handleTagSelect(selectedTag === tag ? null : tag)}
                   className={`px-2 py-1 text-xs rounded-full transition-colors ${
                     selectedTag === tag
                       ? "bg-[var(--color-primary)] text-white"
