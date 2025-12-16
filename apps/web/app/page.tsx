@@ -9,6 +9,7 @@ import {
   arrayMove,
 } from "@dnd-kit/sortable";
 import { SortableSectionCard } from "../components/SortableSectionCard";
+import { Container, Stack } from "../components/layout";
 
 type LanguageVariant = {
   title: string;
@@ -137,14 +138,15 @@ export default function Home() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto p-6 space-y-8">
-      {/* 1. Page title - Most important */}
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-        YT-Transcript
-      </h1>
+    <Container size="lg" className="py-6 sm:py-8">
+      <Stack gap={8}>
+        {/* 1. Page title - Most important */}
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+          YT-Transcript
+        </h1>
 
-      {/* 2. Primary action - Generate Notes */}
-      <div className="flex gap-3">
+        {/* 2. Primary action - Generate Notes */}
+        <Stack direction="row" gap={3}>
         <input
           className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-gray-400 focus:border-transparent"
           placeholder="Paste YouTube URL"
@@ -166,11 +168,11 @@ export default function Home() {
         >
           Generate Notes
         </motion.button>
-      </div>
+        </Stack>
 
-      {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
-      {sections.length > 0 && (
-        <div className="flex gap-2 pt-2 border-t border-gray-200 dark:border-gray-800">
+        {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
+        {sections.length > 0 && (
+          <Stack direction="row" gap={2} className="pt-2 border-t border-gray-200 dark:border-gray-800">
           <motion.button
             onClick={async () => {
               if (sections.length === 0) {
@@ -268,8 +270,8 @@ export default function Home() {
           >
             Export as Markdown
           </motion.button>
-        </div>
-      )}
+          </Stack>
+        )}
 
       {loading && (
         <motion.div
@@ -313,7 +315,7 @@ export default function Home() {
           strategy={verticalListSortingStrategy}
         >
           <AnimatePresence>
-            <section className="space-y-5">
+            <Stack gap={5} as="section">
               {sections.map((section) => {
                 const isFocused = focusedSectionId === section.id;
                 const dimmed = focusedSectionId !== null && !isFocused;
@@ -349,10 +351,11 @@ export default function Home() {
                   </motion.div>
                 );
               })}
-            </section>
+            </Stack>
           </AnimatePresence>
         </SortableContext>
       </DndContext>
-    </main>
+      </Stack>
+    </Container>
   );
 }
