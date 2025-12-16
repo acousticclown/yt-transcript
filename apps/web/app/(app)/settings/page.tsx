@@ -1,8 +1,37 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { useToast } from "../../../components/ui";
 
 export default function SettingsPage() {
+  const { success } = useToast();
+  const [theme, setTheme] = useState("system");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") || "system";
+    setTheme(saved);
+  }, []);
+
+  const handleThemeChange = (newTheme: string) => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    
+    if (newTheme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else if (newTheme === "light") {
+      document.documentElement.classList.remove("dark");
+    } else {
+      // System preference
+      if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+        document.documentElement.classList.add("dark");
+      } else {
+        document.documentElement.classList.remove("dark");
+      }
+    }
+    success("Theme updated");
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-2xl mx-auto">
       <motion.div
@@ -20,11 +49,21 @@ export default function SettingsPage() {
                 <p className="text-sm text-[var(--color-text)]">Theme</p>
                 <p className="text-xs text-[var(--color-text-muted)]">Choose your preferred theme</p>
               </div>
-              <select className="px-3 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg text-sm text-[var(--color-text)]">
-                <option>System</option>
-                <option>Light</option>
-                <option>Dark</option>
-              </select>
+              <div className="flex gap-1 bg-[var(--color-bg)] rounded-lg p-1 border border-[var(--color-border)]">
+                {["light", "dark", "system"].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => handleThemeChange(t)}
+                    className={`px-3 py-1.5 text-sm rounded-md capitalize transition-colors ${
+                      theme === t
+                        ? "bg-[var(--color-primary)] text-white"
+                        : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                    }`}
+                  >
+                    {t === "system" ? "Auto" : t}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 

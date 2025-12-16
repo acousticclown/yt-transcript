@@ -234,6 +234,15 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Safe area for mobile devices with notches */
+.safe-area-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.safe-area-pt {
+  padding-top: env(safe-area-inset-top, 0);
+}
+
 /* ===== Utility Classes for Glassmorphism ===== */
 .glass {
   background: var(--glass-bg);
