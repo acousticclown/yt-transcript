@@ -263,6 +263,20 @@ export default function Home() {
           />
         )}
 
+        {/* Search & Sort */}
+        {sections.length > 0 && (
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+            <div className="flex-1 w-full sm:max-w-md">
+              <SearchBar
+                value={searchQuery}
+                onChange={setSearchQuery}
+                placeholder="Search sections by title, summary, or bullets..."
+              />
+            </div>
+            <SortOptions value={sortBy} onChange={setSortBy} />
+          </div>
+        )}
+
         {/* Category, Type & Tag Filter */}
         {sections.length > 0 && (
           <CategoryFilter
