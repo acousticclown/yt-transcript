@@ -213,16 +213,15 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
               </motion.span>
             </div>
 
-            {/* "y" */}
-            <motion.span
-              className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
-              style={{
-                fontFamily: "var(--font-outfit), system-ui, sans-serif",
-                letterSpacing: "-0.03em",
-              }}
+            {/* "y" as simple SVG shape */}
+            <motion.svg
+              viewBox="0 0 32 48"
+              className="w-8 h-12 sm:w-10 sm:h-14 md:w-12 md:h-16"
+              fill="none"
               initial={{ 
                 opacity: 0, 
                 scale: 0,
+                pathLength: 0,
               }}
               animate={{ 
                 opacity: 1, 
@@ -235,8 +234,29 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 delay: 2.1,
               }}
             >
-              {yLetter}
-            </motion.span>
+              {/* Simple y shape - two strokes meeting */}
+              <motion.path
+                d="M4 4L16 24L28 4"
+                className="stroke-[var(--color-primary)]"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                fill="none"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.4, delay: 2.2 }}
+              />
+              <motion.path
+                d="M16 24L16 44"
+                className="stroke-[var(--color-primary)]"
+                strokeWidth="5"
+                strokeLinecap="round"
+                fill="none"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ duration: 0.3, delay: 2.5 }}
+              />
+            </motion.svg>
           </div>
         </div>
       </div>
