@@ -1,16 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { NoteList, Note } from "../../../components/notes";
 
 // Mock data for demo
-const recentNotes = [
-  { id: "1", title: "React Best Practices", preview: "Key patterns for building scalable React apps...", color: "#F5A623", tags: ["react", "development"], date: "2 hours ago" },
+const initialNotes: Note[] = [
+  { id: "1", title: "React Best Practices", preview: "Key patterns for building scalable React apps...", color: "#F5A623", tags: ["react", "development"], date: "2 hours ago", isFavorite: true },
   { id: "2", title: "Machine Learning Basics", preview: "Introduction to neural networks and deep learning...", color: "#4A7C59", tags: ["ml", "ai"], date: "Yesterday" },
   { id: "3", title: "Product Design Notes", preview: "User-centered design principles and methodologies...", color: "#6366f1", tags: ["design", "ux"], date: "3 days ago" },
 ];
 
 export default function DashboardPage() {
+  const [notes, setNotes] = useState<Note[]>(initialNotes);
+
+  const handleDelete = (id: string) => {
+    setNotes(notes.filter((n) => n.id !== id));
+  };
+
+  const handleToggleFavorite = (id: string) => {
+    setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite: !n.isFavorite } : n)));
+  };
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Good morning";
+    if (hour < 18) return "Good afternoon";
+    return "Good evening";
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       {/* Welcome */}
@@ -20,7 +39,7 @@ export default function DashboardPage() {
         className="mb-8"
       >
         <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-          Good morning! 👋
+          {getGreeting()}! 👋
         </h1>
         <p className="mt-1 text-[var(--color-text-muted)]">
           What would you like to capture today?
@@ -53,19 +72,12 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {recentNotes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {recentNotes.map((note, index) => (
-              <motion.div
-                key={note.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 * index }}
-              >
-                <NoteCard {...note} />
-              </motion.div>
-            ))}
-          </div>
+        {notes.length > 0 ? (
+          <NoteList
+            notes={notes}
+            onDelete={handleDelete}
+            onToggleFavorite={handleToggleFavorite}
+          />
         ) : (
           <EmptyState />
         )}
@@ -82,57 +94,6 @@ function QuickAction({ icon, label, href }: { icon: string; label: string; href:
     >
       <span className="text-2xl">{icon}</span>
       <span className="text-sm font-medium text-[var(--color-text)]">{label}</span>
-    </Link>
-  );
-}
-
-function NoteCard({
-  id,
-  title,
-  preview,
-  color,
-  tags,
-  date,
-}: {
-  id: string;
-  title: string;
-  preview: string;
-  color: string;
-  tags: string[];
-  date: string;
-}) {
-  return (
-    <Link
-      href={`/notes/${id}`}
-      className="block p-5 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:shadow-lg transition-all group"
-    >
-      <div className="flex items-start gap-3">
-        <div
-          className="w-1.5 h-12 rounded-full flex-shrink-0"
-          style={{ backgroundColor: color }}
-        />
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">
-            {title}
-          </h3>
-          <p className="mt-1 text-sm text-[var(--color-text-muted)] line-clamp-2">
-            {preview}
-          </p>
-        </div>
-      </div>
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex gap-1.5">
-          {tags.slice(0, 2).map((tag) => (
-            <span
-              key={tag}
-              className="text-xs px-2 py-0.5 bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)]"
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-        <span className="text-xs text-[var(--color-text-subtle)]">{date}</span>
-      </div>
     </Link>
   );
 }

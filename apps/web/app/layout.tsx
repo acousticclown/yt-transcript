@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./components/ThemeProvider";
-import { Background } from "../components/Background";
+import { UserProvider } from "../lib/UserContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "YT-Transcript",
-  description: "Convert YouTube videos into clean transcripts, structured notes, and editable summaries",
+  title: "NotesAI - AI-Powered Notes",
+  description: "Transform YouTube videos into smart notes. Organize your thoughts with AI assistance.",
 };
 
 export default function RootLayout({
@@ -30,7 +30,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <Background pattern="gradient">{children}</Background>
+          <UserProvider>
+            {children}
+          </UserProvider>
         </ThemeProvider>
       </body>
     </html>
