@@ -145,9 +145,12 @@ function AIActionsMenu({
 
   return (
     <div className="relative">
-      {/* Trigger Button */}
+      {/* Trigger Button - onMouseDown prevents losing text selection */}
       <button
         ref={buttonRef}
+        onMouseDown={(e) => {
+          e.preventDefault(); // Prevent focus change, keeps text selection
+        }}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
@@ -217,6 +220,7 @@ function AIActionsMenu({
                   {languages.map((lang) => (
                     <button
                       key={lang.id}
+                      onMouseDown={(e) => e.preventDefault()}
                       onClick={() => onLanguageChange(lang.id)}
                       className={cn(
                         "flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all",
@@ -243,6 +247,7 @@ function AIActionsMenu({
                 {actions.map((action) => (
                   <button
                     key={action.id}
+                    onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleAction(action.id)}
                     disabled={!!loading}
                     className={cn(
