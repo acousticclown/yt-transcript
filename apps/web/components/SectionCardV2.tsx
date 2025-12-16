@@ -518,7 +518,7 @@ export function SectionCardV2({
                         }}
                       />
                       <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1 z-10">
-                      <InlineAIButton
+                        <InlineAIButton
                         label="✨ Simplify"
                         loading={loadingBullets[i] === "simplify"}
                         onClick={() =>
@@ -546,9 +546,9 @@ export function SectionCardV2({
                             }
                           )
                         }
-                      />
-                      <InlineAIButton
-                        label="➕ Expand"
+                        />
+                        <InlineAIButton
+                          label="➕ Expand"
                         loading={loadingBullets[i] === "expand"}
                         onClick={() =>
                           runInlineAI(
@@ -575,9 +575,9 @@ export function SectionCardV2({
                             }
                           )
                         }
-                      />
-                      <InlineAIButton
-                        label="💡 Example"
+                        />
+                        <InlineAIButton
+                          label="💡 Example"
                         loading={loadingBullets[i] === "example"}
                         onClick={() =>
                           runInlineAI(
@@ -604,8 +604,8 @@ export function SectionCardV2({
                             }
                           )
                         }
-                      />
-                    </div>
+                        />
+                      </div>
                   </div>
                 </motion.li>
               ))}
