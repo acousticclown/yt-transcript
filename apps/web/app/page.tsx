@@ -11,6 +11,8 @@ import {
 import { SortableSectionCard } from "../components/SortableSectionCard";
 import { Container, Stack } from "../components/layout";
 import { CategoryFilter } from "../components/CategoryFilter";
+import { ActionButton } from "../components/ActionButton";
+import { ButtonGroup } from "../components/ButtonGroup";
 
 type LanguageVariant = {
   title: string;
@@ -182,28 +184,29 @@ export default function Home() {
         </h1>
 
         {/* 2. Primary action - Generate Notes */}
-        <Stack direction="row" gap={3}>
-        <input
-          className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-900 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-black dark:focus:ring-gray-400 focus:border-transparent"
-          placeholder="Paste YouTube URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !loading) {
-              generateNotes();
-            }
-          }}
-        />
-        <motion.button
-          onClick={generateNotes}
-          disabled={loading || !url.trim()}
-          whileTap={{ scale: 0.97 }}
-          whileHover={{ scale: 1.01 }}
-          transition={{ duration: 0.15 }}
-          className="bg-black dark:bg-gray-100 text-white dark:text-gray-900 px-6 py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-800 dark:hover:bg-gray-200 transition-colors"
-        >
-          Generate Notes
-        </motion.button>
+        <Stack direction="row" gap={3} className="flex-col sm:flex-row">
+          <input
+            className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-gray-100 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            placeholder="Paste YouTube URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !loading) {
+                generateNotes();
+              }
+            }}
+          />
+          <ActionButton
+            onClick={generateNotes}
+            disabled={loading || !url.trim()}
+            loading={loading}
+            variant="primary"
+            size="lg"
+            icon={<span>✨</span>}
+            className="w-full sm:w-auto"
+          >
+            Generate Notes
+          </ActionButton>
         </Stack>
 
         {/* Category & Tag Filter */}
@@ -231,105 +234,105 @@ export default function Home() {
 
         {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
         {sections.length > 0 && (
-          <Stack direction="row" gap={2} className="pt-2 border-t border-gray-200 dark:border-gray-800">
-          <motion.button
-            onClick={async () => {
-              if (sections.length === 0) {
-                alert("No sections to save.");
-                return;
-              }
-              setSaving(true);
-              try {
-                const res = await fetch("http://localhost:3001/save", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ url, sections }),
-                });
-
-                if (!res.ok) {
-                  const errorData = await res
-                    .json()
-                    .catch(() => ({ error: "Unknown error" }));
-                  alert(errorData.error || `Failed to save: ${res.status}`);
-                  return;
-                }
-
-                const data = await res.json();
-                if (data.error) {
-                  alert(data.error);
-                } else {
-                  alert("Saved to library!");
-                }
-              } catch {
-                // Keep existing sections, show clear error
-                alert(
-                  "⚠️ Couldn't save notes right now. Make sure the API server is running."
-                );
-              } finally {
-                setSaving(false);
-              }
-            }}
-            disabled={saving || sections.length === 0}
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            transition={{ duration: 0.15 }}
-            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            {saving ? "Saving..." : "Save to Library"}
-          </motion.button>
-          <motion.button
-            onClick={async () => {
-              if (sections.length === 0) {
-                alert("No sections to export.");
-                return;
-              }
-              try {
-                // Export only current content (what user sees)
-                const sectionsToExport = sections.map((s) => s.current);
-                const res = await fetch(
-                  "http://localhost:3001/export/markdown",
-                  {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ sections: sectionsToExport }),
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+            <ButtonGroup className="flex-col sm:flex-row w-full sm:w-auto">
+              <ActionButton
+                onClick={async () => {
+                  if (sections.length === 0) {
+                    alert("No sections to save.");
+                    return;
                   }
-                );
+                  setSaving(true);
+                  try {
+                    const res = await fetch("http://localhost:3001/save", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ url, sections }),
+                    });
 
-                if (!res.ok) {
-                  const errorData = await res
-                    .json()
-                    .catch(() => ({ error: "Unknown error" }));
-                  alert(
-                    `⚠️ ${errorData.error || `Failed to export: ${res.status}`}`
-                  );
-                  return;
-                }
+                    if (!res.ok) {
+                      const errorData = await res
+                        .json()
+                        .catch(() => ({ error: "Unknown error" }));
+                      alert(errorData.error || `Failed to save: ${res.status}`);
+                      return;
+                    }
 
-                const blob = await res.blob();
-                const downloadUrl = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = downloadUrl;
-                a.download = "notes.md";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(downloadUrl);
-              } catch {
-                // Keep existing sections, show clear error
-                alert(
-                  "⚠️ Couldn't export notes right now. Make sure the API server is running."
-                );
-              }
-            }}
-            disabled={sections.length === 0}
-            whileTap={{ scale: 0.97 }}
-            whileHover={{ scale: 1.01 }}
-            transition={{ duration: 0.15 }}
-            className="text-sm border border-gray-300 dark:border-gray-700 px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
-          >
-            Export as Markdown
-          </motion.button>
-          </Stack>
+                    const data = await res.json();
+                    if (data.error) {
+                      alert(data.error);
+                    } else {
+                      alert("✅ Saved to library!");
+                    }
+                  } catch {
+                    alert(
+                      "⚠️ Couldn't save notes right now. Make sure the API server is running."
+                    );
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                disabled={saving || sections.length === 0}
+                loading={saving}
+                variant="secondary"
+                size="md"
+                icon={<span>💾</span>}
+                className="w-full sm:w-auto"
+              >
+                Save to Library
+              </ActionButton>
+              <ActionButton
+                onClick={async () => {
+                  if (sections.length === 0) {
+                    alert("No sections to export.");
+                    return;
+                  }
+                  try {
+                    const sectionsToExport = sections.map((s) => s.current);
+                    const res = await fetch(
+                      "http://localhost:3001/export/markdown",
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ sections: sectionsToExport }),
+                      }
+                    );
+
+                    if (!res.ok) {
+                      const errorData = await res
+                        .json()
+                        .catch(() => ({ error: "Unknown error" }));
+                      alert(
+                        `⚠️ ${errorData.error || `Failed to export: ${res.status}`}`
+                      );
+                      return;
+                    }
+
+                    const blob = await res.blob();
+                    const downloadUrl = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = downloadUrl;
+                    a.download = "notes.md";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(downloadUrl);
+                  } catch {
+                    alert(
+                      "⚠️ Couldn't export notes right now. Make sure the API server is running."
+                    );
+                  }
+                }}
+                disabled={sections.length === 0}
+                variant="secondary"
+                size="md"
+                icon={<span>📥</span>}
+                className="w-full sm:w-auto"
+              >
+                Export Markdown
+              </ActionButton>
+            </ButtonGroup>
+          </div>
         )}
 
       {loading && (
