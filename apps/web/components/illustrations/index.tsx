@@ -10,7 +10,7 @@ type IllustrationProps = {
   skinTone?: string;
 };
 
-// Person writing/taking notes - standing at floating desk
+// Person writing/taking notes - half body floating
 export function WritingPerson({ 
   className = "w-48 h-48",
   primaryColor = "var(--color-primary)",
@@ -19,87 +19,74 @@ export function WritingPerson({
 }: IllustrationProps) {
   return (
     <svg viewBox="0 0 200 200" className={className} fill="none">
-      {/* Ground shadow */}
-      <ellipse cx="100" cy="185" rx="50" ry="10" fill="#000" opacity="0.08" />
+      {/* Body - floating torso */}
+      <ellipse cx="100" cy="145" rx="30" ry="38" fill={primaryColor} />
       
-      {/* Legs */}
-      <rect x="80" y="135" width="14" height="50" rx="5" fill={primaryColor} opacity="0.85" />
-      <rect x="106" y="135" width="14" height="50" rx="5" fill={primaryColor} opacity="0.85" />
-      
-      {/* Shoes */}
-      <ellipse cx="87" cy="185" rx="10" ry="5" fill="#333" />
-      <ellipse cx="113" cy="185" rx="10" ry="5" fill="#333" />
-      
-      {/* Body - sweater */}
-      <path d="M70 90 Q65 120 75 145 L125 145 Q135 120 130 90 Q120 80 100 78 Q80 80 70 90" fill={primaryColor} />
-      
-      {/* Collar detail */}
-      <path d="M90 82 Q100 88 110 82" stroke={primaryColor} strokeWidth="8" fill="none" opacity="0.7" />
+      {/* Collar/neckline */}
+      <path d="M85 115 Q100 125 115 115" stroke={primaryColor} strokeWidth="6" fill="none" opacity="0.6" />
       
       {/* Head */}
-      <circle cx="100" cy="55" r="26" fill={skinTone} />
+      <circle cx="100" cy="75" r="28" fill={skinTone} />
       
       {/* Hair - messy/modern */}
-      <path d="M74 45 Q72 30 85 25 Q100 20 115 25 Q128 30 126 45" fill="#2D2016" />
-      <path d="M74 45 Q78 38 90 42 Q95 35 105 40 Q115 35 120 42 Q126 38 126 45" fill="#2D2016" />
-      <ellipse cx="78" cy="50" rx="6" ry="8" fill="#2D2016" />
-      <ellipse cx="122" cy="50" rx="6" ry="8" fill="#2D2016" />
+      <path d="M72 65 Q70 45 88 38 Q100 32 112 38 Q130 45 128 65" fill="#2D2016" />
+      <path d="M72 65 Q78 55 92 60 Q98 50 108 58 Q118 52 122 60 Q128 55 128 65" fill="#2D2016" />
+      <ellipse cx="75" cy="70" rx="5" ry="7" fill="#2D2016" />
+      <ellipse cx="125" cy="70" rx="5" ry="7" fill="#2D2016" />
       
       {/* Ears */}
-      <ellipse cx="74" cy="55" rx="4" ry="6" fill={skinTone} />
-      <ellipse cx="126" cy="55" rx="4" ry="6" fill={skinTone} />
+      <ellipse cx="72" cy="75" rx="4" ry="6" fill={skinTone} />
+      <ellipse cx="128" cy="75" rx="4" ry="6" fill={skinTone} />
       
       {/* Face - focused expression */}
-      <ellipse cx="90" cy="52" rx="3" ry="2" fill="#333" />
-      <ellipse cx="110" cy="52" rx="3" ry="2" fill="#333" />
+      <ellipse cx="90" cy="72" rx="3" ry="2.5" fill="#333" />
+      <ellipse cx="110" cy="72" rx="3" ry="2.5" fill="#333" />
       {/* Eyebrows - focused */}
-      <path d="M85 46 L93 48" stroke="#2D2016" strokeWidth="2" strokeLinecap="round" />
-      <path d="M107 48 L115 46" stroke="#2D2016" strokeWidth="2" strokeLinecap="round" />
+      <path d="M84 65 L93 67" stroke="#2D2016" strokeWidth="2" strokeLinecap="round" />
+      <path d="M107 67 L116 65" stroke="#2D2016" strokeWidth="2" strokeLinecap="round" />
       {/* Slight smile */}
-      <path d="M95 65 Q100 68 105 65" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
+      <path d="M94 88 Q100 92 106 88" stroke="#333" strokeWidth="2" fill="none" strokeLinecap="round" />
       
       {/* Left arm holding notebook */}
-      <path d="M70 95 Q45 100 40 120" stroke={skinTone} strokeWidth="12" strokeLinecap="round" />
+      <path d="M70 130 Q45 135 38 155" stroke={skinTone} strokeWidth="12" strokeLinecap="round" />
       {/* Hand */}
-      <circle cx="38" cy="122" r="7" fill={skinTone} />
+      <circle cx="36" cy="158" r="8" fill={skinTone} />
       
       {/* Right arm writing */}
-      <path d="M130 95 Q150 105 155 125" stroke={skinTone} strokeWidth="12" strokeLinecap="round" />
+      <path d="M130 130 Q155 140 162 160" stroke={skinTone} strokeWidth="12" strokeLinecap="round" />
       {/* Hand */}
-      <circle cx="157" cy="128" r="7" fill={skinTone} />
+      <circle cx="164" cy="163" r="8" fill={skinTone} />
       
       {/* Floating notebook */}
-      <g transform="rotate(-5 60 130)">
-        <rect x="25" y="100" width="55" height="70" rx="3" fill="white" />
-        <rect x="25" y="100" width="55" height="70" rx="3" stroke={secondaryColor} strokeWidth="2" fill="none" />
+      <g transform="rotate(-8 55 160)">
+        <rect x="20" y="140" width="50" height="60" rx="3" fill="white" />
+        <rect x="20" y="140" width="50" height="60" rx="3" stroke={secondaryColor} strokeWidth="2" fill="none" />
         {/* Spiral binding */}
-        <circle cx="30" cy="110" r="2" fill={secondaryColor} />
-        <circle cx="30" cy="122" r="2" fill={secondaryColor} />
-        <circle cx="30" cy="134" r="2" fill={secondaryColor} />
-        <circle cx="30" cy="146" r="2" fill={secondaryColor} />
-        <circle cx="30" cy="158" r="2" fill={secondaryColor} />
+        <circle cx="25" cy="150" r="2" fill={secondaryColor} />
+        <circle cx="25" cy="162" r="2" fill={secondaryColor} />
+        <circle cx="25" cy="174" r="2" fill={secondaryColor} />
+        <circle cx="25" cy="186" r="2" fill={secondaryColor} />
         {/* Lines */}
-        <line x1="38" y1="115" x2="70" y2="115" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
-        <line x1="38" y1="125" x2="65" y2="125" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
-        <line x1="38" y1="135" x2="68" y2="135" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
-        <line x1="38" y1="145" x2="60" y2="145" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
+        <line x1="32" y1="152" x2="62" y2="152" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
+        <line x1="32" y1="162" x2="58" y2="162" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
+        <line x1="32" y1="172" x2="60" y2="172" stroke={primaryColor} strokeWidth="2" opacity="0.4" />
       </g>
       
       {/* Pen */}
-      <rect x="152" y="115" width="4" height="25" rx="1" fill={primaryColor} transform="rotate(25 154 127)" />
-      <polygon points="154,142 156,142 155,148" fill="#333" transform="rotate(25 155 145)" />
+      <rect x="160" y="152" width="4" height="22" rx="1" fill={primaryColor} transform="rotate(30 162 163)" />
+      <polygon points="161,176 163,176 162,182" fill="#333" transform="rotate(30 162 179)" />
       
       {/* Sparkles - creativity */}
       <g fill={primaryColor}>
-        <circle cx="165" cy="70" r="3" opacity="0.6" />
-        <circle cx="175" cy="85" r="2" opacity="0.4" />
-        <circle cx="35" cy="80" r="2" opacity="0.5" />
+        <circle cx="170" cy="100" r="3" opacity="0.6" />
+        <circle cx="178" cy="120" r="2" opacity="0.4" />
+        <circle cx="30" cy="110" r="2.5" opacity="0.5" />
       </g>
       
       {/* Floating elements */}
       <g fill={secondaryColor} opacity="0.3">
-        <rect x="160" cy="50" width="8" height="8" rx="1" transform="rotate(15 164 54)" />
-        <circle cx="30" cy="60" r="4" />
+        <rect x="165" y="75" width="8" height="8" rx="1" transform="rotate(15 169 79)" />
+        <circle cx="25" cy="85" r="4" />
       </g>
     </svg>
   );
