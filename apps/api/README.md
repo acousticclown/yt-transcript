@@ -1,16 +1,22 @@
-# API Server
+# API Server (Backend)
 
-To install dependencies:
+Node.js backend for YT-Transcript.
+
+## Development
 
 ```bash
 npm install
+npm run dev    # Development with hot reload
 ```
 
-To run:
+## Production
 
 ```bash
-npm run dev    # Development with hot reload
-npm run start  # Production
+npm run start
 ```
 
-Built with Node.js and TypeScript.
+## Environment Variables
+
+Copy `.env.example` to `.env` and add your API keys:
+- `GEMINI_API_KEY` - Required for AI summaries and section detection
+- `OPENAI_API_KEY` - Required for Whisper transcription fallback

@@ -1,6 +1,8 @@
 # Roadmap
 
-This document outlines the planned features and improvements for YT-Transcript.
+This document outlines completed features and future plans for YT-Transcript.
+
+**Current Version:** v1.0.0
 
 ## Week 1 ✅ (Complete)
 
@@ -96,45 +98,53 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Graceful error handling
 - [x] Edge case handling
 
-### Day 20 (In Progress)
-- [ ] Real usage test with 3 videos
-- [ ] Document friction points
-- [ ] Identify 3 signals (Stickiness, Differentiation, Missing Core)
-- [ ] Decide next direction (Visual Thinking / Knowledge System / Creator Tool / Polish & OSS)
-- [ ] No coding - just reflection
+### Day 20 ✅ (Complete)
+- [x] Real usage test completed
+- [x] v1.0.0 release prepared
+- [x] Open-source polish applied
 
-### Future Week 2 Features
-- Multilingual Support
-- Hinglish / Hindi output
-- Language detection
-- Translation options
-
----
-
-## Week 3 (Planned)
+## Future Features
 
 ### Visual Enhancements
 - Mind maps
 - Flow diagrams
 - Visual section relationships
 
-### Sharing & Collaboration
-- Share notes via link
-- Export to various formats (PDF, Notion, etc.)
+### Knowledge System
+- Search across saved notes
+- Tags and categories
+- Note linking
 
-### Better Exports
+### Export Enhancements
+- PDF export
+- Custom templates
+- Multiple format support
+
+---
+
+## Future Enhancements
+
+### Visual Thinking
+- Mind maps
+- Flow diagrams
+- Visual section relationships
+
+### Knowledge System
+- Search across saved notes
+- Tags and categories
+- Note linking
+- Personal knowledge base features
+
+### Export Enhancements
+- PDF export
 - Custom templates
 - Multiple format support
 - Batch export
 
----
-
-## Future Considerations
-
-- Cloud sync (optional)
+### Platform Expansion
 - Browser extension
 - Mobile app
-- API for developers
+- Public API for developers
 
 ---
 

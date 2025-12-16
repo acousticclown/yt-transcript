@@ -1,6 +1,8 @@
 # YT-Transcript
 
-YT-Transcript is a personal-first, open-source web app that converts YouTube videos into clean transcripts, structured notes, and editable summaries.
+> **v1.0.0** - Convert YouTube videos into clean transcripts, structured notes, and editable summaries.
+
+YT-Transcript is a personal-first, open-source web app that transforms YouTube videos into clean transcripts, structured notes, and editable summaries. Built with AI-powered structuring, multilingual support (English, Hindi, Hinglish), and a playful, thoughtful UX.
 
 ## Features
 
@@ -40,46 +42,14 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 
 ## Status
 
-**Week 3 - Day 19 Complete** ✅
+**v1.0.0** - Production Ready ✅
 
-**Week 1 MVP Complete** ✅
-- Transcript extraction (primary method working)
-- AI-powered structuring
-- Editable UI
-- Save and export
-
-**Week 2 Complete** ✅
-- UX polish & animations
-- Inline AI actions & partial regeneration
-- Drag & drop reordering and focus mode
-- Visual hierarchy & themes
-
-**Week 3 Complete** ✅
-- Multilingual support (English, Hindi, Hinglish)
-- Hinglish tone presets (Neutral, Casual, Interview)
-- Language variant caching (no re-generation needed)
-- Reliable error handling & edge case management
-
-**Day 20 - Real Usage Test** 🧘
-- Testing with real videos
-- Reflection & direction decision
-- No coding - just observation
-
-**Week 2 Progress** ✅
-- Day 8: UX Polish & Micro-Playfulness ✅
-- Day 9: Playful Animations with Framer Motion ✅
-- Day 10: Inline AI Actions ✅
-- Day 11: Partial Regeneration ✅
-- Day 12: Drag, Reorder & Focus Mode ✅
-- Day 13: Visual Hierarchy, Themes & Finishing Touches ✅
-
-**Week 3 Progress** ✅ (Complete)
-- Day 14: Language Foundations & Hinglish Philosophy ✅
-- Day 15: Section-Level Language Switching ✅
-- Day 16: Inline Language Switching & UX Polish ✅
-- Day 17: Hinglish Tone Tuning & Presets ✅
-- Day 18: Save Language Variants ✅
-- Day 19: Polish, Edge Cases & Quality Checks ✅
+YT-Transcript is a fully functional, production-ready application with:
+- Complete transcript extraction and AI-powered structuring
+- Multilingual support (English, Hindi, Hinglish with tone presets)
+- Language variant caching for instant switching
+- Reliable error handling and graceful degradation
+- Polished UX with animations, drag & drop, and focus mode
 
 **Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
 
@@ -131,6 +101,7 @@ See [docs/api.md](./docs/api.md) for detailed API documentation.
 - `POST /export/markdown` - Export notes as Markdown
 - `POST /ai/inline` - Inline AI actions (simplify, expand, example)
 - `POST /ai/regenerate-section` - Regenerate one section surgically
+- `POST /ai/transform-language` - Transform section to different language
 
 ## Cost
 
@@ -162,11 +133,13 @@ See [docs/roadmap.md](./docs/roadmap.md) for planned features.
 
 ## Contributing
 
-This is an open-source project. Contributions are welcome!
+Contributions are welcome! This is an open-source project built with intention.
+
+See [docs/roadmap.md](./docs/roadmap.md) for planned features and [docs/vision.md](./docs/vision.md) for project philosophy.
 
 ## License
 
-[Add your license here]
+MIT License - See [LICENSE](./LICENSE) file for details.
 
 ---
 
