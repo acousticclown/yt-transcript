@@ -3,32 +3,34 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { NoteEditor } from "../../../../components/notes";
+import { UnifiedNoteEditor } from "../../../../components/notes";
 
 export default function NewNotePage() {
   const router = useRouter();
 
-  const handleSave = (data: { title: string; content: string; tags: string[] }) => {
+  const handleSave = (note: any) => {
     // Mock save - would create note via API
-    console.log("Saving note:", data);
+    console.log("Saving note:", note);
     const id = crypto.randomUUID();
     router.push(`/notes/${id}`);
   };
 
-  const handleAIAction = async (action: string, text?: string): Promise<string> => {
-    // Mock AI action - would call API
-    await new Promise((r) => setTimeout(r, 1000));
-    
-    switch (action) {
-      case "summarize":
-        return `Summary: ${text?.slice(0, 100)}...`;
-      case "expand":
-        return `\n\nExpanded content based on: "${text?.slice(0, 50)}..."`;
-      case "simplify":
-        return text?.split(" ").slice(0, Math.ceil((text?.split(" ").length || 0) / 2)).join(" ") + "...";
-      default:
-        return text || "";
+  const handleAIAction = async (action: string, text: string): Promise<string> => {
+    // Call actual API
+    try {
+      const res = await fetch("http://localhost:3001/ai/inline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, text }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.text || text;
+      }
+    } catch (e) {
+      console.error("AI action failed:", e);
     }
+    return text;
   };
 
   return (
@@ -54,7 +56,7 @@ export default function NewNotePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <NoteEditor onSave={handleSave} onAIAction={handleAIAction} />
+        <UnifiedNoteEditor onSave={handleSave} onAIAction={handleAIAction} />
       </motion.div>
     </div>
   );

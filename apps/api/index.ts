@@ -288,11 +288,11 @@ const server = http.createServer(async (req, res) => {
       // Fix common JSON issues from AI
       // Remove control characters that break JSON
       jsonText = jsonText.replace(/[\x00-\x1F\x7F]/g, (char) => {
-        if (char === '\n' || char === '\r' || char === '\t') return char;
-        return '';
+        if (char === "\n" || char === "\r" || char === "\t") return char;
+        return "";
       });
       // Fix unescaped quotes in strings (common AI mistake)
-      jsonText = jsonText.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
+      jsonText = jsonText.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, "\\\\");
 
       const sections = JSON.parse(jsonText);
 
