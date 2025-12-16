@@ -16,6 +16,7 @@ import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.
 import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
 import { regenerateSectionPrompt } from "../../packages/prompts/regenerateSection.ts";
 import { languageTransformPrompt } from "../../packages/prompts/languageTransform.ts";
+import { categoryDetectionPrompt } from "../../packages/prompts/categoryDetection.ts";
 
 // Storage & Export
 import { saveNote } from "./storage/saveNote";
@@ -630,6 +631,99 @@ const server = http.createServer(async (req, res) => {
       res.end(
         JSON.stringify({
           error: "Failed to transform language. Please try again.",
+          details: err.message,
+        })
+      );
+    }
+    return;
+  }
+
+  // ============================================
+  // POST /ai/detect-categories - Detect categories and tags for sections
+  // ============================================
+  if (req.method === "POST" && pathname === "/ai/detect-categories") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      let parsedBody: {
+        sections?: Array<{
+          title: string;
+          summary: string;
+          bullets: string[];
+        }>;
+      };
+
+      try {
+        parsedBody = JSON.parse(body);
+      } catch (parseError) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid JSON in request body" }));
+        return;
+      }
+
+      const { sections } = parsedBody;
+
+      if (!sections || !Array.isArray(sections) || sections.length === 0) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({ error: "Sections array is required and must not be empty" })
+        );
+        return;
+      }
+
+      // Validate section structure
+      for (const section of sections) {
+        if (
+          typeof section.title !== "string" ||
+          typeof section.summary !== "string" ||
+          !Array.isArray(section.bullets)
+        ) {
+          res.writeHead(400, { "Content-Type": "application/json" });
+          res.end(
+            JSON.stringify({ error: "Invalid section structure" })
+          );
+          return;
+        }
+      }
+
+      // Generate category detection
+      const prompt = categoryDetectionPrompt(sections);
+      const result = await geminiModel.generateContent(prompt);
+
+      // Gemini sometimes wraps JSON in markdown code blocks - strip safely
+      const jsonText = result
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      const categories = JSON.parse(jsonText);
+
+      // Validate response structure
+      if (
+        typeof categories.type !== "string" ||
+        !Array.isArray(categories.tags) ||
+        typeof categories.confidence !== "number"
+      ) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(
+          JSON.stringify({
+            error: "AI returned invalid category format",
+            details: "Expected {type: string, tags: string[], confidence: number}",
+          })
+        );
+        return;
+      }
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify(categories));
+    } catch (err: any) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          error: "Failed to detect categories. Please try again.",
           details: err.message,
         })
       );

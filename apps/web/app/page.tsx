@@ -10,6 +10,7 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableSectionCard } from "../components/SortableSectionCard";
 import { Container, Stack } from "../components/layout";
+import { CategoryFilter } from "../components/CategoryFilter";
 
 type LanguageVariant = {
   title: string;
@@ -35,6 +36,13 @@ type Section = {
   current: LanguageVariant;
   language: "english" | "hindi" | "hinglish";
   hinglishTone?: "neutral" | "casual" | "interview";
+  // Smart organization
+  category?: {
+    type: string;
+    tags: string[];
+    confidence: number;
+  };
+  personalTags?: string[];
 };
 
 const loadingMessages = [
@@ -54,6 +62,7 @@ export default function Home() {
   const [saving, setSaving] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   async function generateNotes() {
     // Soft warning for potentially long videos (estimate based on URL)
@@ -126,7 +135,33 @@ export default function Home() {
           language: "english" as const,
         })
       );
-      setSections(sectionsWithIds);
+
+      // 3. Detect categories for all sections
+      try {
+        const categoryRes = await fetch("http://localhost:3001/ai/detect-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sections: sectionsWithIds.map((s) => s.current),
+          }),
+        });
+
+        if (categoryRes.ok) {
+          const categoryData = await categoryRes.json();
+          // Apply same category to all sections (video-level categorization)
+          const sectionsWithCategories = sectionsWithIds.map((section) => ({
+            ...section,
+            category: categoryData,
+          }));
+          setSections(sectionsWithCategories);
+        } else {
+          // If category detection fails, just use sections without categories
+          setSections(sectionsWithIds);
+        }
+      } catch {
+        // If category detection fails, just use sections without categories
+        setSections(sectionsWithIds);
+      }
     } catch (error) {
       // Keep existing sections, show clear error
       alert(
@@ -169,6 +204,21 @@ export default function Home() {
           Generate Notes
         </motion.button>
         </Stack>
+
+        {/* Category Filter */}
+        {sections.length > 0 && (
+          <CategoryFilter
+            categories={Array.from(
+              new Set(
+                sections
+                  .map((s) => s.category?.type)
+                  .filter((c): c is string => !!c)
+              )
+            )}
+            selectedCategory={selectedCategory}
+            onSelectCategory={setSelectedCategory}
+          />
+        )}
 
         {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
         {sections.length > 0 && (
@@ -316,9 +366,14 @@ export default function Home() {
         >
           <AnimatePresence>
             <Stack gap={5} as="section">
-              {sections.map((section) => {
-                const isFocused = focusedSectionId === section.id;
-                const dimmed = focusedSectionId !== null && !isFocused;
+              {sections
+                .filter((section) => {
+                  if (selectedCategory === null) return true;
+                  return section.category?.type === selectedCategory;
+                })
+                .map((section) => {
+                  const isFocused = focusedSectionId === section.id;
+                  const dimmed = focusedSectionId !== null && !isFocused;
 
                 return (
                   <motion.div

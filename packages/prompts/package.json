@@ -6,7 +6,8 @@
   "exports": {
     ".": "./index.ts",
     "./basicSummary": "./basicSummary.ts",
-    "./sectionDetection": "./sectionDetection.ts"
+    "./sectionDetection": "./sectionDetection.ts",
+    "./categoryDetection": "./categoryDetection.ts"
   }
 }
 

@@ -6,6 +6,7 @@ import { GlassCard } from "./GlassCard";
 import { Stack } from "./layout";
 import { InlineAIButton } from "./InlineAIButton";
 import { LanguageToggle } from "./LanguageToggle";
+import { CategoryBadge } from "./CategoryBadge";
 import { cn } from "../lib/utils";
 
 type LanguageVariant = {
@@ -29,6 +30,12 @@ type Section = {
   current: LanguageVariant;
   language: "english" | "hindi" | "hinglish";
   hinglishTone?: "neutral" | "casual" | "interview";
+  category?: {
+    type: string;
+    tags: string[];
+    confidence: number;
+  };
+  personalTags?: string[];
 };
 
 function cleanTranscript(
@@ -108,19 +115,38 @@ export function SectionCardV2({
       <Stack gap={0} className="h-full">
         {/* Card Header */}
         <div className="px-5 pt-5 pb-4 border-b border-white/10 dark:border-white/5 hover:bg-white/5 dark:hover:bg-gray-900/5 transition-colors">
-          <Stack direction="row" gap={3} align="center" justify="between" className="flex-wrap">
-            {/* Title */}
-            <input
-              className="flex-1 min-w-0 text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
-              placeholder="Section title..."
-              value={section.current.title}
-              onChange={(e) =>
-                onChange({
-                  ...section,
-                  current: { ...section.current, title: e.target.value },
-                })
-              }
-            />
+          <Stack gap={2}>
+            {/* Category Badge */}
+            {section.category && (
+              <div className="flex items-center gap-2">
+                <CategoryBadge type={section.category.type} size="sm" />
+                {section.category.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {section.category.tags.slice(0, 3).map((tag, i) => (
+                      <span
+                        key={i}
+                        className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            <Stack direction="row" gap={3} align="center" justify="between" className="flex-wrap">
+              {/* Title */}
+              <input
+                className="flex-1 min-w-0 text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                placeholder="Section title..."
+                value={section.current.title}
+                onChange={(e) =>
+                  onChange({
+                    ...section,
+                    current: { ...section.current, title: e.target.value },
+                  })
+                }
+              />
             
             {/* Header Actions */}
             <Stack direction="row" gap={2} align="center">
