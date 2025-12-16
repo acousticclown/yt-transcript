@@ -158,37 +158,79 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
-          {/* "ly" - Elastic pop with color */}
-          <div className="flex">
-            {lyLetters.map((letter, i) => (
-              <motion.span
-                key={i}
-                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
-                style={{
-                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
-                  letterSpacing: "-0.03em",
-                  transformOrigin: "bottom center",
-                }}
-                initial={{ 
-                  opacity: 0, 
-                  scale: 0,
-                  y: 40,
-                }}
-                animate={{ 
-                  opacity: 1, 
-                  scale: 1,
-                  y: 0,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 300,
-                  damping: 15,
-                  delay: 1.1 + i * 0.12,
-                }}
+          {/* Pen that writes "ly" */}
+          <div className="relative flex items-baseline">
+            {/* Pen SVG */}
+            <motion.div
+              className="absolute -left-2 bottom-0"
+              initial={{ opacity: 0, x: -20, y: 20 }}
+              animate={{ 
+                opacity: [0, 1, 1, 0],
+                x: [-20, 0, 60, 80],
+                y: [20, 0, 0, -10],
+              }}
+              transition={{
+                duration: 1.4,
+                delay: 1.0,
+                times: [0, 0.2, 0.8, 1],
+                ease: "easeInOut",
+              }}
+            >
+              <svg 
+                viewBox="0 0 24 24" 
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12"
+                fill="none"
               >
-                {letter}
-              </motion.span>
-            ))}
+                <path
+                  d="M3 21l1.5-4.5L17.5 3.5a2.12 2.12 0 013 3L7.5 19.5 3 21z"
+                  className="fill-[var(--color-primary)]"
+                />
+                <path
+                  d="M15 5l4 4"
+                  className="stroke-[var(--color-primary-dark)]"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+                <path
+                  d="M3 21l1.5-4.5"
+                  className="stroke-[var(--color-primary-dark)]"
+                  strokeWidth="1"
+                />
+              </svg>
+            </motion.div>
+
+            {/* "ly" - Written by pen */}
+            <div className="flex">
+              {lyLetters.map((letter, i) => (
+                <motion.span
+                  key={i}
+                  className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+                  style={{
+                    fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                    letterSpacing: "-0.03em",
+                    transformOrigin: "left bottom",
+                  }}
+                  initial={{ 
+                    opacity: 0, 
+                    scaleX: 0,
+                    x: -10,
+                  }}
+                  animate={{ 
+                    opacity: 1, 
+                    scaleX: 1,
+                    x: 0,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 200,
+                    damping: 20,
+                    delay: 1.2 + i * 0.2,
+                  }}
+                >
+                  {letter}
+                </motion.span>
+              ))}
+            </div>
           </div>
         </div>
       </div>
