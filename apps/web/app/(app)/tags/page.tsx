@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 type Tag = {
@@ -10,6 +10,107 @@ type Tag = {
   color: string;
   count: number;
 };
+
+// Tag card with long-press menu
+function TagCard({ 
+  tag, 
+  onDelete, 
+  index 
+}: { 
+  tag: Tag; 
+  onDelete: (id: string) => void;
+  index: number;
+}) {
+  const [showMenu, setShowMenu] = useState(false);
+  const longPressTimer = useRef<NodeJS.Timeout | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    if (showMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [showMenu]);
+
+  const handleTouchStart = () => {
+    longPressTimer.current = setTimeout(() => setShowMenu(true), 500);
+  };
+
+  const handleTouchEnd = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+  };
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ delay: 0.03 * index }}
+      className="group relative"
+    >
+      <Link
+        href={`/notes?tag=${encodeURIComponent(tag.name)}`}
+        className="block bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 hover:border-[var(--color-primary)] hover:shadow-md transition-all"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        onContextMenu={(e) => { e.preventDefault(); setShowMenu(true); }}
+      >
+        <div className="flex items-center gap-3">
+          <div
+            className="w-4 h-4 rounded-full"
+            style={{ backgroundColor: tag.color }}
+          />
+          <span className="font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">#{tag.name}</span>
+        </div>
+        <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+          {tag.count} {tag.count === 1 ? "note" : "notes"}
+        </p>
+      </Link>
+
+      {/* Long press menu */}
+      <AnimatePresence>
+        {showMenu && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/20 z-40"
+              onClick={() => setShowMenu(false)}
+            />
+            <motion.div
+              ref={menuRef}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-xl overflow-hidden min-w-[140px]"
+            >
+              <button
+                onClick={() => { onDelete(tag.id); setShowMenu(false); }}
+                className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600"
+              >
+                🗑️ Delete
+              </button>
+              <button
+                onClick={() => setShowMenu(false)}
+                className="w-full px-4 py-3 text-left text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] border-t border-[var(--color-border)]"
+              >
+                Cancel
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
 
 const COLORS = [
   "#F5A623", "#3178C6", "#10B981", "#8B5CF6", 
@@ -132,42 +233,12 @@ export default function TagsPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
             {filteredTags.map((tag, index) => (
-              <motion.div
-                key={tag.id}
-                layout
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ delay: 0.03 * index }}
-                className="group"
-              >
-                <Link
-                  href={`/notes?tag=${encodeURIComponent(tag.name)}`}
-                  className="block bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 hover:border-[var(--color-primary)] hover:shadow-md transition-all"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      <span className="font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">#{tag.name}</span>
-                    </div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleDeleteTag(tag.id);
-                      }}
-                      className="p-1 text-[var(--color-text-subtle)] hover:text-red-500 transition-all"
-                    >
-                      🗑️
-                    </button>
-                  </div>
-                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                    {tag.count} {tag.count === 1 ? "note" : "notes"}
-                  </p>
-                </Link>
-              </motion.div>
+              <TagCard 
+                key={tag.id} 
+                tag={tag} 
+                onDelete={handleDeleteTag} 
+                index={index} 
+              />
             ))}
           </AnimatePresence>
         </div>
