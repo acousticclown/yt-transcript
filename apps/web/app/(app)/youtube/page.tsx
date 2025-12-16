@@ -1,59 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { DndContext, closestCenter, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  arrayMove,
-} from "@dnd-kit/sortable";
-import { SortableSectionCard } from "../../../components/SortableSectionCard";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
-import { CategoryFilter } from "../../../components/CategoryFilter";
 import { ActionButton } from "../../../components/ActionButton";
-import { ButtonGroup } from "../../../components/ButtonGroup";
-import { VideoMetadata } from "../../../components/VideoMetadata";
-import { SearchBar } from "../../../components/SearchBar";
-import { SortOptions } from "../../../components/SortOptions";
-
-type LanguageVariant = {
-  title: string;
-  summary: string;
-  bullets: string[];
-};
-
-type Section = {
-  id: string;
-  // Source of truth (always English)
-  source: LanguageVariant;
-  // Cached variants
-  variants: {
-    english: LanguageVariant;
-    hindi?: LanguageVariant;
-    hinglish?: {
-      neutral?: LanguageVariant;
-      casual?: LanguageVariant;
-      interview?: LanguageVariant;
-    };
-  };
-  // Current view state
-  current: LanguageVariant;
-  language: "english" | "hindi" | "hinglish";
-  hinglishTone?: "neutral" | "casual" | "interview";
-  // Smart organization
-  category?: {
-    type: string;
-    tags: string[];
-    confidence: number;
-  };
-  personalTags?: string[];
-  // Section type (Tutorial, Interview, Lecture, etc.)
-  sectionType?: {
-    type: string;
-    confidence: number;
-  };
-};
+import { UnifiedNoteEditor } from "../../../components/notes";
 
 const loadingMessages = [
   "🧠 Listening to the video…",
@@ -62,54 +14,35 @@ const loadingMessages = [
   "🎨 Making it readable…",
 ];
 
-type VideoMetadata = {
-  videoId: string;
-  thumbnailUrl: string;
-  duration: number; // in seconds
+type NoteSection = {
+  id: string;
+  title: string;
+  summary: string;
+  bullets: string[];
+  language: "english" | "hindi" | "hinglish";
 };
 
-export default function Home() {
-  const [url, setUrl] = useState("");
-  const [sections, setSections] = useState<Section[]>([]);
-  const [transcript, setTranscript] = useState<
-    Array<{ text: string; start: number; duration: number }>
-  >([]);
-  const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null);
-  const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
-  const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedTag, setSelectedTag] = useState<string | null>(null);
-  const [selectedSectionType, setSelectedSectionType] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortBy, setSortBy] = useState<"relevance" | "title" | "date">("relevance");
+type GeneratedNote = {
+  title: string;
+  tags: string[];
+  language: "english" | "hindi" | "hinglish";
+  sections: NoteSection[];
+  source: "youtube";
+  youtubeUrl: string;
+};
 
-  // Mobile-optimized drag sensors - allow touch drag with delay to prevent conflicts
-  const sensors = useSensors(
-    useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8, // 8px movement required before drag starts
-      },
-    }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: 200, // 200ms delay on touch to prevent accidental drags
-        tolerance: 8, // 8px movement tolerance
-      },
-    })
-  );
+export default function YouTubePage() {
+  const router = useRouter();
+  const [url, setUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
+  const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
 
   async function generateNotes() {
-    // Soft warning for potentially long videos (estimate based on URL)
-    // This is a rough heuristic - we can't know video length without fetching
-    // Just set expectations, don't block
-    const isLongVideo = false; // Could be enhanced with video metadata later
+    if (!url.trim()) return;
 
     setLoading(true);
-    setSections([]);
-    // Random loading message for micro-playfulness
+    setGeneratedNote(null);
     setLoadingMessage(
       loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
     );
@@ -124,7 +57,6 @@ export default function Home() {
       const transcriptData = await transcriptRes.json();
 
       if (transcriptData.error) {
-        // Human-friendly error message
         const errorMsg =
           transcriptData.error.includes("captions") ||
           transcriptData.error.includes("Transcript not available")
@@ -135,9 +67,6 @@ export default function Home() {
         return;
       }
 
-      // Store transcript for regeneration
-      setTranscript(transcriptData.transcript || []);
-
       // 2. Fetch sections
       const sectionsRes = await fetch("http://localhost:3001/sections", {
         method: "POST",
@@ -147,69 +76,36 @@ export default function Home() {
       const sectionsData = await sectionsRes.json();
 
       if (sectionsData.error) {
-        // Human-friendly error message
         alert(
-          `⚠️ Couldn't generate notes right now. ${
-            sectionsData.error || "Please try again."
-          }`
+          `⚠️ Couldn't generate notes right now. ${sectionsData.error || "Please try again."}`
         );
         setLoading(false);
         return;
       }
 
-      // Initialize sections with variants cache
-      // source = always English (stable, editable)
-      // variants = cached language versions (no re-generation needed)
-      // current = what user sees & edits
-      const now = new Date();
-      const sectionsWithIds = (sectionsData.sections || []).map(
+      // Convert to unified note format
+      const sections: NoteSection[] = (sectionsData.sections || []).map(
         (section: { title: string; summary: string; bullets: string[] }) => ({
           id: crypto.randomUUID(),
-          source: section, // Always English from backend
-          variants: {
-            english: section, // Cache English version
-          },
-          current: section, // Initially same as source
+          title: section.title,
+          summary: section.summary,
+          bullets: section.bullets,
           language: "english" as const,
-          createdAt: now.toISOString(),
-          lastEditedAt: now.toISOString(),
         })
       );
 
-      // 3. Detect categories and section types for all sections
-      try {
-        const [categoryRes, typeRes] = await Promise.all([
-          fetch("http://localhost:3001/ai/detect-categories", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sections: sectionsWithIds.map((s) => s.current),
-            }),
-          }),
-          fetch("http://localhost:3001/ai/section-types", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              sections: sectionsWithIds.map((s) => s.current),
-            }),
-          }),
-        ]);
+      // Extract video title from URL or use first section title
+      const videoTitle = sections[0]?.title || "YouTube Notes";
 
-        const categoryData = categoryRes.ok ? await categoryRes.json() : null;
-        const typeData = typeRes.ok ? await typeRes.json() : null;
-
-        const sectionsWithMetadata = sectionsWithIds.map((section, i) => ({
-          ...section,
-          category: categoryData || null,
-          sectionType: typeData?.types?.[i] || null,
-        }));
-        setSections(sectionsWithMetadata);
-      } catch {
-        // If metadata detection fails, just use sections without metadata
-        setSections(sectionsWithIds);
-      }
+      setGeneratedNote({
+        title: videoTitle,
+        tags: ["youtube"],
+        language: "english",
+        sections,
+        source: "youtube",
+        youtubeUrl: url,
+      });
     } catch (error) {
-      // Keep existing sections, show clear error
       alert(
         "⚠️ Couldn't generate notes right now. Make sure the API server is running on port 3001."
       );
@@ -218,6 +114,68 @@ export default function Home() {
     }
   }
 
+  const handleSave = (note: any) => {
+    console.log("Saving YouTube note:", note);
+    // Would save via API
+    const id = crypto.randomUUID();
+    router.push(`/notes/${id}`);
+  };
+
+  const handleAIAction = async (action: string, text: string): Promise<string> => {
+    try {
+      const res = await fetch("http://localhost:3001/ai/inline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, text }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        return data.text || text;
+      }
+    } catch (e) {
+      console.error("AI action failed:", e);
+    }
+    return text;
+  };
+
+  // If note is generated, show the editor
+  if (generatedNote) {
+    return (
+      <Container size="lg" className="py-6 sm:py-8">
+        <Stack gap={6}>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+                Generated Notes
+              </h1>
+              <p className="mt-1 text-[var(--color-text-muted)] text-sm truncate max-w-md">
+                From: {generatedNote.youtubeUrl}
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setGeneratedNote(null);
+                setUrl("");
+              }}
+              className="px-4 py-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-xl transition-colors"
+            >
+              ← New Import
+            </button>
+          </div>
+
+          {/* Editor with generated sections */}
+          <UnifiedNoteEditor
+            initialNote={generatedNote}
+            onSave={handleSave}
+            onAIAction={handleAIAction}
+          />
+        </Stack>
+      </Container>
+    );
+  }
+
+  // Initial state - URL input
   return (
     <Container size="lg" className="py-6 sm:py-8">
       <Stack gap={8}>
@@ -231,7 +189,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Primary action - Generate Notes */}
+        {/* URL Input */}
         <Stack direction="row" gap={3} className="flex-col sm:flex-row">
           <input
             className="flex-1 border border-[var(--color-border)] rounded-xl px-4 py-3 text-base text-[var(--color-text)] bg-[var(--color-surface)] placeholder-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
@@ -257,300 +215,49 @@ export default function Home() {
           </ActionButton>
         </Stack>
 
-        {/* Video Metadata */}
-        {videoMetadata && sections.length > 0 && (
-          <VideoMetadata
-            thumbnailUrl={videoMetadata.thumbnailUrl}
-            duration={videoMetadata.duration}
-            generatedAt={generatedAt}
-            className="mb-4"
-          />
-        )}
-
-        {/* Search & Sort */}
-        {sections.length > 0 && (
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
-            <div className="flex-1 w-full sm:max-w-md">
-              <SearchBar
-                value={searchQuery}
-                onChange={setSearchQuery}
-                placeholder="Search sections by title, summary, or bullets..."
-              />
+        {/* Loading state */}
+        {loading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-primary)]/10 mb-4">
+              <motion.span
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="text-2xl"
+              >
+                ✨
+              </motion.span>
             </div>
-            <SortOptions value={sortBy} onChange={setSortBy} />
+            <p className="text-lg text-[var(--color-text)]">{loadingMessage}</p>
+            <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+              This may take a moment...
+            </p>
+          </motion.div>
+        )}
+
+        {/* Empty state */}
+        {!loading && !generatedNote && (
+          <div className="text-center py-16 px-4">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/10 mb-6">
+              <span className="text-4xl">📺</span>
+            </div>
+            <h2 className="text-xl font-semibold text-[var(--color-text)]">
+              Import from YouTube
+            </h2>
+            <p className="mt-2 text-[var(--color-text-muted)] max-w-md mx-auto">
+              Paste a YouTube URL above to automatically generate structured notes with sections, summaries, and key points.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2 justify-center text-xs text-[var(--color-text-subtle)]">
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Auto-sections</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Key points</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Multilingual</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Editable</span>
+            </div>
           </div>
         )}
-
-        {/* Category, Type & Tag Filter */}
-        {sections.length > 0 && (
-          <CategoryFilter
-            categories={Array.from(
-              new Set(
-                sections
-                  .map((s) => s.category?.type)
-                  .filter((c): c is string => !!c)
-              )
-            )}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-            sectionTypes={Array.from(
-              new Set(
-                sections
-                  .map((s) => s.sectionType?.type)
-                  .filter((t): t is string => !!t)
-              )
-            )}
-            selectedSectionType={selectedSectionType}
-            onSelectSectionType={setSelectedSectionType}
-            tags={Array.from(
-              new Set([
-                ...sections.flatMap((s) => s.category?.tags || []),
-                ...sections.flatMap((s) => s.personalTags || []),
-              ])
-            )}
-            selectedTag={selectedTag}
-            onSelectTag={setSelectedTag}
-          />
-        )}
-
-        {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
-        {sections.length > 0 && (
-          <div className="pt-4 border-t border-[var(--color-border)]">
-            <ButtonGroup className="flex-col sm:flex-row w-full sm:w-auto">
-              <ActionButton
-                onClick={async () => {
-                  if (sections.length === 0) {
-                    alert("No sections to save.");
-                    return;
-                  }
-                  setSaving(true);
-                  try {
-                    const res = await fetch("http://localhost:3001/save", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ url, sections }),
-                    });
-
-                    if (!res.ok) {
-                      const errorData = await res
-                        .json()
-                        .catch(() => ({ error: "Unknown error" }));
-                      alert(errorData.error || `Failed to save: ${res.status}`);
-                      return;
-                    }
-
-                    const data = await res.json();
-                    if (data.error) {
-                      alert(data.error);
-                    } else {
-                      alert("✅ Saved to library!");
-                    }
-                  } catch {
-                    alert(
-                      "⚠️ Couldn't save notes right now. Make sure the API server is running."
-                    );
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                disabled={saving || sections.length === 0}
-                loading={saving}
-                variant="secondary"
-                size="md"
-                icon={<span>💾</span>}
-                className="w-full sm:w-auto"
-              >
-                Save to Library
-              </ActionButton>
-              <ActionButton
-                onClick={async () => {
-                  if (sections.length === 0) {
-                    alert("No sections to export.");
-                    return;
-                  }
-                  try {
-                    const sectionsToExport = sections.map((s) => s.current);
-                    const res = await fetch(
-                      "http://localhost:3001/export/markdown",
-                      {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ sections: sectionsToExport }),
-                      }
-                    );
-
-                    if (!res.ok) {
-                      const errorData = await res
-                        .json()
-                        .catch(() => ({ error: "Unknown error" }));
-                      alert(
-                        `⚠️ ${errorData.error || `Failed to export: ${res.status}`}`
-                      );
-                      return;
-                    }
-
-                    const blob = await res.blob();
-                    const downloadUrl = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = downloadUrl;
-                    a.download = "notes.md";
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    URL.revokeObjectURL(downloadUrl);
-                  } catch {
-                    alert(
-                      "⚠️ Couldn't export notes right now. Make sure the API server is running."
-                    );
-                  }
-                }}
-                disabled={sections.length === 0}
-                variant="secondary"
-                size="md"
-                icon={<span>📥</span>}
-                className="w-full sm:w-auto"
-              >
-                Export Markdown
-              </ActionButton>
-            </ButtonGroup>
-          </div>
-        )}
-
-      {loading && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-          className="text-center py-12"
-        >
-          <p className="text-base text-[var(--color-text-muted)]">
-            {loadingMessage}
-          </p>
-        </motion.div>
-      )}
-
-      {!loading && sections.length === 0 && (
-        <div className="text-center py-20 px-4">
-          <p className="text-base text-[var(--color-text-muted)] mb-2">
-            👋 Paste a YouTube link to begin.
-          </p>
-          <p className="text-sm text-[var(--color-text-subtle)]">
-            Your notes will appear here, fully editable.
-          </p>
-        </div>
-      )}
-
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={(event: DragEndEvent) => {
-          const { active, over } = event;
-          if (over && active.id !== over.id) {
-            setSections((items) => {
-              const oldIndex = items.findIndex((i) => i.id === active.id);
-              const newIndex = items.findIndex((i) => i.id === over.id);
-              return arrayMove(items, oldIndex, newIndex);
-            });
-          }
-        }}
-      >
-        <SortableContext
-          items={sections.map((s) => s.id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <AnimatePresence>
-            <Stack gap={4} as="section" className="pb-4 sm:pb-0 sm:gap-5">
-              {(() => {
-                // Filter sections
-                let filtered = sections.filter((section) => {
-                  // Search filter
-                  if (searchQuery.trim()) {
-                    const query = searchQuery.toLowerCase();
-                    const matchesTitle = section.current.title.toLowerCase().includes(query);
-                    const matchesSummary = section.current.summary.toLowerCase().includes(query);
-                    const matchesBullets = section.current.bullets.some((bullet) =>
-                      bullet.toLowerCase().includes(query)
-                    );
-                    if (!matchesTitle && !matchesSummary && !matchesBullets) {
-                      return false;
-                    }
-                  }
-                  // Section type filter
-                  if (selectedSectionType !== null && section.sectionType?.type !== selectedSectionType) {
-                    return false;
-                  }
-                  // Category filter
-                  if (selectedCategory !== null && section.category?.type !== selectedCategory) {
-                    return false;
-                  }
-                  // Tag filter
-                  if (selectedTag !== null) {
-                    const hasTag =
-                      section.category?.tags.includes(selectedTag) ||
-                      section.personalTags?.includes(selectedTag);
-                    if (!hasTag) return false;
-                  }
-                  return true;
-                });
-
-                // Sort sections
-                filtered = [...filtered].sort((a, b) => {
-                  if (sortBy === "title") {
-                    return a.current.title.localeCompare(b.current.title);
-                  }
-                  if (sortBy === "date") {
-                    const dateA = new Date(a.lastEditedAt || a.createdAt || 0).getTime();
-                    const dateB = new Date(b.lastEditedAt || b.createdAt || 0).getTime();
-                    return dateB - dateA; // Newest first
-                  }
-                  // Relevance (default) - keep original order for now
-                  // Could be enhanced with search score later
-                  return 0;
-                });
-
-                return filtered;
-              })().map((section) => {
-                  const isFocused = focusedSectionId === section.id;
-                  const dimmed = focusedSectionId !== null && !isFocused;
-
-                return (
-                  <motion.div
-                    key={section.id}
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{
-                      opacity: dimmed ? 0.3 : 1,
-                      y: 0,
-                    }}
-                    exit={{ opacity: 0 }}
-                    transition={{ 
-                      duration: 0.2, 
-                      ease: [0.4, 0, 0.2, 1] // Custom easing for smoother feel
-                    }}
-                    className={
-                      dimmed ? "pointer-events-none" : "pointer-events-auto"
-                    }
-                  >
-                    <SortableSectionCard
-                      section={section}
-                      transcript={transcript}
-                      isFocused={isFocused}
-                      onChange={(updated) => {
-                        setSections((items) =>
-                          items.map((item) =>
-                            item.id === section.id ? updated : item
-                          )
-                        );
-                      }}
-                      onFocus={() => setFocusedSectionId(section.id)}
-                      onBlurFocus={() => setFocusedSectionId(null)}
-                    />
-                  </motion.div>
-                );
-              })}
-            </Stack>
-          </AnimatePresence>
-        </SortableContext>
-      </DndContext>
       </Stack>
     </Container>
   );
