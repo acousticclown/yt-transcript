@@ -1,26 +1,30 @@
 @import "tailwindcss";
 
 /* ============================================
-   v1.1.0 Design System - Phase 1: Foundation
+   v1.2.0 Design System - Warm Notes App
    ============================================ */
 
 :root {
-  /* ===== Color Palette (Light Mode) ===== */
-  --color-bg: #f9fafb;
+  /* ===== Color Palette (Light Mode - Warm) ===== */
+  --color-bg: #FAF9F7;
+  --color-bg-alt: #F5F3EF;
   --color-surface: #ffffff;
-  --color-surface-muted: #f3f4f6;
+  --color-surface-muted: #F5F3EF;
   --color-surface-elevated: #ffffff;
 
-  --color-primary: #6366f1;
-  --color-primary-dark: #4f46e5;
-  --color-primary-light: #818cf8;
+  --color-primary: #F5A623;
+  --color-primary-dark: #E09000;
+  --color-primary-light: #FFBA08;
 
-  --color-text: #111827;
-  --color-text-muted: #6b7280;
-  --color-text-subtle: #9ca3af;
+  --color-secondary: #4A7C59;
+  --color-secondary-light: #6B9080;
 
-  --color-border: rgba(99, 102, 241, 0.12);
-  --color-border-strong: rgba(99, 102, 241, 0.2);
+  --color-text: #1A1A1A;
+  --color-text-muted: #6B6B6B;
+  --color-text-subtle: #9A9A9A;
+
+  --color-border: #E8E6E1;
+  --color-border-strong: #D4D2CD;
 
   /* Semantic Colors */
   --color-success: #10b981;
@@ -93,21 +97,25 @@
 /* ===== Dark Mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #0f172a;
-    --color-surface: #1f2937;
-    --color-surface-muted: #111827;
-    --color-surface-elevated: #374151;
+    --color-bg: #1A1A1A;
+    --color-bg-alt: #121212;
+    --color-surface: #242424;
+    --color-surface-muted: #1E1E1E;
+    --color-surface-elevated: #2D2D2D;
 
-    --color-primary: #818cf8;
-    --color-primary-dark: #6366f1;
-    --color-primary-light: #a5b4fc;
+    --color-primary: #FFBA08;
+    --color-primary-dark: #F5A623;
+    --color-primary-light: #FFD54F;
 
-    --color-text: #f9fafb;
-    --color-text-muted: #d1d5db;
-    --color-text-subtle: #9ca3af;
+    --color-secondary: #6B9080;
+    --color-secondary-light: #8FB8A8;
 
-    --color-border: rgba(129, 140, 248, 0.18);
-    --color-border-strong: rgba(129, 140, 248, 0.3);
+    --color-text: #FAFAFA;
+    --color-text-muted: #A0A0A0;
+    --color-text-subtle: #6B6B6B;
+
+    --color-border: #333333;
+    --color-border-strong: #444444;
 
     /* Semantic Colors (Dark) */
     --color-success-bg: rgba(16, 185, 129, 0.15);
