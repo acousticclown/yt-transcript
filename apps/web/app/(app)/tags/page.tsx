@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -138,26 +139,34 @@ export default function TagsPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ delay: 0.03 * index }}
-                className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 hover:border-[var(--color-border-strong)] transition-colors group"
+                className="group"
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: tag.color }}
-                    />
-                    <span className="font-medium text-[var(--color-text)]">#{tag.name}</span>
+                <Link
+                  href={`/notes?tag=${encodeURIComponent(tag.name)}`}
+                  className="block bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 hover:border-[var(--color-primary)] hover:shadow-md transition-all"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-4 h-4 rounded-full"
+                        style={{ backgroundColor: tag.color }}
+                      />
+                      <span className="font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">#{tag.name}</span>
+                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDeleteTag(tag.id);
+                      }}
+                      className="p-1 text-[var(--color-text-subtle)] hover:text-red-500 transition-all"
+                    >
+                      🗑️
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDeleteTag(tag.id)}
-                    className="opacity-0 group-hover:opacity-100 p-1 text-[var(--color-text-subtle)] hover:text-red-500 transition-all"
-                  >
-                    🗑️
-                  </button>
-                </div>
-                <p className="mt-2 text-sm text-[var(--color-text-muted)]">
-                  {tag.count} {tag.count === 1 ? "note" : "notes"}
-                </p>
+                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">
+                    {tag.count} {tag.count === 1 ? "note" : "notes"}
+                  </p>
+                </Link>
               </motion.div>
             ))}
           </AnimatePresence>
