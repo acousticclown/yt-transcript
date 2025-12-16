@@ -165,18 +165,17 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
               {/* Pen SVG - fades out */}
               <motion.svg 
                 viewBox="0 0 24 24" 
-                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 absolute bottom-0 left-0"
+                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 absolute bottom-0 left-1/2 -translate-x-1/2"
                 fill="none"
-                initial={{ opacity: 0, scale: 0, rotate: -135 }}
+                initial={{ opacity: 0, scale: 0 }}
                 animate={{ 
                   opacity: [0, 1, 1, 0],
-                  scale: [0, 1.2, 1, 0.5],
-                  rotate: [-135, -45, 0, 0],
+                  scale: [0, 1, 1, 0],
                 }}
                 transition={{
-                  duration: 1.2,
+                  duration: 1.4,
                   delay: 1.0,
-                  times: [0, 0.3, 0.7, 1],
+                  times: [0, 0.25, 0.7, 1],
                   ease: "easeInOut",
                 }}
               >
