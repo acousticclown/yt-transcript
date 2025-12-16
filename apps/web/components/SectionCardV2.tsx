@@ -115,7 +115,7 @@ export function SectionCardV2({
     >
       <Stack gap={0} className="h-full">
         {/* Card Header */}
-        <div className="px-5 pt-5 pb-4 border-b border-white/10 dark:border-white/5 hover:bg-white/5 dark:hover:bg-gray-900/5 transition-colors">
+        <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-white/10 dark:border-white/5 hover:bg-white/5 dark:hover:bg-gray-900/5 transition-colors">
           <Stack gap={2}>
             {/* Category Badge */}
             {section.category && (
@@ -135,10 +135,10 @@ export function SectionCardV2({
                 )}
               </div>
             )}
-            <Stack direction="row" gap={3} align="center" justify="between" className="flex-wrap">
+            <Stack direction="row" gap={2} align="center" justify="between" className="flex-wrap">
               {/* Title */}
               <input
-                className="flex-1 min-w-0 text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                className="flex-1 min-w-0 text-lg sm:text-xl font-semibold outline-none bg-transparent text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 py-1"
                 placeholder="Section title..."
                 value={section.current.title}
                 onChange={(e) =>
@@ -150,7 +150,7 @@ export function SectionCardV2({
               />
             
             {/* Header Actions */}
-            <Stack direction="row" gap={2} align="center">
+            <Stack direction="row" gap={1.5} align="center" className="flex-shrink-0">
               <LanguageToggle
                 value={section.language}
                 onChange={async (target) => {
@@ -420,7 +420,7 @@ export function SectionCardV2({
         {/* Split Layout: Summary (Left) + Bullets (Right) */}
         <div className="flex flex-col md:flex-row flex-1 min-h-0">
           {/* Left: Summary Panel (Scrollable) */}
-          <div className="flex-1 md:w-1/2 border-r-0 md:border-r border-white/10 dark:border-white/5 p-5 overflow-y-auto max-h-[500px] md:max-h-none">
+          <div className="flex-1 md:w-1/2 border-r-0 md:border-r border-b md:border-b-0 border-white/10 dark:border-white/5 p-4 sm:p-5 overflow-y-auto max-h-[400px] sm:max-h-[500px] md:max-h-none">
             <div className="relative group h-full flex flex-col">
               {/* Summary Header */}
               <div className="flex items-center justify-between mb-2">
@@ -514,7 +514,7 @@ export function SectionCardV2({
           </div>
 
           {/* Right: Bullets Panel */}
-          <div className="flex-1 md:w-1/2 p-5 overflow-y-auto max-h-[500px] md:max-h-none">
+          <div className="flex-1 md:w-1/2 p-4 sm:p-5 overflow-y-auto max-h-[400px] sm:max-h-[500px] md:max-h-none">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wide">
                 Key Points
@@ -655,7 +655,7 @@ export function SectionCardV2({
         </div>
 
         {/* Card Footer */}
-        <div className="px-5 py-3 border-t border-white/10 dark:border-white/5 bg-white/20 dark:bg-gray-900/20 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-900/30 transition-colors">
+        <div className="px-4 sm:px-5 py-3 border-t border-white/10 dark:border-white/5 bg-white/20 dark:bg-gray-900/20 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-900/30 transition-colors">
           <Stack gap={2}>
             {/* Personal Tags */}
             <TagInput

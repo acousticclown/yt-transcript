@@ -38,15 +38,15 @@ export function InlineAIButton({
       whileHover={{ scale: 1.05 }}
       transition={{ duration: 0.1 }}
       className={cn(
-        "inline-flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md",
+        "inline-flex items-center gap-1.5 text-xs px-3 py-2 sm:px-2.5 sm:py-1.5 rounded-md",
         "bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm",
         "border border-gray-300 dark:border-gray-700",
-        "shadow-sm hover:shadow-md",
+        "shadow-sm hover:shadow-md active:scale-95",
         "hover:bg-white dark:hover:bg-gray-700",
         "disabled:opacity-50 disabled:cursor-not-allowed",
         "text-gray-700 dark:text-gray-300 font-medium",
         "transition-all duration-150",
-        "min-h-[32px] min-w-[32px]" // Touch-friendly size
+        "min-h-[44px] sm:min-h-[32px] min-w-[44px] sm:min-w-[32px]" // Mobile: 44px, Desktop: 32px
       )}
       title={label}
     >

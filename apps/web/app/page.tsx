@@ -68,6 +68,21 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
+  // Mobile-optimized drag sensors - allow touch drag with delay to prevent conflicts
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // 8px movement required before drag starts
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200, // 200ms delay on touch to prevent accidental drags
+        tolerance: 8, // 8px movement tolerance
+      },
+    })
+  );
+
   async function generateNotes() {
     // Soft warning for potentially long videos (estimate based on URL)
     // This is a rough heuristic - we can't know video length without fetching
@@ -180,11 +195,13 @@ export default function Home() {
     <Container size="lg" className="py-6 sm:py-8">
       <Stack gap={8}>
         {/* Header with title and theme toggle */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
             YT-Transcript
           </h1>
-          <ThemeToggle />
+          <div className="flex-shrink-0">
+            <ThemeToggle />
+          </div>
         </div>
 
         {/* 2. Primary action - Generate Notes */}
@@ -364,6 +381,7 @@ export default function Home() {
       )}
 
       <DndContext
+        sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={(event: DragEndEvent) => {
           const { active, over } = event;
