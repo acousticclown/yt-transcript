@@ -59,6 +59,7 @@ export function SectionCard({
   const [loadingSummary, setLoadingSummary] = useState<string | null>(null);
   const [loadingBullets, setLoadingBullets] = useState<Record<number, string>>({});
   const [regenerating, setRegenerating] = useState(false);
+  const [switchingLanguage, setSwitchingLanguage] = useState(false);
 
   async function runInlineAI(
     action: "simplify" | "expand" | "example",
