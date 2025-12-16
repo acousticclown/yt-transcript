@@ -55,6 +55,11 @@ export default function Home() {
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
 
   async function generateNotes() {
+    // Soft warning for potentially long videos (estimate based on URL)
+    // This is a rough heuristic - we can't know video length without fetching
+    // Just set expectations, don't block
+    const isLongVideo = false; // Could be enhanced with video metadata later
+    
     setLoading(true);
     setSections([]);
     // Random loading message for micro-playfulness
@@ -72,7 +77,12 @@ export default function Home() {
       const transcriptData = await transcriptRes.json();
 
       if (transcriptData.error) {
-        alert(`⚠️ ${transcriptData.error}`);
+        // Human-friendly error message
+        const errorMsg = transcriptData.error.includes("captions") || 
+                        transcriptData.error.includes("Transcript not available")
+          ? "This video doesn't have captions yet. Try another video with captions enabled."
+          : transcriptData.error;
+        alert(`⚠️ ${errorMsg}`);
         setLoading(false);
         return;
       }
@@ -89,7 +99,8 @@ export default function Home() {
       const sectionsData = await sectionsRes.json();
 
       if (sectionsData.error) {
-        alert(`⚠️ ${sectionsData.error}`);
+        // Human-friendly error message
+        alert(`⚠️ Couldn't generate notes right now. ${sectionsData.error || "Please try again."}`);
         setLoading(false);
         return;
       }
@@ -110,9 +121,10 @@ export default function Home() {
         })
       );
       setSections(sectionsWithIds);
-    } catch {
+    } catch (error) {
+      // Keep existing sections, show clear error
       alert(
-        "⚠️ Failed to generate notes. Make sure the API server is running on port 3001."
+        "⚠️ Couldn't generate notes right now. Make sure the API server is running on port 3001."
       );
     } finally {
       setLoading(false);
@@ -180,11 +192,12 @@ export default function Home() {
                 if (data.error) {
                   alert(data.error);
                 } else {
-                  alert("Notes saved!");
+                  alert("Saved to library!");
                 }
               } catch {
+                // Keep existing sections, show clear error
                 alert(
-                  "⚠️ Failed to save notes. Make sure the API server is running."
+                  "⚠️ Couldn't save notes right now. Make sure the API server is running."
                 );
               } finally {
                 setSaving(false);
@@ -220,7 +233,7 @@ export default function Home() {
                   const errorData = await res
                     .json()
                     .catch(() => ({ error: "Unknown error" }));
-                  alert(errorData.error || `Failed to export: ${res.status}`);
+                  alert(`⚠️ ${errorData.error || `Failed to export: ${res.status}`}`);
                   return;
                 }
 
@@ -234,8 +247,9 @@ export default function Home() {
                 document.body.removeChild(a);
                 URL.revokeObjectURL(downloadUrl);
               } catch {
+                // Keep existing sections, show clear error
                 alert(
-                  "⚠️ Failed to export notes. Make sure the API server is running."
+                  "⚠️ Couldn't export notes right now. Make sure the API server is running."
                 );
               }
             }}

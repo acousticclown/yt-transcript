@@ -78,14 +78,16 @@ export function SectionCard({
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
-        alert(`⚠️ ${errorData.error || "Failed to process AI action"}`);
+        // Keep existing content, show clear error
+        alert(`⚠️ Couldn't ${action} this right now. ${errorData.error || "Please try again."}`);
         return;
       }
 
       const data = await res.json();
       onUpdate(data.text);
     } catch {
-      alert("⚠️ Failed to process AI action. Make sure the API server is running.");
+      // Keep existing content, show clear error
+      alert("⚠️ Couldn't process this right now. Make sure the API server is running.");
     } finally {
       setLoading(false);
     }
@@ -150,9 +152,9 @@ export function SectionCard({
                 const errorData = await res
                   .json()
                   .catch(() => ({ error: "Unknown error" }));
-                // Keep previous language, show toast
+                // Keep previous language, show clear error
                 alert(
-                  `⚠️ Couldn't convert language. ${errorData.error || "Try again."}`
+                  `⚠️ Couldn't convert language right now. ${errorData.error || "Please try again."}`
                 );
                 return;
               }
@@ -165,9 +167,9 @@ export function SectionCard({
                 ...(tone && { hinglishTone: tone }), // Store tone only for Hinglish
               });
             } catch {
-              // Keep previous language, show toast
+              // Keep previous language, show clear error
               alert(
-                "⚠️ Couldn't convert language. Make sure the API server is running."
+                "⚠️ Couldn't convert language right now. Make sure the API server is running."
               );
             } finally {
               setSwitchingLanguage(false);
@@ -182,7 +184,7 @@ export function SectionCard({
               onClick={onFocus}
               className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 font-medium transition-colors"
             >
-              🎯 Focus
+              🎯 Focus section
             </button>
           )}
           {onBlurFocus && isFocused && (
@@ -213,7 +215,8 @@ export function SectionCard({
 
                 if (!res.ok) {
                   const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
-                  alert(`⚠️ ${errorData.error || "Failed to regenerate section"}`);
+                  // Keep existing section, show clear error
+                  alert(`⚠️ Couldn't regenerate this section right now. ${errorData.error || "Please try again."}`);
                   return;
                 }
 
@@ -226,7 +229,8 @@ export function SectionCard({
                   language: "english", // Reset to English after regeneration
                 });
               } catch {
-                alert("⚠️ Failed to regenerate section. Make sure the API server is running.");
+                // Keep existing section, show clear error
+                alert("⚠️ Couldn't regenerate this section right now. Make sure the API server is running.");
               } finally {
                 setRegenerating(false);
               }
@@ -234,7 +238,7 @@ export function SectionCard({
             disabled={regenerating || transcript.length === 0}
             className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
           >
-            {regenerating ? "..." : "🔁 Regenerate"}
+            {regenerating ? "..." : "🔁 Regenerate section"}
           </button>
         </div>
       </div>
@@ -280,8 +284,9 @@ export function SectionCard({
                   const errorData = await res
                     .json()
                     .catch(() => ({ error: "Unknown error" }));
+                  // Keep previous tone, show clear error
                   alert(
-                    `⚠️ Couldn't change tone. ${errorData.error || "Try again."}`
+                    `⚠️ Couldn't change tone right now. ${errorData.error || "Please try again."}`
                   );
                   return;
                 }
@@ -300,8 +305,9 @@ export function SectionCard({
                   hinglishTone: tone,
                 });
               } catch {
+                // Keep previous tone, show clear error
                 alert(
-                  "⚠️ Couldn't change tone. Make sure the API server is running."
+                  "⚠️ Couldn't change tone right now. Make sure the API server is running."
                 );
               } finally {
                 setSwitchingLanguage(false);
