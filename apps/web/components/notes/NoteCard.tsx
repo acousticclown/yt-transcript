@@ -34,7 +34,7 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
         href={`/notes/${note.id}`}
         className="block p-5 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:shadow-lg transition-all group relative"
       >
-        {/* Favorite button */}
+        {/* Favorite button - always visible */}
         {onToggleFavorite && (
           <button
             onClick={(e) => {
@@ -42,9 +42,9 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
               onToggleFavorite(note.id);
             }}
             className={cn(
-              "absolute top-4 right-4 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100",
+              "absolute top-4 right-4 p-1.5 rounded-lg transition-colors",
               note.isFavorite
-                ? "text-[var(--color-primary)] opacity-100"
+                ? "text-[var(--color-primary)]"
                 : "text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] hover:bg-[var(--color-bg)]"
             )}
           >
@@ -83,19 +83,17 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
           </span>
         </div>
 
-        {/* Quick actions on hover */}
+        {/* Delete button - always visible */}
         {onDelete && (
-          <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                onDelete(note.id);
-              }}
-              className="p-1.5 text-[var(--color-text-subtle)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs"
-            >
-              🗑️
-            </button>
-          </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete(note.id);
+            }}
+            className="absolute bottom-4 right-4 p-1.5 text-[var(--color-text-subtle)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors text-xs"
+          >
+            🗑️
+          </button>
         )}
       </Link>
     </motion.div>
