@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { Logo } from "../../../components/Logo";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -25,11 +26,8 @@ export default function SignupPage() {
         transition={{ duration: 0.4 }}
         className="w-full max-w-md"
       >
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <span className="text-3xl">📝</span>
-            <span className="font-bold text-xl text-[var(--color-text)]">NotesAI</span>
-          </Link>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Logo size="lg" href="/" />
           <h1 className="mt-6 text-2xl font-bold text-[var(--color-text)]">Create your account</h1>
           <p className="mt-2 text-[var(--color-text-muted)]">Start organizing your ideas today</p>
         </div>

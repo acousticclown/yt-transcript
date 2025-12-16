@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Logo } from "../../components/Logo";
 
 export default function LandingPage() {
   return (
@@ -9,10 +10,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg)]/80 backdrop-blur-md border-b border-[var(--color-border)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl">📝</span>
-            <span className="font-bold text-lg text-[var(--color-text)]">NotesAI</span>
-          </div>
+          <Logo size="md" href="/" />
           <nav className="flex items-center gap-4">
             <Link
               href="/login"

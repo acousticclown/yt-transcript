@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
+import { Logo } from "../Logo";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -52,10 +52,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
       >
         {/* Logo */}
         <div className="p-6 border-b border-[var(--color-border)]">
-          <Link href="/dashboard" className="flex items-center gap-3">
-            <span className="text-2xl">📝</span>
-            <span className="font-bold text-lg text-[var(--color-text)]">NotesAI</span>
-          </Link>
+          <Logo size="md" href="/dashboard" />
         </div>
 
         {/* Search */}
