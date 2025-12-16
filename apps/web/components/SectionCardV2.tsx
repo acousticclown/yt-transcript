@@ -336,72 +336,72 @@ export function SectionCardV2({
                 </button>
               </Stack>
             </Stack>
-          </Stack>
 
-          {/* Tone selector - Only when Hinglish is active */}
-          {section.language === "hinglish" && (
-            <div className="mt-3 flex items-center gap-2 text-xs">
-              <span className="text-gray-500 dark:text-gray-400">Tone:</span>
-              <select
-                value={section.hinglishTone || "neutral"}
-                onChange={async (e) => {
-                  const tone = e.target.value as "neutral" | "casual" | "interview";
-                  const cached = section.variants.hinglish?.[tone];
-                  if (cached) {
-                    onChange({
-                      ...section,
-                      current: cached,
-                      hinglishTone: tone,
-                    });
-                    return;
-                  }
-
-                  setSwitchingLanguage(true);
-                  try {
-                    const res = await fetch("http://localhost:3001/ai/transform-language", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        target: "hinglish",
-                        tone,
-                        section: section.source,
-                      }),
-                    });
-
-                    if (!res.ok) {
-                      const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
-                      alert(`⚠️ Couldn't change tone right now. ${errorData.error || "Please try again."}`);
+            {/* Tone selector - Only when Hinglish is active */}
+            {section.language === "hinglish" && (
+              <div className="mt-3 flex items-center gap-2 text-xs">
+                <span className="text-gray-500 dark:text-gray-400">Tone:</span>
+                <select
+                  value={section.hinglishTone || "neutral"}
+                  onChange={async (e) => {
+                    const tone = e.target.value as "neutral" | "casual" | "interview";
+                    const cached = section.variants.hinglish?.[tone];
+                    if (cached) {
+                      onChange({
+                        ...section,
+                        current: cached,
+                        hinglishTone: tone,
+                      });
                       return;
                     }
 
-                    const transformed = await res.json();
-                    onChange({
-                      ...section,
-                      variants: {
-                        ...section.variants,
-                        hinglish: {
-                          ...(section.variants.hinglish || {}),
-                          [tone]: transformed,
+                    setSwitchingLanguage(true);
+                    try {
+                      const res = await fetch("http://localhost:3001/ai/transform-language", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          target: "hinglish",
+                          tone,
+                          section: section.source,
+                        }),
+                      });
+
+                      if (!res.ok) {
+                        const errorData = await res.json().catch(() => ({ error: "Unknown error" }));
+                        alert(`⚠️ Couldn't change tone right now. ${errorData.error || "Please try again."}`);
+                        return;
+                      }
+
+                      const transformed = await res.json();
+                      onChange({
+                        ...section,
+                        variants: {
+                          ...section.variants,
+                          hinglish: {
+                            ...(section.variants.hinglish || {}),
+                            [tone]: transformed,
+                          },
                         },
-                      },
-                      current: transformed,
-                      hinglishTone: tone,
-                    });
-                  } catch {
-                    alert("⚠️ Couldn't change tone right now. Make sure the API server is running.");
-                  } finally {
-                    setSwitchingLanguage(false);
-                  }
-                }}
-                disabled={switchingLanguage}
-                className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white/50 dark:bg-gray-900/50 backdrop-blur text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <option value="neutral">Neutral</option>
-                <option value="casual">Casual</option>
-                <option value="interview">Interview</option>
-              </select>
-            </div>
-          )}
+                        current: transformed,
+                        hinglishTone: tone,
+                      });
+                    } catch {
+                      alert("⚠️ Couldn't change tone right now. Make sure the API server is running.");
+                    } finally {
+                      setSwitchingLanguage(false);
+                    }
+                  }}
+                  disabled={switchingLanguage}
+                  className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white/50 dark:bg-gray-900/50 backdrop-blur text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <option value="neutral">Neutral</option>
+                  <option value="casual">Casual</option>
+                  <option value="interview">Interview</option>
+                </select>
+              </div>
+            )}
+          </Stack>
         </div>
 
         {/* Split Layout: Summary (Left) + Bullets (Right) */}
