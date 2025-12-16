@@ -40,13 +40,30 @@ YT-Transcript is a personal-first, open-source web app that converts YouTube vid
 
 ## Status
 
-**Week 2 In Progress** 🚀
+**Week 3 - Day 19 Complete** ✅
 
 **Week 1 MVP Complete** ✅
 - Transcript extraction (primary method working)
 - AI-powered structuring
 - Editable UI
 - Save and export
+
+**Week 2 Complete** ✅
+- UX polish & animations
+- Inline AI actions & partial regeneration
+- Drag & drop reordering and focus mode
+- Visual hierarchy & themes
+
+**Week 3 Complete** ✅
+- Multilingual support (English, Hindi, Hinglish)
+- Hinglish tone presets (Neutral, Casual, Interview)
+- Language variant caching (no re-generation needed)
+- Reliable error handling & edge case management
+
+**Day 20 - Real Usage Test** 🧘
+- Testing with real videos
+- Reflection & direction decision
+- No coding - just observation
 
 **Week 2 Progress** ✅
 - Day 8: UX Polish & Micro-Playfulness ✅
