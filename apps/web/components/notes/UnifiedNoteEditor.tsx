@@ -1,28 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 
 // Types
-type LanguageVariant = {
-  title: string;
-  summary: string;
-  bullets: string[];
-};
-
 type NoteSection = {
   id: string;
   title: string;
   summary: string;
   bullets: string[];
   language: "english" | "hindi" | "hinglish";
-  variants?: {
-    english?: LanguageVariant;
-    hindi?: LanguageVariant;
-    hinglish?: LanguageVariant;
-  };
-  collapsed?: boolean;
 };
 
 type UnifiedNote = {
@@ -33,14 +21,12 @@ type UnifiedNote = {
   sections: NoteSection[];
   source?: "manual" | "youtube";
   youtubeUrl?: string;
-  createdAt?: string;
-  updatedAt?: string;
 };
 
 type UnifiedNoteEditorProps = {
   initialNote?: Partial<UnifiedNote>;
   onSave?: (note: UnifiedNote) => void;
-  onAIAction?: (action: string, text: string, sectionId?: string) => Promise<string>;
+  onAIAction?: (action: string, text: string) => Promise<string>;
 };
 
 export function UnifiedNoteEditor({
@@ -60,7 +46,13 @@ export function UnifiedNoteEditor({
   const [newTag, setNewTag] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
-  const [aiLoading, setAiLoading] = useState<Record<string, boolean>>({});
+  const [focusedBulletKey, setFocusedBulletKey] = useState<string | null>(null); // "sectionId-bulletIndex"
+  const [aiLoading, setAiLoading] = useState<string | null>(null);
+  const [textSelection, setTextSelection] = useState("");
+
+  // Refs for text inputs
+  const summaryRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
+  const bulletRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   // Stats
   const totalChars = note.sections.reduce(
@@ -68,6 +60,77 @@ export function UnifiedNoteEditor({
     0
   );
   const totalPoints = note.sections.reduce((acc, s) => acc + s.bullets.length, 0);
+
+  // Get current target for AI action
+  const getAITarget = (): { text: string; type: "selection" | "bullet" | "section" | "all"; sectionId?: string; bulletIndex?: number } => {
+    // 1. Selected text
+    if (textSelection) {
+      return { text: textSelection, type: "selection" };
+    }
+    // 2. Focused bullet
+    if (focusedBulletKey) {
+      const [sectionId, bulletIdx] = focusedBulletKey.split("-");
+      const section = note.sections.find(s => s.id === sectionId);
+      const bullet = section?.bullets[parseInt(bulletIdx)];
+      if (bullet) {
+        return { text: bullet, type: "bullet", sectionId, bulletIndex: parseInt(bulletIdx) };
+      }
+    }
+    // 3. Focused section
+    if (focusedSectionId) {
+      const section = note.sections.find(s => s.id === focusedSectionId);
+      if (section) {
+        const fullText = `${section.title}\n${section.summary}\n${section.bullets.join("\n")}`;
+        return { text: fullText, type: "section", sectionId: focusedSectionId };
+      }
+    }
+    // 4. All content
+    const allText = note.sections.map(s => `${s.title}\n${s.summary}\n${s.bullets.join("\n")}`).join("\n\n");
+    return { text: allText, type: "all" };
+  };
+
+  // AI Action handler
+  const handleAI = async (action: "simplify" | "expand" | "regenerate") => {
+    if (!onAIAction) return;
+    
+    const target = getAITarget();
+    if (!target.text.trim()) return;
+
+    setAiLoading(action);
+    try {
+      const result = await onAIAction(action, target.text);
+      
+      // Apply result based on target type
+      if (target.type === "selection") {
+        // For selection, we'd need to track which field - for now just log
+        console.log("AI result for selection:", result);
+        alert("✨ AI Result:\n\n" + result);
+      } else if (target.type === "bullet" && target.sectionId !== undefined && target.bulletIndex !== undefined) {
+        updateBullet(target.sectionId, target.bulletIndex, result);
+      } else if (target.type === "section" && target.sectionId) {
+        // For section, update summary
+        updateSection(target.sectionId, { summary: result });
+      } else {
+        // For all, show result (can't easily replace everything)
+        console.log("AI result for all:", result);
+        alert("✨ AI Result:\n\n" + result);
+      }
+    } finally {
+      setAiLoading(null);
+      setTextSelection("");
+    }
+  };
+
+  // Get label for current AI target
+  const getTargetLabel = () => {
+    if (textSelection) return `Selected text (${textSelection.length} chars)`;
+    if (focusedBulletKey) return "Focused key point";
+    if (focusedSectionId) {
+      const section = note.sections.find(s => s.id === focusedSectionId);
+      return `Section: ${section?.title || "Untitled"}`;
+    }
+    return "All content";
+  };
 
   // Tag handlers
   const handleAddTag = () => {
@@ -108,6 +171,7 @@ export function UnifiedNoteEditor({
       ...note,
       sections: note.sections.filter((s) => s.id !== sectionId),
     });
+    if (focusedSectionId === sectionId) setFocusedSectionId(null);
   };
 
   const addBullet = (sectionId: string) => {
@@ -141,39 +205,43 @@ export function UnifiedNoteEditor({
     });
   };
 
-  // Language change for entire note
-  const handleLanguageChange = async (lang: "english" | "hindi" | "hinglish") => {
+  // Language change
+  const handleLanguageChange = (lang: "english" | "hindi" | "hinglish") => {
     setNote({ ...note, language: lang });
-    // Could trigger AI translation here
   };
 
-  // AI Actions
-  const handleSectionAI = async (
-    sectionId: string,
-    action: "simplify" | "expand" | "regenerate"
-  ) => {
-    if (!onAIAction) return;
-    const section = note.sections.find((s) => s.id === sectionId);
-    if (!section) return;
-
-    setAiLoading({ ...aiLoading, [`${sectionId}-${action}`]: true });
-    try {
-      const result = await onAIAction(action, section.summary, sectionId);
-      updateSection(sectionId, { summary: result });
-    } finally {
-      setAiLoading({ ...aiLoading, [`${sectionId}-${action}`]: false });
-    }
+  // Text selection handler
+  const handleTextSelect = () => {
+    const selected = window.getSelection()?.toString() || "";
+    setTextSelection(selected);
   };
 
   const handleSave = () => {
     onSave?.({
       ...note,
       updatedAt: new Date().toISOString(),
-    });
+    } as UnifiedNote & { updatedAt: string });
   };
 
   return (
     <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+      {/* Top Toolbar - AI Actions */}
+      <div className="flex items-center gap-2 p-3 border-b border-[var(--color-border)] bg-[var(--color-bg)]/50 overflow-x-auto">
+        <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
+          AI on: <span className="font-medium text-[var(--color-text)]">{getTargetLabel()}</span>
+        </span>
+        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+        <AIButton onClick={() => handleAI("simplify")} loading={aiLoading === "simplify"}>
+          ✨ Simplify
+        </AIButton>
+        <AIButton onClick={() => handleAI("expand")} loading={aiLoading === "expand"}>
+          📝 Expand
+        </AIButton>
+        <AIButton onClick={() => handleAI("regenerate")} loading={aiLoading === "regenerate"}>
+          🔄 Regenerate
+        </AIButton>
+      </div>
+
       {/* Header */}
       <div className="p-6 border-b border-[var(--color-border)]">
         {/* Title */}
@@ -222,7 +290,7 @@ export function UnifiedNoteEditor({
           )}
         </div>
 
-        {/* Language Toggle - Note level */}
+        {/* Language Toggle */}
         <div className="mt-4 flex items-center gap-3">
           <span className="text-xs text-[var(--color-text-muted)]">Language:</span>
           <div className="inline-flex gap-1 bg-[var(--color-bg)] rounded-lg p-1">
@@ -245,7 +313,7 @@ export function UnifiedNoteEditor({
       </div>
 
       {/* Sections */}
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-6" onMouseUp={handleTextSelect}>
         <AnimatePresence>
           {note.sections.map((section, sectionIndex) => {
             const isFocused = focusedSectionId === section.id;
@@ -267,77 +335,43 @@ export function UnifiedNoteEditor({
               >
                 {/* Section Header */}
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <div className="flex-1">
-                    <input
-                      type="text"
-                      placeholder={`Section ${sectionIndex + 1}`}
-                      value={section.title}
-                      onChange={(e) =>
-                        updateSection(section.id, { title: e.target.value })
-                      }
-                      className="w-full text-lg font-semibold text-[var(--color-text)] bg-transparent border-none focus:outline-none placeholder:text-[var(--color-text-subtle)]"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    {/* Focus button */}
+                  <input
+                    type="text"
+                    placeholder={`Section ${sectionIndex + 1}`}
+                    value={section.title}
+                    onChange={(e) => updateSection(section.id, { title: e.target.value })}
+                    className="flex-1 text-lg font-semibold text-[var(--color-text)] bg-transparent border-none focus:outline-none placeholder:text-[var(--color-text-subtle)]"
+                  />
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() =>
-                        setFocusedSectionId(isFocused ? null : section.id)
-                      }
+                      onClick={() => setFocusedSectionId(isFocused ? null : section.id)}
                       className={cn(
                         "p-1.5 rounded-lg text-xs transition-colors",
                         isFocused
                           ? "bg-[var(--color-primary)] text-white"
                           : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg)]"
                       )}
-                      title={isFocused ? "Unfocus" : "Focus"}
+                      title={isFocused ? "Unfocus" : "Focus for AI"}
                     >
                       {isFocused ? "◉" : "○"}
                     </button>
-                    {/* Delete section */}
                     <button
                       onClick={() => deleteSection(section.id)}
                       className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-xs"
-                      title="Delete section"
                     >
                       🗑️
                     </button>
                   </div>
                 </div>
 
-                {/* Summary/Content */}
+                {/* Summary */}
                 <div className="mb-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs text-[var(--color-text-muted)]">
-                      Summary
-                    </label>
-                    <div className="flex gap-1">
-                      <AIActionButton
-                        onClick={() => handleSectionAI(section.id, "simplify")}
-                        loading={aiLoading[`${section.id}-simplify`]}
-                      >
-                        Simplify
-                      </AIActionButton>
-                      <AIActionButton
-                        onClick={() => handleSectionAI(section.id, "expand")}
-                        loading={aiLoading[`${section.id}-expand`]}
-                      >
-                        Expand
-                      </AIActionButton>
-                      <AIActionButton
-                        onClick={() => handleSectionAI(section.id, "regenerate")}
-                        loading={aiLoading[`${section.id}-regenerate`]}
-                      >
-                        Regen
-                      </AIActionButton>
-                    </div>
-                  </div>
+                  <label className="text-xs text-[var(--color-text-muted)] mb-2 block">Summary</label>
                   <textarea
+                    ref={(el) => { summaryRefs.current[section.id] = el; }}
                     placeholder="Write a summary..."
                     value={section.summary}
-                    onChange={(e) =>
-                      updateSection(section.id, { summary: e.target.value })
-                    }
+                    onChange={(e) => updateSection(section.id, { summary: e.target.value })}
                     className="w-full min-h-[80px] p-3 text-sm text-[var(--color-text)] bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] resize-none"
                   />
                   <div className="mt-1 text-xs text-[var(--color-text-subtle)] text-right">
@@ -345,34 +379,49 @@ export function UnifiedNoteEditor({
                   </div>
                 </div>
 
-                {/* Key Points / Bullets */}
+                {/* Key Points */}
                 <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs text-[var(--color-text-muted)]">
-                      Key Points ({section.bullets.filter(Boolean).length})
-                    </label>
-                  </div>
+                  <label className="text-xs text-[var(--color-text-muted)] mb-2 block">
+                    Key Points ({section.bullets.filter(Boolean).length})
+                  </label>
                   <ul className="space-y-2">
-                    {section.bullets.map((bullet, bulletIndex) => (
-                      <li key={bulletIndex} className="flex items-start gap-2">
-                        <span className="w-1.5 h-1.5 mt-2 rounded-full bg-[var(--color-primary)] flex-shrink-0" />
-                        <input
-                          type="text"
-                          placeholder="Add a key point..."
-                          value={bullet}
-                          onChange={(e) =>
-                            updateBullet(section.id, bulletIndex, e.target.value)
-                          }
-                          className="flex-1 text-sm text-[var(--color-text)] bg-transparent border-none focus:outline-none placeholder:text-[var(--color-text-subtle)]"
-                        />
-                        <button
-                          onClick={() => deleteBullet(section.id, bulletIndex)}
-                          className="p-1 text-[var(--color-text-subtle)] hover:text-red-500 transition-colors text-xs opacity-60 hover:opacity-100"
-                        >
-                          ×
-                        </button>
-                      </li>
-                    ))}
+                    {section.bullets.map((bullet, bulletIndex) => {
+                      const bulletKey = `${section.id}-${bulletIndex}`;
+                      const isBulletFocused = focusedBulletKey === bulletKey;
+                      
+                      return (
+                        <li key={bulletIndex} className="flex items-start gap-2">
+                          <button
+                            onClick={() => setFocusedBulletKey(isBulletFocused ? null : bulletKey)}
+                            className={cn(
+                              "w-2 h-2 mt-2 rounded-full flex-shrink-0 transition-colors",
+                              isBulletFocused
+                                ? "bg-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/30"
+                                : "bg-[var(--color-text-subtle)]"
+                            )}
+                            title={isBulletFocused ? "Unfocus" : "Focus for AI"}
+                          />
+                          <input
+                            ref={(el) => { bulletRefs.current[bulletKey] = el; }}
+                            type="text"
+                            placeholder="Add a key point..."
+                            value={bullet}
+                            onChange={(e) => updateBullet(section.id, bulletIndex, e.target.value)}
+                            onFocus={() => setFocusedBulletKey(bulletKey)}
+                            className={cn(
+                              "flex-1 text-sm text-[var(--color-text)] bg-transparent border-none focus:outline-none placeholder:text-[var(--color-text-subtle)]",
+                              isBulletFocused && "text-[var(--color-primary)]"
+                            )}
+                          />
+                          <button
+                            onClick={() => deleteBullet(section.id, bulletIndex)}
+                            className="p-1 text-[var(--color-text-subtle)] hover:text-red-500 transition-colors text-xs opacity-60 hover:opacity-100"
+                          >
+                            ×
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                   <button
                     onClick={() => addBullet(section.id)}
@@ -386,7 +435,7 @@ export function UnifiedNoteEditor({
           })}
         </AnimatePresence>
 
-        {/* Add Section Button */}
+        {/* Add Section */}
         <button
           onClick={addSection}
           className="w-full p-4 border-2 border-dashed border-[var(--color-border)] rounded-xl text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
@@ -394,13 +443,10 @@ export function UnifiedNoteEditor({
           + Add Section
         </button>
 
-        {/* No sections hint */}
         {note.sections.length === 0 && (
           <div className="text-center py-8 text-[var(--color-text-muted)]">
             <p>No sections yet. Add a section to organize your notes.</p>
-            <p className="text-sm mt-1">
-              Sections are optional - great for YouTube imports or long notes.
-            </p>
+            <p className="text-sm mt-1">Sections are optional - great for YouTube imports or long notes.</p>
           </div>
         )}
       </div>
@@ -411,9 +457,7 @@ export function UnifiedNoteEditor({
           <span>{note.sections.length} sections</span>
           <span>{totalPoints} points</span>
           <span>{totalChars} chars</span>
-          {note.source === "youtube" && note.youtubeUrl && (
-            <span className="text-red-500">📺 YouTube</span>
-          )}
+          {note.source === "youtube" && <span className="text-red-500">📺 YouTube</span>}
         </div>
         <button
           onClick={handleSave}
@@ -426,7 +470,7 @@ export function UnifiedNoteEditor({
   );
 }
 
-function AIActionButton({
+function AIButton({
   children,
   onClick,
   loading,
@@ -440,7 +484,7 @@ function AIActionButton({
       onClick={onClick}
       disabled={loading}
       className={cn(
-        "px-2 py-1 text-xs rounded-md transition-colors",
+        "px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap",
         "bg-[var(--color-primary)]/10 text-[var(--color-primary)] hover:bg-[var(--color-primary)]/20",
         loading && "opacity-50 cursor-not-allowed"
       )}
@@ -449,4 +493,3 @@ function AIActionButton({
     </button>
   );
 }
-
