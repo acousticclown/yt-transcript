@@ -422,6 +422,10 @@ export default function Home() {
             <Stack gap={4} as="section" className="pb-4 sm:pb-0 sm:gap-5">
               {sections
                 .filter((section) => {
+                  // Section type filter
+                  if (selectedSectionType !== null && section.sectionType?.type !== selectedSectionType) {
+                    return false;
+                  }
                   // Category filter
                   if (selectedCategory !== null && section.category?.type !== selectedCategory) {
                     return false;
