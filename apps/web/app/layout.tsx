@@ -24,6 +24,9 @@ const outfit = Outfit({
 export const metadata: Metadata = {
   title: "Notely - Smart Notes, Effortlessly",
   description: "Transform YouTube videos into smart notes. Organize your thoughts with AI assistance.",
+  icons: {
+    icon: "/icon.svg",
+  },
 };
 
 export default function RootLayout({

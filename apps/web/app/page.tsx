@@ -38,12 +38,7 @@ export default function LandingPage() {
             <AnimatedLogo />
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 2 }}
-            className="text-center max-w-3xl mx-auto"
-          >
+          <div className="text-center max-w-3xl mx-auto">
             <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
               Transform YouTube videos into smart notes. Organize your thoughts with AI assistance. 
               A beautiful, personal notes app built for the way you think.
@@ -62,7 +57,7 @@ export default function LandingPage() {
                 View Demo
               </Link>
             </div>
-          </motion.div>
+          </div>
 
           {/* Features */}
           <motion.div
