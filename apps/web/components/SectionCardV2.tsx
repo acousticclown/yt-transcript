@@ -607,7 +607,7 @@ export function SectionCardV2({
                       />
                     </div>
                   </div>
-                </li>
+                </motion.li>
               ))}
             </motion.ul>
           </div>
