@@ -13,7 +13,6 @@ import { Container, Stack } from "../../../components/layout";
 import { CategoryFilter } from "../../../components/CategoryFilter";
 import { ActionButton } from "../../../components/ActionButton";
 import { ButtonGroup } from "../../../components/ButtonGroup";
-import { ThemeToggle } from "../../../components/ThemeToggle";
 import { VideoMetadata } from "../../../components/VideoMetadata";
 import { SearchBar } from "../../../components/SearchBar";
 import { SortOptions } from "../../../components/SortOptions";
@@ -222,20 +221,20 @@ export default function Home() {
   return (
     <Container size="lg" className="py-6 sm:py-8">
       <Stack gap={8}>
-        {/* Header with title and theme toggle */}
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">
-            YT-Transcript
+        {/* Header */}
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+            YouTube to Notes
           </h1>
-          <div className="flex-shrink-0">
-            <ThemeToggle />
-          </div>
+          <p className="mt-1 text-[var(--color-text-muted)]">
+            Transform any YouTube video into structured, editable notes
+          </p>
         </div>
 
-        {/* 2. Primary action - Generate Notes */}
+        {/* Primary action - Generate Notes */}
         <Stack direction="row" gap={3} className="flex-col sm:flex-row">
           <input
-            className="flex-1 border border-gray-300 dark:border-gray-700 rounded-lg px-4 py-3 text-base text-gray-900 dark:text-gray-100 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+            className="flex-1 border border-[var(--color-border)] rounded-xl px-4 py-3 text-base text-[var(--color-text)] bg-[var(--color-surface)] placeholder-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
             placeholder="Paste YouTube URL"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -316,7 +315,7 @@ export default function Home() {
 
         {/* 5. Secondary actions - Save and Export (grouped, less prominent) */}
         {sections.length > 0 && (
-          <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
+          <div className="pt-4 border-t border-[var(--color-border)]">
             <ButtonGroup className="flex-col sm:flex-row w-full sm:w-auto">
               <ActionButton
                 onClick={async () => {
@@ -424,7 +423,7 @@ export default function Home() {
           transition={{ duration: 0.2 }}
           className="text-center py-12"
         >
-          <p className="text-base text-gray-600 dark:text-gray-400">
+          <p className="text-base text-[var(--color-text-muted)]">
             {loadingMessage}
           </p>
         </motion.div>
@@ -432,10 +431,10 @@ export default function Home() {
 
       {!loading && sections.length === 0 && (
         <div className="text-center py-20 px-4">
-          <p className="text-base text-gray-500 dark:text-gray-400 mb-2">
+          <p className="text-base text-[var(--color-text-muted)] mb-2">
             👋 Paste a YouTube link to begin.
           </p>
-          <p className="text-sm text-gray-400 dark:text-gray-500">
+          <p className="text-sm text-[var(--color-text-subtle)]">
             Your notes will appear here, fully editable.
           </p>
         </div>
