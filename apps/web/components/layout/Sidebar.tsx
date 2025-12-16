@@ -39,15 +39,14 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ x: isOpen ? 0 : -280 }}
-        transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      {/* Sidebar - Desktop: always visible, Mobile: slide in/out */}
+      <aside
         className={cn(
           "fixed lg:static inset-y-0 left-0 z-50 w-[280px] bg-[var(--color-surface)] border-r border-[var(--color-border)]",
           "flex flex-col h-screen",
-          "lg:translate-x-0"
+          "transition-transform duration-300 ease-out",
+          "lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
         {/* Logo */}
@@ -135,7 +134,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             </div>
           </div>
         </div>
-      </motion.aside>
+      </aside>
     </>
   );
 }
