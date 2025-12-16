@@ -5,16 +5,15 @@ import { MobileNav } from "../../components/layout/MobileNav";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-[var(--color-bg)]">
-      <div className="flex">
-        {/* Sidebar - Desktop only */}
-        <div className="hidden lg:block">
+    <div className="h-screen bg-[var(--color-bg)] overflow-hidden">
+      <div className="flex h-full">
+        {/* Sidebar - Desktop only, fixed height */}
+        <div className="hidden lg:block h-full">
           <Sidebar isOpen={true} onClose={() => {}} />
         </div>
 
-        {/* Main content */}
-        <main className="flex-1 min-h-screen">
-          {/* Page content */}
+        {/* Main content - independent scroll */}
+        <main className="flex-1 h-full overflow-y-auto">
           <div className="pb-20 lg:pb-0">
             {children}
           </div>
