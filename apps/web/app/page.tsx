@@ -13,6 +13,7 @@ import { Container, Stack } from "../components/layout";
 import { CategoryFilter } from "../components/CategoryFilter";
 import { ActionButton } from "../components/ActionButton";
 import { ButtonGroup } from "../components/ButtonGroup";
+import { ThemeToggle } from "../components/ThemeToggle";
 
 type LanguageVariant = {
   title: string;
@@ -178,10 +179,13 @@ export default function Home() {
   return (
     <Container size="lg" className="py-6 sm:py-8">
       <Stack gap={8}>
-        {/* 1. Page title - Most important */}
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-          YT-Transcript
-        </h1>
+        {/* Header with title and theme toggle */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+            YT-Transcript
+          </h1>
+          <ThemeToggle />
+        </div>
 
         {/* 2. Primary action - Generate Notes */}
         <Stack direction="row" gap={3} className="flex-col sm:flex-row">
