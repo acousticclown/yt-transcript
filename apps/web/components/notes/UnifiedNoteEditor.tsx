@@ -1,8 +1,53 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
+
+// Custom hook for undo/redo
+function useHistory<T>(initialState: T, maxHistory = 50) {
+  const [history, setHistory] = useState<T[]>([initialState]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const current = history[currentIndex];
+
+  const set = useCallback((newState: T | ((prev: T) => T)) => {
+    setHistory((prev) => {
+      const actualNewState = typeof newState === "function" 
+        ? (newState as (prev: T) => T)(prev[currentIndex])
+        : newState;
+      
+      // Remove any future states if we're not at the end
+      const newHistory = prev.slice(0, currentIndex + 1);
+      newHistory.push(actualNewState);
+      
+      // Limit history size
+      if (newHistory.length > maxHistory) {
+        newHistory.shift();
+        return newHistory;
+      }
+      return newHistory;
+    });
+    setCurrentIndex((prev) => Math.min(prev + 1, maxHistory - 1));
+  }, [currentIndex, maxHistory]);
+
+  const undo = useCallback(() => {
+    if (currentIndex > 0) {
+      setCurrentIndex((prev) => prev - 1);
+    }
+  }, [currentIndex]);
+
+  const redo = useCallback(() => {
+    if (currentIndex < history.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    }
+  }, [currentIndex, history.length]);
+
+  const canUndo = currentIndex > 0;
+  const canRedo = currentIndex < history.length - 1;
+
+  return { current, set, undo, redo, canUndo, canRedo };
+}
 
 // Types
 type NoteSection = {
@@ -35,7 +80,7 @@ export function UnifiedNoteEditor({
   onSave,
   onAIAction,
 }: UnifiedNoteEditorProps) {
-  const [note, setNote] = useState<UnifiedNote>({
+  const initialNoteState: UnifiedNote = {
     title: initialNote?.title || "",
     content: initialNote?.content || "",
     tags: initialNote?.tags || [],
@@ -43,7 +88,9 @@ export function UnifiedNoteEditor({
     sections: initialNote?.sections || [],
     source: initialNote?.source || "manual",
     youtubeUrl: initialNote?.youtubeUrl,
-  });
+  };
+
+  const { current: note, set: setNote, undo, redo, canUndo, canRedo } = useHistory(initialNoteState);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -348,8 +395,42 @@ export function UnifiedNoteEditor({
 
   return (
     <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
-      {/* Top Toolbar - AI Actions */}
+      {/* Top Toolbar - Undo/Redo + AI Actions */}
       <div className="flex items-center gap-2 p-3 border-b border-[var(--color-border)] bg-[var(--color-bg)]/50 overflow-x-auto">
+        {/* Undo/Redo */}
+        <button
+          onClick={undo}
+          disabled={!canUndo}
+          title="Undo (Ctrl+Z)"
+          className={cn(
+            "p-1.5 rounded-lg transition-colors",
+            canUndo
+              ? "text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)]"
+              : "text-[var(--color-text-subtle)] opacity-50 cursor-not-allowed"
+          )}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+          </svg>
+        </button>
+        <button
+          onClick={redo}
+          disabled={!canRedo}
+          title="Redo (Ctrl+Shift+Z)"
+          className={cn(
+            "p-1.5 rounded-lg transition-colors",
+            canRedo
+              ? "text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)]"
+              : "text-[var(--color-text-subtle)] opacity-50 cursor-not-allowed"
+          )}
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6" />
+          </svg>
+        </button>
+        
+        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+        
         <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
           AI on: <span className="font-medium text-[var(--color-text)]">{getTargetLabel()}</span>
         </span>
@@ -523,6 +604,9 @@ export function UnifiedNoteEditor({
           onKeyDown={(e) => {
             // Keyboard shortcuts
             if (e.ctrlKey || e.metaKey) {
+              if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+              if (e.key === 'z' && e.shiftKey) { e.preventDefault(); redo(); }
+              if (e.key === 'y') { e.preventDefault(); redo(); }
               if (e.key === 'b') { e.preventDefault(); insertFormat("**", "**"); }
               if (e.key === 'i') { e.preventDefault(); insertFormat("*", "*"); }
               if (e.key === 'k') { e.preventDefault(); insertFormat("[", "](url)"); }
