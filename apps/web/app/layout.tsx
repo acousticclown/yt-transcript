@@ -22,7 +22,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "NotesAI - AI-Powered Notes",
+  title: "Notely - Smart Notes, Effortlessly",
   description: "Transform YouTube videos into smart notes. Organize your thoughts with AI assistance.",
 };
 

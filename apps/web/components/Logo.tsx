@@ -10,77 +10,62 @@ type LogoProps = {
   className?: string;
 };
 
+// App name: "Notely" - Simple, memorable, note-focused
 export function Logo({ size = "md", showIcon = true, href = "/dashboard", className }: LogoProps) {
   const sizes = {
-    sm: { text: "text-lg", icon: "w-6 h-6" },
-    md: { text: "text-xl", icon: "w-8 h-8" },
-    lg: { text: "text-3xl", icon: "w-10 h-10" },
+    sm: { text: "text-lg", icon: "w-6 h-6", gap: "gap-1.5" },
+    md: { text: "text-xl", icon: "w-7 h-7", gap: "gap-2" },
+    lg: { text: "text-2xl", icon: "w-9 h-9", gap: "gap-2.5" },
   };
 
   const content = (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center", sizes[size].gap, className)}>
       {showIcon && (
         <div className={cn("relative", sizes[size].icon)}>
-          {/* Abstract logo mark - layered shapes */}
-          <svg viewBox="0 0 40 40" fill="none" className="w-full h-full">
-            {/* Background circle with gradient */}
-            <defs>
-              <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="var(--color-primary)" />
-                <stop offset="50%" stopColor="#a855f7" />
-                <stop offset="100%" stopColor="#6366f1" />
-              </linearGradient>
-              <linearGradient id="logoShine" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="white" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="white" stopOpacity="0" />
-              </linearGradient>
-            </defs>
+          {/* Sophisticated monochrome logo mark */}
+          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full">
+            {/* Outer rounded square */}
+            <rect 
+              x="2" y="2" width="28" height="28" rx="8" 
+              className="fill-[var(--color-text)]"
+            />
             
-            {/* Main shape - rounded square */}
-            <rect x="4" y="4" width="32" height="32" rx="10" fill="url(#logoGradient)" />
-            
-            {/* Shine overlay */}
-            <rect x="4" y="4" width="32" height="16" rx="10" fill="url(#logoShine)" />
-            
-            {/* Abstract "N" mark */}
+            {/* Inner pen/note shape - negative space */}
             <path
-              d="M12 28V14L20 22V14M20 28V22L28 14V28"
-              stroke="white"
+              d="M10 22V12L16 18L22 12V22"
+              className="stroke-[var(--color-bg)]"
               strokeWidth="2.5"
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
             />
             
-            {/* Sparkle dot */}
-            <circle cx="30" cy="10" r="2" fill="white" opacity="0.8" />
+            {/* Dot accent */}
+            <circle cx="16" cy="9" r="1.5" className="fill-[var(--color-bg)]" />
           </svg>
         </div>
       )}
       
-      {/* Text with gradient clip */}
+      {/* Sophisticated single-color text */}
       <span
         className={cn(
           sizes[size].text,
-          "font-black tracking-tight",
-          "bg-gradient-to-r from-[var(--color-primary)] via-purple-500 to-indigo-500",
-          "bg-clip-text text-transparent",
+          "font-bold tracking-tight text-[var(--color-text)]",
           "select-none"
         )}
         style={{
           fontFamily: "var(--font-outfit), 'Inter', system-ui, sans-serif",
-          letterSpacing: "-0.03em",
+          letterSpacing: "-0.02em",
         }}
       >
-        Notes
-        <span className="opacity-80">AI</span>
+        Notely
       </span>
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex hover:opacity-90 transition-opacity">
+      <Link href={href} className="inline-flex hover:opacity-80 transition-opacity">
         {content}
       </Link>
     );
