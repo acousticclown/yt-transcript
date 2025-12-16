@@ -17,6 +17,7 @@ import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
 import { regenerateSectionPrompt } from "../../packages/prompts/regenerateSection.ts";
 import { languageTransformPrompt } from "../../packages/prompts/languageTransform.ts";
 import { categoryDetectionPrompt } from "../../packages/prompts/categoryDetection.ts";
+import { sectionTypeDetectionPrompt } from "../../packages/prompts/sectionTypeDetection.ts";
 
 // Storage & Export
 import { saveNote } from "./storage/saveNote";

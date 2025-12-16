@@ -46,6 +46,11 @@ type Section = {
     confidence: number;
   };
   personalTags?: string[];
+  // Section type (Tutorial, Interview, Lecture, etc.)
+  sectionType?: {
+    type: string;
+    confidence: number;
+  };
 };
 
 const loadingMessages = [
@@ -230,7 +235,7 @@ export default function Home() {
           </ActionButton>
         </Stack>
 
-        {/* Category & Tag Filter */}
+        {/* Category, Type & Tag Filter */}
         {sections.length > 0 && (
           <CategoryFilter
             categories={Array.from(
@@ -242,6 +247,15 @@ export default function Home() {
             )}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
+            sectionTypes={Array.from(
+              new Set(
+                sections
+                  .map((s) => s.sectionType?.type)
+                  .filter((t): t is string => !!t)
+              )
+            )}
+            selectedSectionType={selectedSectionType}
+            onSelectSectionType={setSelectedSectionType}
             tags={Array.from(
               new Set([
                 ...sections.flatMap((s) => s.category?.tags || []),

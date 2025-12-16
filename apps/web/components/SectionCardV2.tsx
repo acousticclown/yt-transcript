@@ -7,6 +7,7 @@ import { Stack } from "./layout";
 import { InlineAIButton } from "./InlineAIButton";
 import { LanguageToggle } from "./LanguageToggle";
 import { CategoryBadge } from "./CategoryBadge";
+import { SectionTypeBadge } from "./SectionTypeBadge";
 import { TagInput } from "./TagInput";
 import { cn } from "../lib/utils";
 
@@ -117,21 +118,28 @@ export function SectionCardV2({
         {/* Card Header */}
         <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 sm:pb-4 border-b border-white/10 dark:border-white/5 hover:bg-white/5 dark:hover:bg-gray-900/5 transition-colors">
           <Stack gap={2}>
-            {/* Category Badge */}
-            {section.category && (
-              <div className="flex items-center gap-2">
-                <CategoryBadge type={section.category.type} size="sm" />
-                {section.category.tags.length > 0 && (
-                  <div className="flex flex-wrap gap-1">
-                    {section.category.tags.slice(0, 3).map((tag, i) => (
-                      <span
-                        key={i}
-                        className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
-                      >
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
+            {/* Category and Type Badges */}
+            {(section.category || section.sectionType) && (
+              <div className="flex items-center gap-2 flex-wrap">
+                {section.sectionType && (
+                  <SectionTypeBadge type={section.sectionType.type} size="sm" />
+                )}
+                {section.category && (
+                  <>
+                    <CategoryBadge type={section.category.type} size="sm" />
+                    {section.category.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {section.category.tags.slice(0, 3).map((tag, i) => (
+                          <span
+                            key={i}
+                            className="text-xs px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                          >
+                            #{tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}

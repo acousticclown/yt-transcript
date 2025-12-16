@@ -205,7 +205,7 @@
   * {
     will-change: auto; /* Only animate what's necessary */
   }
-  
+
   /* Optimize rendering */
   .glass {
     transform: translateZ(0); /* Force GPU acceleration */
