@@ -519,91 +519,91 @@ export function SectionCardV2({
                       />
                       <div className="absolute top-0 right-0 hidden group-hover/bullet:flex gap-1 z-10">
                         <InlineAIButton
-                        label="✨ Simplify"
-                        loading={loadingBullets[i] === "simplify"}
-                        onClick={() =>
-                          runInlineAI(
-                            "simplify",
-                            bullet,
-                            (newText) => {
-                              const bullets = [...section.current.bullets];
-                              bullets[i] = newText;
-                              onChange({
-                                ...section,
-                                current: { ...section.current, bullets },
-                              });
-                            },
-                            (loading) => {
-                              if (loading) {
-                                setLoadingBullets((prev) => ({ ...prev, [i]: "simplify" }));
-                              } else {
-                                setLoadingBullets((prev) => {
-                                  const next = { ...prev };
-                                  delete next[i];
-                                  return next;
+                          label="✨ Simplify"
+                          loading={loadingBullets[i] === "simplify"}
+                          onClick={() =>
+                            runInlineAI(
+                              "simplify",
+                              bullet,
+                              (newText) => {
+                                const bullets = [...section.current.bullets];
+                                bullets[i] = newText;
+                                onChange({
+                                  ...section,
+                                  current: { ...section.current, bullets },
                                 });
+                              },
+                              (loading) => {
+                                if (loading) {
+                                  setLoadingBullets((prev) => ({ ...prev, [i]: "simplify" }));
+                                } else {
+                                  setLoadingBullets((prev) => {
+                                    const next = { ...prev };
+                                    delete next[i];
+                                    return next;
+                                  });
+                                }
                               }
-                            }
-                          )
-                        }
+                            )
+                          }
                         />
                         <InlineAIButton
                           label="➕ Expand"
-                        loading={loadingBullets[i] === "expand"}
-                        onClick={() =>
-                          runInlineAI(
-                            "expand",
-                            bullet,
-                            (newText) => {
-                              const bullets = [...section.current.bullets];
-                              bullets[i] = newText;
-                              onChange({
-                                ...section,
-                                current: { ...section.current, bullets },
-                              });
-                            },
-                            (loading) => {
-                              if (loading) {
-                                setLoadingBullets((prev) => ({ ...prev, [i]: "expand" }));
-                              } else {
-                                setLoadingBullets((prev) => {
-                                  const next = { ...prev };
-                                  delete next[i];
-                                  return next;
+                          loading={loadingBullets[i] === "expand"}
+                          onClick={() =>
+                            runInlineAI(
+                              "expand",
+                              bullet,
+                              (newText) => {
+                                const bullets = [...section.current.bullets];
+                                bullets[i] = newText;
+                                onChange({
+                                  ...section,
+                                  current: { ...section.current, bullets },
                                 });
+                              },
+                              (loading) => {
+                                if (loading) {
+                                  setLoadingBullets((prev) => ({ ...prev, [i]: "expand" }));
+                                } else {
+                                  setLoadingBullets((prev) => {
+                                    const next = { ...prev };
+                                    delete next[i];
+                                    return next;
+                                  });
+                                }
                               }
-                            }
-                          )
-                        }
+                            )
+                          }
                         />
                         <InlineAIButton
                           label="💡 Example"
-                        loading={loadingBullets[i] === "example"}
-                        onClick={() =>
-                          runInlineAI(
-                            "example",
-                            bullet,
-                            (newText) => {
-                              const bullets = [...section.current.bullets];
-                              bullets[i] = newText;
-                              onChange({
-                                ...section,
-                                current: { ...section.current, bullets },
-                              });
-                            },
-                            (loading) => {
-                              if (loading) {
-                                setLoadingBullets((prev) => ({ ...prev, [i]: "example" }));
-                              } else {
-                                setLoadingBullets((prev) => {
-                                  const next = { ...prev };
-                                  delete next[i];
-                                  return next;
+                          loading={loadingBullets[i] === "example"}
+                          onClick={() =>
+                            runInlineAI(
+                              "example",
+                              bullet,
+                              (newText) => {
+                                const bullets = [...section.current.bullets];
+                                bullets[i] = newText;
+                                onChange({
+                                  ...section,
+                                  current: { ...section.current, bullets },
                                 });
+                              },
+                              (loading) => {
+                                if (loading) {
+                                  setLoadingBullets((prev) => ({ ...prev, [i]: "example" }));
+                                } else {
+                                  setLoadingBullets((prev) => {
+                                    const next = { ...prev };
+                                    delete next[i];
+                                    return next;
+                                  });
+                                }
                               }
-                            }
-                          )
-                        }
+                            )
+                          }
                         />
                       </div>
                   </div>
