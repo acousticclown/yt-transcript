@@ -399,7 +399,7 @@ export default function Home() {
           strategy={verticalListSortingStrategy}
         >
           <AnimatePresence>
-            <Stack gap={4} sm:gap={5} as="section" className="pb-4 sm:pb-0">
+            <Stack gap={4} as="section" className="pb-4 sm:pb-0 sm:gap-5">
               {sections
                 .filter((section) => {
                   // Category filter
