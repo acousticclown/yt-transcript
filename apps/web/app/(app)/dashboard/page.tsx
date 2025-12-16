@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { NoteList, Note } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
+import { AISpotlight } from "../../../components/AISpotlight";
 
 // Mock data for demo
 const initialNotes: Note[] = [
@@ -14,7 +16,9 @@ const initialNotes: Note[] = [
 ];
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [aiSpotlightOpen, setAiSpotlightOpen] = useState(false);
 
   const handleDelete = (id: string) => {
     setNotes(notes.filter((n) => n.id !== id));
@@ -112,8 +116,8 @@ export default function DashboardPage() {
           description="Import video"
           color="red"
         />
-        <ActionCard
-          href="/notes/new?ai=true"
+        <ActionCardButton
+          onClick={() => setAiSpotlightOpen(true)}
           icon={<SparkleIcon />}
           title="AI Generate"
           description="Create with AI"
@@ -127,6 +131,16 @@ export default function DashboardPage() {
           color="green"
         />
       </motion.div>
+
+      {/* AI Spotlight */}
+      <AISpotlight
+        isOpen={aiSpotlightOpen}
+        onClose={() => setAiSpotlightOpen(false)}
+        onSubmit={(prompt) => {
+          // Navigate to new note with AI prompt
+          router.push(`/notes/new?prompt=${encodeURIComponent(prompt)}`);
+        }}
+      />
 
       {/* Recent Notes */}
       <motion.div
@@ -212,6 +226,62 @@ function ActionCard({
         </div>
       </motion.div>
     </Link>
+  );
+}
+
+// Button variant for actions that don't navigate
+function ActionCardButton({
+  onClick,
+  icon,
+  title,
+  description,
+  color,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: "primary" | "red" | "purple" | "green";
+}) {
+  const colorClasses = {
+    primary: "from-[var(--color-primary)]/20 to-[var(--color-primary)]/5 hover:from-[var(--color-primary)]/30 border-[var(--color-primary)]/20",
+    red: "from-red-500/20 to-red-500/5 hover:from-red-500/30 border-red-500/20",
+    purple: "from-purple-500/20 to-purple-500/5 hover:from-purple-500/30 border-purple-500/20",
+    green: "from-[var(--color-secondary)]/20 to-[var(--color-secondary)]/5 hover:from-[var(--color-secondary)]/30 border-[var(--color-secondary)]/20",
+  };
+
+  const iconColors = {
+    primary: "text-[var(--color-primary)]",
+    red: "text-red-500",
+    purple: "text-purple-500",
+    green: "text-[var(--color-secondary)]",
+  };
+
+  return (
+    <motion.button
+      onClick={onClick}
+      whileHover={{ y: -4, scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+      className={`relative p-5 rounded-2xl bg-gradient-to-br ${colorClasses[color]} border backdrop-blur-sm transition-all cursor-pointer group overflow-hidden text-left w-full`}
+    >
+      {/* Background glow */}
+      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full blur-3xl ${
+          color === "primary" ? "bg-[var(--color-primary)]" :
+          color === "red" ? "bg-red-500" :
+          color === "purple" ? "bg-purple-500" :
+          "bg-[var(--color-secondary)]"
+        } opacity-20`} />
+      </div>
+
+      <div className="relative z-10">
+        <div className={`w-10 h-10 rounded-xl bg-[var(--color-surface)] flex items-center justify-center mb-3 ${iconColors[color]}`}>
+          {icon}
+        </div>
+        <h3 className="font-semibold text-[var(--color-text)]">{title}</h3>
+        <p className="text-sm text-[var(--color-text-muted)] mt-0.5">{description}</p>
+      </div>
+    </motion.button>
   );
 }
 
