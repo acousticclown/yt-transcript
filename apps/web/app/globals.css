@@ -6,25 +6,25 @@
 
 :root {
   /* ===== Color Palette (Light Mode - Warm) ===== */
-  --color-bg: #FAF9F7;
-  --color-bg-alt: #F5F3EF;
+  --color-bg: #faf9f7;
+  --color-bg-alt: #f5f3ef;
   --color-surface: #ffffff;
-  --color-surface-muted: #F5F3EF;
+  --color-surface-muted: #f5f3ef;
   --color-surface-elevated: #ffffff;
 
-  --color-primary: #F5A623;
-  --color-primary-dark: #E09000;
-  --color-primary-light: #FFBA08;
+  --color-primary: #f5a623;
+  --color-primary-dark: #e09000;
+  --color-primary-light: #ffba08;
 
-  --color-secondary: #4A7C59;
-  --color-secondary-light: #6B9080;
+  --color-secondary: #4a7c59;
+  --color-secondary-light: #6b9080;
 
-  --color-text: #1A1A1A;
-  --color-text-muted: #6B6B6B;
-  --color-text-subtle: #9A9A9A;
+  --color-text: #1a1a1a;
+  --color-text-muted: #6b6b6b;
+  --color-text-subtle: #9a9a9a;
 
-  --color-border: #E8E6E1;
-  --color-border-strong: #D4D2CD;
+  --color-border: #e8e6e1;
+  --color-border-strong: #d4d2cd;
 
   /* Semantic Colors */
   --color-success: #10b981;
@@ -97,22 +97,22 @@
 /* ===== Dark Mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #1A1A1A;
+    --color-bg: #1a1a1a;
     --color-bg-alt: #121212;
     --color-surface: #242424;
-    --color-surface-muted: #1E1E1E;
-    --color-surface-elevated: #2D2D2D;
+    --color-surface-muted: #1e1e1e;
+    --color-surface-elevated: #2d2d2d;
 
-    --color-primary: #FFBA08;
-    --color-primary-dark: #F5A623;
-    --color-primary-light: #FFD54F;
+    --color-primary: #ffba08;
+    --color-primary-dark: #f5a623;
+    --color-primary-light: #ffd54f;
 
-    --color-secondary: #6B9080;
-    --color-secondary-light: #8FB8A8;
+    --color-secondary: #6b9080;
+    --color-secondary-light: #8fb8a8;
 
-    --color-text: #FAFAFA;
-    --color-text-muted: #A0A0A0;
-    --color-text-subtle: #6B6B6B;
+    --color-text: #fafafa;
+    --color-text-muted: #a0a0a0;
+    --color-text-subtle: #6b6b6b;
 
     --color-border: #333333;
     --color-border-strong: #444444;
