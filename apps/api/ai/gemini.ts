@@ -11,7 +11,7 @@ const ai = new GoogleGenAI({
 export const geminiModel = {
   async generateContent(prompt: string): Promise<string> {
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash", // Free tier model
+      model: "gemini-2.0-flash", // Free tier model
       contents: prompt,
     });
     // response.text is a property, not a method

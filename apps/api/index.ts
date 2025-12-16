@@ -290,10 +290,13 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(sections));
     } catch (err: any) {
+      console.error("Section generation error:", err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
-          error: "Failed to generate sections. Please try again.",
+          error: `Failed to generate sections: ${
+            err.message || "Unknown error"
+          }`,
         })
       );
     }
@@ -740,6 +743,7 @@ const server = http.createServer(async (req, res) => {
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(JSON.stringify(categories));
     } catch (err: any) {
+      console.error("Category detection error:", err);
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
@@ -747,6 +751,41 @@ const server = http.createServer(async (req, res) => {
           details: err.message,
         })
       );
+    }
+    return;
+  }
+
+  // ============================================
+  // POST /ai/section-types - Detect section types
+  // ============================================
+  if (req.method === "POST" && pathname === "/ai/section-types") {
+    try {
+      let body = "";
+      for await (const chunk of req) {
+        body += chunk.toString();
+      }
+
+      const parsedBody = JSON.parse(body);
+      const { sections } = parsedBody;
+
+      if (!sections || !Array.isArray(sections) || sections.length === 0) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Sections array required" }));
+        return;
+      }
+
+      // For now, return placeholder types - can be enhanced with AI later
+      const types = sections.map(() => ({
+        type: "Explanation",
+        confidence: 0.8,
+      }));
+
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ types }));
+    } catch (err: any) {
+      console.error("Section type detection error:", err);
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Failed to detect section types" }));
     }
     return;
   }
