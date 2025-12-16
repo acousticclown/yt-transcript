@@ -82,10 +82,14 @@ function AIActionsMenu({
   onAction,
   loading,
   targetLabel,
+  currentLanguage,
+  onLanguageChange,
 }: {
   onAction: (action: "simplify" | "expand" | "regenerate") => void;
   loading: string | null;
   targetLabel: string;
+  currentLanguage: "english" | "hindi" | "hinglish";
+  onLanguageChange: (lang: "english" | "hindi" | "hinglish") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -109,13 +113,19 @@ function AIActionsMenu({
     { id: "regenerate" as const, icon: "🔄", label: "Regenerate", desc: "Rewrite from scratch" },
   ];
 
+  const languages = [
+    { id: "english" as const, label: "English", flag: "🇬🇧" },
+    { id: "hindi" as const, label: "हिंदी", flag: "🇮🇳" },
+    { id: "hinglish" as const, label: "Hinglish", flag: "🌐" },
+  ];
+
   const handleAction = (actionId: "simplify" | "expand" | "regenerate") => {
     onAction(actionId);
     setIsOpen(false);
   };
 
   return (
-    <div className="relative" ref={menuRef}>
+    <div className="relative z-50" ref={menuRef}>
       {/* Trigger Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -129,7 +139,7 @@ function AIActionsMenu({
         )}
       >
         <span className="text-base">🪄</span>
-        <span>AI Assist</span>
+        <span className="hidden sm:inline">AI Assist</span>
         {loading && (
           <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
@@ -150,7 +160,7 @@ function AIActionsMenu({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40"
+              className="fixed inset-0 z-[100]"
               onClick={() => setIsOpen(false)}
             />
             
@@ -160,23 +170,53 @@ function AIActionsMenu({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="absolute right-0 mt-2 w-72 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 mt-2 w-80 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-2xl z-[101] overflow-hidden"
             >
               {/* Header */}
               <div className="px-4 py-3 border-b border-[var(--color-border)] bg-gradient-to-r from-violet-500/5 to-purple-500/5">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">🪄</span>
                   <div>
-                    <p className="text-sm font-semibold text-[var(--color-text)]">AI Actions</p>
+                    <p className="text-sm font-semibold text-[var(--color-text)]">AI Assistant</p>
                     <p className="text-xs text-[var(--color-text-muted)]">
-                      Apply to: <span className="font-medium text-violet-600 dark:text-violet-400">{targetLabel}</span>
+                      Target: <span className="font-medium text-violet-600 dark:text-violet-400">{targetLabel}</span>
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Actions */}
+              {/* Language Section */}
+              <div className="p-3 border-b border-[var(--color-border)]">
+                <p className="text-xs font-medium text-[var(--color-text-muted)] mb-2 px-1 flex items-center gap-1.5">
+                  🌍 Translate / Language
+                </p>
+                <div className="flex gap-1.5">
+                  {languages.map((lang) => (
+                    <button
+                      key={lang.id}
+                      onClick={() => onLanguageChange(lang.id)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all",
+                        currentLanguage === lang.id
+                          ? "bg-violet-500/15 text-violet-600 dark:text-violet-400 border border-violet-500/30"
+                          : "bg-[var(--color-bg)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] border border-transparent"
+                      )}
+                    >
+                      <span>{lang.flag}</span>
+                      <span>{lang.label}</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[10px] text-[var(--color-text-subtle)] mt-2 px-1">
+                  AI will translate content to selected language
+                </p>
+              </div>
+
+              {/* Transform Actions */}
               <div className="p-2">
+                <p className="text-xs font-medium text-[var(--color-text-muted)] mb-1 px-2 flex items-center gap-1.5">
+                  ⚡ Transform
+                </p>
                 {actions.map((action) => (
                   <button
                     key={action.id}
@@ -600,6 +640,8 @@ export function UnifiedNoteEditor({
           onAction={handleAI}
           loading={aiLoading}
           targetLabel={getTargetLabel()}
+          currentLanguage={note.language}
+          onLanguageChange={handleLanguageChange}
         />
       </div>
 
@@ -651,25 +693,9 @@ export function UnifiedNoteEditor({
           )}
         </div>
 
-        {/* Language Toggle */}
-        <div className="mt-4 flex items-center gap-3">
-          <span className="text-xs text-[var(--color-text-muted)]">Language:</span>
-          <div className="inline-flex gap-1 bg-[var(--color-bg)] rounded-lg p-1">
-            {(["english", "hindi", "hinglish"] as const).map((lang) => (
-              <button
-                key={lang}
-                onClick={() => handleLanguageChange(lang)}
-                className={cn(
-                  "px-3 py-1 text-xs rounded-md transition-colors capitalize",
-                  note.language === lang
-                    ? "bg-[var(--color-primary)] text-white"
-                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-                )}
-              >
-                {lang}
-              </button>
-            ))}
-          </div>
+        {/* Language indicator (change via AI menu) */}
+        <div className="mt-3 text-xs text-[var(--color-text-subtle)]">
+          🌍 {note.language === "english" ? "English" : note.language === "hindi" ? "हिंदी" : "Hinglish"}
         </div>
       </div>
 
