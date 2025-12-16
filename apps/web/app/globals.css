@@ -77,8 +77,16 @@
 
   /* ===== Glassmorphism (Light Mode) ===== */
   --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.85);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.5);
+  --glass-bg-matte: rgba(255, 255, 255, 0.9);
+  --glass-bg-glossy: rgba(255, 255, 255, 0.5);
   --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-border-strong: rgba(255, 255, 255, 0.3);
+  --glass-border-subtle: rgba(255, 255, 255, 0.1);
   --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  --glass-shadow-elevated: 0 12px 40px 0 rgba(31, 38, 135, 0.5);
+  --glass-shadow-subtle: 0 4px 16px 0 rgba(31, 38, 135, 0.2);
   --glass-blur: blur(10px);
 }
 
@@ -109,8 +117,16 @@
 
     /* Glassmorphism (Dark Mode) */
     --glass-bg: rgba(31, 41, 55, 0.7);
+    --glass-bg-elevated: rgba(31, 41, 55, 0.85);
+    --glass-bg-subtle: rgba(31, 41, 55, 0.5);
+    --glass-bg-matte: rgba(31, 41, 55, 0.9);
+    --glass-bg-glossy: rgba(31, 41, 55, 0.5);
     --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-strong: rgba(255, 255, 255, 0.15);
+    --glass-border-subtle: rgba(255, 255, 255, 0.05);
     --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+    --glass-shadow-elevated: 0 12px 40px 0 rgba(0, 0, 0, 0.7);
+    --glass-shadow-subtle: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
   }
 
   html {
@@ -189,6 +205,45 @@ body {
   -webkit-backdrop-filter: var(--glass-blur);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
+}
+
+.glass-elevated {
+  background: var(--glass-bg-elevated);
+  box-shadow: var(--glass-shadow-elevated);
+  border: 1px solid var(--glass-border-strong);
+}
+
+.glass-subtle {
+  background: var(--glass-bg-subtle);
+  box-shadow: var(--glass-shadow-subtle);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+/* Matte variant (less blur, more opacity) */
+.glass-matte {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: var(--glass-bg-matte);
+}
+
+/* Glossy variant (more blur, less opacity) */
+.glass-glossy {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: var(--glass-bg-glossy);
+}
+
+/* Global glass style classes (applied to root) */
+html.glass-matte .glass {
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  background: var(--glass-bg-matte);
+}
+
+html.glass-glossy .glass {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: var(--glass-bg-glossy);
 }
 
 /* ===== Accessibility ===== */

@@ -3,11 +3,14 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 type Theme = "light" | "dark" | "system";
+type GlassStyle = "default" | "matte" | "glossy";
 
 type ThemeContextType = {
   theme: Theme;
   setTheme: (theme: Theme) => void;
   resolvedTheme: "light" | "dark";
+  glassStyle: GlassStyle;
+  setGlassStyle: (style: GlassStyle) => void;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -15,12 +18,19 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [glassStyle, setGlassStyleState] = useState<GlassStyle>("default");
 
   useEffect(() => {
     // Load theme from localStorage
     const stored = localStorage.getItem("theme") as Theme | null;
     if (stored && ["light", "dark", "system"].includes(stored)) {
       setThemeState(stored);
+    }
+    
+    // Load glass style from localStorage
+    const storedGlassStyle = localStorage.getItem("glassStyle") as GlassStyle | null;
+    if (storedGlassStyle && ["default", "matte", "glossy"].includes(storedGlassStyle)) {
+      setGlassStyleState(storedGlassStyle);
     }
   }, []);
 
@@ -63,8 +73,29 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("theme", newTheme);
   };
 
+  const setGlassStyle = (style: GlassStyle) => {
+    setGlassStyleState(style);
+    localStorage.setItem("glassStyle", style);
+    
+    // Apply glass style class to root
+    const root = document.documentElement;
+    root.classList.remove("glass-default", "glass-matte", "glass-glossy");
+    if (style !== "default") {
+      root.classList.add(`glass-${style}`);
+    }
+  };
+
+  // Apply glass style on mount and change
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove("glass-default", "glass-matte", "glass-glossy");
+    if (glassStyle !== "default") {
+      root.classList.add(`glass-${glassStyle}`);
+    }
+  }, [glassStyle]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, glassStyle, setGlassStyle }}>
       {children}
     </ThemeContext.Provider>
   );
