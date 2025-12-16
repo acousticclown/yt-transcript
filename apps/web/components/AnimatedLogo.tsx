@@ -213,50 +213,68 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
               </motion.span>
             </div>
 
-            {/* "y" as simple SVG shape */}
-            <motion.svg
-              viewBox="0 0 32 48"
-              className="w-8 h-12 sm:w-10 sm:h-14 md:w-12 md:h-16"
-              fill="none"
-              initial={{ 
-                opacity: 0, 
-                scale: 0,
-                pathLength: 0,
-              }}
-              animate={{ 
-                opacity: 1, 
-                scale: 1,
-              }}
-              transition={{
-                type: "spring",
-                stiffness: 250,
-                damping: 18,
-                delay: 2.1,
-              }}
-            >
-              {/* Simple y shape - two strokes meeting */}
-              <motion.path
-                d="M4 4L16 24L28 4"
-                className="stroke-[var(--color-primary)]"
-                strokeWidth="5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
+            {/* "y" - SVG shape transforms into letter */}
+            <div className="relative">
+              {/* Simple y SVG shape - fades out */}
+              <motion.svg
+                viewBox="0 0 32 48"
+                className="w-8 h-12 sm:w-10 sm:h-14 md:w-12 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
                 fill="none"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.4, delay: 2.2 }}
-              />
-              <motion.path
-                d="M16 24L16 44"
-                className="stroke-[var(--color-primary)]"
-                strokeWidth="5"
-                strokeLinecap="round"
-                fill="none"
-                initial={{ pathLength: 0 }}
-                animate={{ pathLength: 1 }}
-                transition={{ duration: 0.3, delay: 2.5 }}
-              />
-            </motion.svg>
+                initial={{ opacity: 0, scale: 0 }}
+                animate={{ 
+                  opacity: [0, 1, 1, 0],
+                  scale: [0, 1, 1, 0],
+                }}
+                transition={{
+                  duration: 1.4,
+                  delay: 2.0,
+                  times: [0, 0.25, 0.7, 1],
+                  ease: "easeInOut",
+                }}
+              >
+                {/* Simple y shape */}
+                <path
+                  d="M4 4L16 24L28 4"
+                  className="stroke-[var(--color-primary)]"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                <path
+                  d="M16 24L16 44"
+                  className="stroke-[var(--color-primary)]"
+                  strokeWidth="5"
+                  strokeLinecap="round"
+                  fill="none"
+                />
+              </motion.svg>
+
+              {/* "y" letter - fades in as SVG fades out */}
+              <motion.span
+                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+                style={{
+                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                  letterSpacing: "-0.03em",
+                }}
+                initial={{ 
+                  opacity: 0,
+                  scale: 0.5,
+                }}
+                animate={{ 
+                  opacity: 1,
+                  scale: 1,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 200,
+                  damping: 15,
+                  delay: 2.9,
+                }}
+              >
+                y
+              </motion.span>
+            </div>
           </div>
         </div>
       </div>
