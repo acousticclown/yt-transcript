@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { cn } from "../lib/utils";
 
 type LogoProps = {
@@ -9,13 +8,10 @@ type LogoProps = {
   showIcon?: boolean;
   href?: string;
   className?: string;
-  animate?: boolean;
 };
 
-const letters = ["N", "o", "t", "e", "l", "y"];
-
 // App name: "Notely" - Simple, memorable, note-focused
-export function Logo({ size = "md", showIcon = true, href = "/dashboard", className, animate = true }: LogoProps) {
+export function Logo({ size = "md", showIcon = true, href = "/dashboard", className }: LogoProps) {
   const sizes = {
     sm: { text: "text-lg", icon: "w-6 h-6", gap: "gap-1.5" },
     md: { text: "text-xl", icon: "w-7 h-7", gap: "gap-2" },
@@ -25,11 +21,7 @@ export function Logo({ size = "md", showIcon = true, href = "/dashboard", classN
   const content = (
     <div className={cn("flex items-center", sizes[size].gap, className)}>
       {showIcon && (
-        <motion.div 
-          className={cn("relative", sizes[size].icon)}
-          whileHover={{ rotate: [0, -10, 10, 0] }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className={cn("relative", sizes[size].icon)}>
           {/* Sophisticated monochrome logo mark */}
           <svg viewBox="0 0 32 32" fill="none" className="w-full h-full">
             {/* Outer rounded square */}
@@ -51,50 +43,29 @@ export function Logo({ size = "md", showIcon = true, href = "/dashboard", classN
             {/* Dot accent */}
             <circle cx="16" cy="9" r="1.5" className="fill-[var(--color-bg)]" />
           </svg>
-        </motion.div>
+        </div>
       )}
       
-      {/* Animated letters */}
+      {/* Simple text */}
       <span
         className={cn(
           sizes[size].text,
           "font-bold tracking-tight text-[var(--color-text)]",
-          "select-none inline-flex"
+          "select-none"
         )}
         style={{
           fontFamily: "var(--font-outfit), 'Inter', system-ui, sans-serif",
           letterSpacing: "-0.02em",
         }}
       >
-        {letters.map((letter, i) => (
-          <motion.span
-            key={i}
-            className="inline-block"
-            animate={animate ? {
-              y: [0, -2, 0],
-            } : undefined}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: i * 0.15,
-              ease: "easeInOut",
-            }}
-            whileHover={{
-              scale: 1.1,
-              y: -3,
-              transition: { duration: 0.15 }
-            }}
-          >
-            {letter}
-          </motion.span>
-        ))}
+        Notely
       </span>
     </div>
   );
 
   if (href) {
     return (
-      <Link href={href} className="inline-flex hover:opacity-90 transition-opacity">
+      <Link href={href} className="inline-flex hover:opacity-80 transition-opacity">
         {content}
       </Link>
     );

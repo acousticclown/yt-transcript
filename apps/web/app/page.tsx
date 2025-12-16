@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { WritingPerson, WatchingPerson, IdeaPerson, OrganizingPerson } from "../components/illustrations";
 import { Logo } from "../components/Logo";
+import { AnimatedLogo } from "../components/AnimatedLogo";
 
 export default function LandingPage() {
   return (
@@ -32,17 +33,18 @@ export default function LandingPage() {
       {/* Hero */}
       <main className="pt-24 pb-16 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto">
+          {/* Animated Logo Hero */}
+          <div className="py-12 sm:py-16">
+            <AnimatedLogo />
+          </div>
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.6, delay: 2 }}
             className="text-center max-w-3xl mx-auto"
           >
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-[var(--color-text)] leading-tight">
-              Your ideas,{" "}
-              <span className="text-[var(--color-primary)]">powered by AI</span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
+            <p className="text-lg sm:text-xl text-[var(--color-text-muted)] max-w-2xl mx-auto">
               Transform YouTube videos into smart notes. Organize your thoughts with AI assistance. 
               A beautiful, personal notes app built for the way you think.
             </p>
