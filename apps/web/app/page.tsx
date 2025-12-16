@@ -14,6 +14,9 @@ import { CategoryFilter } from "../components/CategoryFilter";
 import { ActionButton } from "../components/ActionButton";
 import { ButtonGroup } from "../components/ButtonGroup";
 import { ThemeToggle } from "../components/ThemeToggle";
+import { VideoMetadata } from "../components/VideoMetadata";
+import { SearchBar } from "../components/SearchBar";
+import { SortOptions } from "../components/SortOptions";
 
 type LanguageVariant = {
   title: string;
@@ -456,8 +459,21 @@ export default function Home() {
         >
           <AnimatePresence>
             <Stack gap={4} as="section" className="pb-4 sm:pb-0 sm:gap-5">
-              {sections
-                .filter((section) => {
+              {(() => {
+                // Filter sections
+                let filtered = sections.filter((section) => {
+                  // Search filter
+                  if (searchQuery.trim()) {
+                    const query = searchQuery.toLowerCase();
+                    const matchesTitle = section.current.title.toLowerCase().includes(query);
+                    const matchesSummary = section.current.summary.toLowerCase().includes(query);
+                    const matchesBullets = section.current.bullets.some((bullet) =>
+                      bullet.toLowerCase().includes(query)
+                    );
+                    if (!matchesTitle && !matchesSummary && !matchesBullets) {
+                      return false;
+                    }
+                  }
                   // Section type filter
                   if (selectedSectionType !== null && section.sectionType?.type !== selectedSectionType) {
                     return false;
@@ -474,8 +490,25 @@ export default function Home() {
                     if (!hasTag) return false;
                   }
                   return true;
-                })
-                .map((section) => {
+                });
+
+                // Sort sections
+                filtered = [...filtered].sort((a, b) => {
+                  if (sortBy === "title") {
+                    return a.current.title.localeCompare(b.current.title);
+                  }
+                  if (sortBy === "date") {
+                    const dateA = new Date(a.lastEditedAt || a.createdAt || 0).getTime();
+                    const dateB = new Date(b.lastEditedAt || b.createdAt || 0).getTime();
+                    return dateB - dateA; // Newest first
+                  }
+                  // Relevance (default) - keep original order for now
+                  // Could be enhanced with search score later
+                  return 0;
+                });
+
+                return filtered;
+              })().map((section) => {
                   const isFocused = focusedSectionId === section.id;
                   const dimmed = focusedSectionId !== null && !isFocused;
 
