@@ -112,7 +112,6 @@ const server = http.createServer(async (req, res) => {
           start: parseFloat(sub.start) || 0,
           duration: parseFloat(sub.dur) || 0,
         }));
-
       } catch (error: any) {
         // Try without language specification (auto-detect)
         try {
@@ -142,7 +141,6 @@ const server = http.createServer(async (req, res) => {
           transcript = await transcribeAudio(audioFilePath);
           transcriptSource = "whisper";
         } catch (error: any) {
-
           // Clean up audio file if it exists
           if (audioFilePath) {
             await cleanupAudioFile(audioFilePath);
@@ -175,12 +173,26 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
+      // Calculate video duration from transcript
+      const videoDuration = transcript.reduce(
+        (total, chunk) => total + chunk.duration,
+        0
+      );
+
+      // Generate thumbnail URL (YouTube standard format)
+      const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
+
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
         JSON.stringify({
           transcript,
           language: "unknown",
           source: transcriptSource,
+          metadata: {
+            videoId,
+            thumbnailUrl,
+            duration: videoDuration, // in seconds
+          },
         })
       );
     } catch (error: any) {
@@ -325,7 +337,11 @@ const server = http.createServer(async (req, res) => {
 
       if (!sections || !Array.isArray(sections) || sections.length === 0) {
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ error: "Sections array is required and cannot be empty" }));
+        res.end(
+          JSON.stringify({
+            error: "Sections array is required and cannot be empty",
+          })
+        );
         return;
       }
 
@@ -338,7 +354,9 @@ const server = http.createServer(async (req, res) => {
         }
         if (!Array.isArray(section.bullets)) {
           res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(JSON.stringify({ error: "Section bullets must be an array" }));
+          res.end(
+            JSON.stringify({ error: "Section bullets must be an array" })
+          );
           return;
         }
       }
@@ -444,9 +462,7 @@ const server = http.createServer(async (req, res) => {
 
       if (!action || !text) {
         res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(
-          JSON.stringify({ error: "Action and text are required" })
-        );
+        res.end(JSON.stringify({ error: "Action and text are required" }));
         return;
       }
 
@@ -589,7 +605,9 @@ const server = http.createServer(async (req, res) => {
       ) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(
-          JSON.stringify({ error: "Invalid section structure for transformation" })
+          JSON.stringify({
+            error: "Invalid section structure for transformation",
+          })
         );
         return;
       }
@@ -670,7 +688,9 @@ const server = http.createServer(async (req, res) => {
       if (!sections || !Array.isArray(sections) || sections.length === 0) {
         res.writeHead(400, { "Content-Type": "application/json" });
         res.end(
-          JSON.stringify({ error: "Sections array is required and must not be empty" })
+          JSON.stringify({
+            error: "Sections array is required and must not be empty",
+          })
         );
         return;
       }
@@ -683,9 +703,7 @@ const server = http.createServer(async (req, res) => {
           !Array.isArray(section.bullets)
         ) {
           res.writeHead(400, { "Content-Type": "application/json" });
-          res.end(
-            JSON.stringify({ error: "Invalid section structure" })
-          );
+          res.end(JSON.stringify({ error: "Invalid section structure" }));
           return;
         }
       }
@@ -712,7 +730,8 @@ const server = http.createServer(async (req, res) => {
         res.end(
           JSON.stringify({
             error: "AI returned invalid category format",
-            details: "Expected {type: string, tags: string[], confidence: number}",
+            details:
+              "Expected {type: string, tags: string[], confidence: number}",
           })
         );
         return;

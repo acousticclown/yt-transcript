@@ -8,6 +8,7 @@ import { InlineAIButton } from "./InlineAIButton";
 import { LanguageToggle } from "./LanguageToggle";
 import { CategoryBadge } from "./CategoryBadge";
 import { SectionTypeBadge } from "./SectionTypeBadge";
+import { SectionMetadata } from "./SectionMetadata";
 import { TagInput } from "./TagInput";
 import { cn } from "../lib/utils";
 
@@ -150,12 +151,13 @@ export function SectionCardV2({
                 placeholder="Section title..."
                 value={section.current.title}
                 onChange={(e) =>
-                  onChange({
-                    ...section,
-                    current: { ...section.current, title: e.target.value },
-                  })
-                }
-              />
+                onChange={{
+                  ...section,
+                  current: { ...section.current, title: e.target.value },
+                  lastEditedAt: new Date().toISOString(),
+                })
+              }
+            />
             
             {/* Header Actions */}
             <Stack direction="row" gap={1.5} align="center" className="flex-shrink-0">
@@ -459,10 +461,11 @@ export function SectionCardV2({
                   placeholder="Summary..."
                   value={section.current.summary}
                   onChange={(e) =>
-                    onChange({
-                      ...section,
-                      current: { ...section.current, summary: e.target.value },
-                    })
+                  onChange({
+                    ...section,
+                    current: { ...section.current, summary: e.target.value },
+                    lastEditedAt: new Date().toISOString(),
+                  })
                   }
                 />
               </motion.div>

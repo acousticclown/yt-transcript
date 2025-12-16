@@ -60,12 +60,20 @@ const loadingMessages = [
   "🎨 Making it readable…",
 ];
 
+type VideoMetadata = {
+  videoId: string;
+  thumbnailUrl: string;
+  duration: number; // in seconds
+};
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [sections, setSections] = useState<Section[]>([]);
   const [transcript, setTranscript] = useState<
     Array<{ text: string; start: number; duration: number }>
   >([]);
+  const [videoMetadata, setVideoMetadata] = useState<VideoMetadata | null>(null);
+  const [generatedAt, setGeneratedAt] = useState<Date | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
@@ -149,6 +157,7 @@ export default function Home() {
       // source = always English (stable, editable)
       // variants = cached language versions (no re-generation needed)
       // current = what user sees & edits
+      const now = new Date();
       const sectionsWithIds = (sectionsData.sections || []).map(
         (section: { title: string; summary: string; bullets: string[] }) => ({
           id: crypto.randomUUID(),
@@ -158,6 +167,8 @@ export default function Home() {
           },
           current: section, // Initially same as source
           language: "english" as const,
+          createdAt: now.toISOString(),
+          lastEditedAt: now.toISOString(),
         })
       );
 
@@ -241,6 +252,16 @@ export default function Home() {
             Generate Notes
           </ActionButton>
         </Stack>
+
+        {/* Video Metadata */}
+        {videoMetadata && sections.length > 0 && (
+          <VideoMetadata
+            thumbnailUrl={videoMetadata.thumbnailUrl}
+            duration={videoMetadata.duration}
+            generatedAt={generatedAt}
+            className="mb-4"
+          />
+        )}
 
         {/* Category, Type & Tag Filter */}
         {sections.length > 0 && (
