@@ -75,6 +75,27 @@ type UnifiedNoteEditorProps = {
   onAIAction?: (action: string, text: string) => Promise<string>;
 };
 
+// Helper components (defined before main component)
+function FormatButton({
+  children,
+  onClick,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="p-1.5 min-w-[28px] text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-md transition-colors"
+    >
+      {children}
+    </button>
+  );
+}
+
 export function UnifiedNoteEditor({
   initialNote,
   onSave,
@@ -816,26 +837,6 @@ function AIButton({
       )}
     >
       {loading ? "..." : children}
-    </button>
-  );
-}
-
-function FormatButton({
-  children,
-  onClick,
-  title,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  title: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      title={title}
-      className="p-1.5 min-w-[28px] text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-md transition-colors"
-    >
-      {children}
     </button>
   );
 }
