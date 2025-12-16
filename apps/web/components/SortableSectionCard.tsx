@@ -2,7 +2,7 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { SectionCard } from "./SectionCard";
+import { SectionCardV2 } from "./SectionCardV2";
 
 type LanguageVariant = {
   title: string;
@@ -59,14 +59,14 @@ export function SortableSectionCard({
   };
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes}>
+    <div ref={setNodeRef} style={style} {...attributes} className="relative">
       <div
         {...listeners}
-        className="cursor-grab active:cursor-grabbing text-xs text-gray-400 dark:text-gray-500 mb-1 select-none"
+        className="absolute top-2 left-2 z-10 cursor-grab active:cursor-grabbing text-xs text-gray-400 dark:text-gray-500 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm px-2 py-1 rounded select-none hover:bg-white/70 dark:hover:bg-gray-900/70 transition-colors"
       >
         ⠿ Drag
       </div>
-      <SectionCard
+      <SectionCardV2
         section={section}
         transcript={transcript}
         isFocused={isFocused}
