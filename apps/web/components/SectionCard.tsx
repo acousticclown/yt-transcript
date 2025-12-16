@@ -119,6 +119,8 @@ export function SectionCard({
             }
 
             // Transform to target language
+            // For Hinglish, use existing tone or default to "neutral"
+            const tone = target === "hinglish" ? (section.hinglishTone || "neutral") : undefined;
             setSwitchingLanguage(true);
             try {
               const res = await fetch(
@@ -129,6 +131,7 @@ export function SectionCard({
                   body: JSON.stringify({
                     target,
                     section: section.source, // Always use source for transformation
+                    ...(tone && { tone }), // Include tone only for Hinglish
                   }),
                 }
               );
@@ -149,6 +152,7 @@ export function SectionCard({
                 ...section,
                 current: transformed,
                 language: target,
+                ...(tone && { hinglishTone: tone }), // Store tone only for Hinglish
               });
             } catch {
               // Keep previous language, show toast
