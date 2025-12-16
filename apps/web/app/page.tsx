@@ -63,6 +63,7 @@ export default function Home() {
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedTag, setSelectedTag] = useState<string | null>(null);
 
   async function generateNotes() {
     // Soft warning for potentially long videos (estimate based on URL)
@@ -205,7 +206,7 @@ export default function Home() {
         </motion.button>
         </Stack>
 
-        {/* Category Filter */}
+        {/* Category & Tag Filter */}
         {sections.length > 0 && (
           <CategoryFilter
             categories={Array.from(
@@ -217,6 +218,14 @@ export default function Home() {
             )}
             selectedCategory={selectedCategory}
             onSelectCategory={setSelectedCategory}
+            tags={Array.from(
+              new Set([
+                ...sections.flatMap((s) => s.category?.tags || []),
+                ...sections.flatMap((s) => s.personalTags || []),
+              ])
+            )}
+            selectedTag={selectedTag}
+            onSelectTag={setSelectedTag}
           />
         )}
 
@@ -368,8 +377,18 @@ export default function Home() {
             <Stack gap={5} as="section">
               {sections
                 .filter((section) => {
-                  if (selectedCategory === null) return true;
-                  return section.category?.type === selectedCategory;
+                  // Category filter
+                  if (selectedCategory !== null && section.category?.type !== selectedCategory) {
+                    return false;
+                  }
+                  // Tag filter
+                  if (selectedTag !== null) {
+                    const hasTag =
+                      section.category?.tags.includes(selectedTag) ||
+                      section.personalTags?.includes(selectedTag);
+                    if (!hasTag) return false;
+                  }
+                  return true;
                 })
                 .map((section) => {
                   const isFocused = focusedSectionId === section.id;

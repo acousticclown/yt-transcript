@@ -7,6 +7,7 @@ import { Stack } from "./layout";
 import { InlineAIButton } from "./InlineAIButton";
 import { LanguageToggle } from "./LanguageToggle";
 import { CategoryBadge } from "./CategoryBadge";
+import { TagInput } from "./TagInput";
 import { cn } from "../lib/utils";
 
 type LanguageVariant = {
@@ -642,16 +643,36 @@ export function SectionCardV2({
 
         {/* Card Footer */}
         <div className="px-5 py-3 border-t border-white/10 dark:border-white/5 bg-white/20 dark:bg-gray-900/20 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-900/30 transition-colors">
-          <Stack direction="row" gap={2} align="center" justify="between" className="text-xs text-gray-500 dark:text-gray-400">
-            <div>
-              {section.language !== "english" && (
-                <span className="mr-2">🌐 {section.language === "hinglish" ? "Hinglish" : "Hindi"}</span>
-              )}
-              <span>{section.current.bullets.length} points</span>
-            </div>
-            <div className="text-gray-400 dark:text-gray-500">
-              {/* Placeholder for future metadata */}
-            </div>
+          <Stack gap={2}>
+            {/* Personal Tags */}
+            <TagInput
+              tags={section.personalTags || []}
+              suggestions={[
+                ...(section.category?.tags || []),
+                "important",
+                "todo",
+                "review",
+                "favorite",
+              ]}
+              onChange={(newTags) =>
+                onChange({
+                  ...section,
+                  personalTags: newTags,
+                })
+              }
+              placeholder="Add personal tags..."
+            />
+            <Stack direction="row" gap={2} align="center" justify="between" className="text-xs text-gray-500 dark:text-gray-400">
+              <div>
+                {section.language !== "english" && (
+                  <span className="mr-2">🌐 {section.language === "hinglish" ? "Hinglish" : "Hindi"}</span>
+                )}
+                <span>{section.current.bullets.length} points</span>
+              </div>
+              <div className="text-gray-400 dark:text-gray-500">
+                {/* Placeholder for future metadata */}
+              </div>
+            </Stack>
           </Stack>
         </div>
       </Stack>
