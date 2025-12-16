@@ -598,7 +598,7 @@ export function UnifiedNoteEditor({
   };
 
   return (
-    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] overflow-hidden">
+    <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)]">
       {/* Top Toolbar - Undo/Redo + AI Actions */}
       <div className="flex items-center gap-2 p-3 border-b border-[var(--color-border)] bg-[var(--color-bg)]/50 overflow-x-auto">
         {/* Undo/Redo */}
