@@ -121,59 +121,143 @@ export function SectionCard({
             // If already on this language, do nothing
             if (target === section.language) return;
 
-            // If switching to English, restore from source instantly
+            // English: Use cached variant (always available)
             if (target === "english") {
               onChange({
                 ...section,
-                current: section.source,
+                current: section.variants.english,
                 language: "english",
+                hinglishTone: undefined,
               });
               return;
             }
 
-            // Transform to target language
-            // For Hinglish, use existing tone or default to "neutral"
-            const tone = target === "hinglish" ? (section.hinglishTone || "neutral") : undefined;
-            setSwitchingLanguage(true);
-            try {
-              const res = await fetch(
-                "http://localhost:3001/ai/transform-language",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    target,
-                    section: section.source, // Always use source for transformation
-                    ...(tone && { tone }), // Include tone only for Hinglish
-                  }),
-                }
-              );
-
-              if (!res.ok) {
-                const errorData = await res
-                  .json()
-                  .catch(() => ({ error: "Unknown error" }));
-                // Keep previous language, show clear error
-                alert(
-                  `⚠️ Couldn't convert language right now. ${errorData.error || "Please try again."}`
-                );
+            // Hindi: Check cache first
+            if (target === "hindi") {
+              if (section.variants.hindi) {
+                // Use cached version (instant)
+                onChange({
+                  ...section,
+                  current: section.variants.hindi,
+                  language: "hindi",
+                  hinglishTone: undefined,
+                });
                 return;
               }
 
-              const transformed = await res.json();
-              onChange({
-                ...section,
-                current: transformed,
-                language: target,
-                ...(tone && { hinglishTone: tone }), // Store tone only for Hinglish
-              });
-            } catch {
-              // Keep previous language, show clear error
-              alert(
-                "⚠️ Couldn't convert language right now. Make sure the API server is running."
-              );
-            } finally {
-              setSwitchingLanguage(false);
+              // Generate and cache
+              setSwitchingLanguage(true);
+              try {
+                const res = await fetch(
+                  "http://localhost:3001/ai/transform-language",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      target: "hindi",
+                      section: section.source,
+                    }),
+                  }
+                );
+
+                if (!res.ok) {
+                  const errorData = await res
+                    .json()
+                    .catch(() => ({ error: "Unknown error" }));
+                  // Keep previous language, show clear error
+                  alert(
+                    `⚠️ Couldn't convert language right now. ${errorData.error || "Please try again."}`
+                  );
+                  return;
+                }
+
+                const transformed = await res.json();
+                onChange({
+                  ...section,
+                  variants: {
+                    ...section.variants,
+                    hindi: transformed,
+                  },
+                  current: transformed,
+                  language: "hindi",
+                  hinglishTone: undefined,
+                });
+              } catch {
+                // Keep previous language, show clear error
+                alert(
+                  "⚠️ Couldn't convert language right now. Make sure the API server is running."
+                );
+              } finally {
+                setSwitchingLanguage(false);
+              }
+              return;
+            }
+
+            // Hinglish: Check cache for specific tone
+            if (target === "hinglish") {
+              const tone = section.hinglishTone || "neutral";
+              const cached = section.variants.hinglish?.[tone];
+
+              if (cached) {
+                // Use cached version (instant)
+                onChange({
+                  ...section,
+                  current: cached,
+                  language: "hinglish",
+                  hinglishTone: tone,
+                });
+                return;
+              }
+
+              // Generate and cache
+              setSwitchingLanguage(true);
+              try {
+                const res = await fetch(
+                  "http://localhost:3001/ai/transform-language",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      target: "hinglish",
+                      tone,
+                      section: section.source,
+                    }),
+                  }
+                );
+
+                if (!res.ok) {
+                  const errorData = await res
+                    .json()
+                    .catch(() => ({ error: "Unknown error" }));
+                  // Keep previous language, show clear error
+                  alert(
+                    `⚠️ Couldn't convert language right now. ${errorData.error || "Please try again."}`
+                  );
+                  return;
+                }
+
+                const transformed = await res.json();
+                onChange({
+                  ...section,
+                  variants: {
+                    ...section.variants,
+                    hinglish: {
+                      ...(section.variants.hinglish || {}),
+                      [tone]: transformed,
+                    },
+                  },
+                  current: transformed,
+                  language: "hinglish",
+                  hinglishTone: tone,
+                });
+              } catch {
+                // Keep previous language, show clear error
+                alert(
+                  "⚠️ Couldn't convert language right now. Make sure the API server is running."
+                );
+              } finally {
+                setSwitchingLanguage(false);
+              }
             }
           }}
           disabled={switchingLanguage}
