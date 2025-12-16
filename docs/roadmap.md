@@ -96,8 +96,12 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] Graceful error handling
 - [x] Edge case handling
 
-### Day 20 (Planned)
-- Pause & real usage test
+### Day 20 (In Progress)
+- [ ] Real usage test with 3 videos
+- [ ] Document friction points
+- [ ] Identify 3 signals (Stickiness, Differentiation, Missing Core)
+- [ ] Decide next direction (Visual Thinking / Knowledge System / Creator Tool / Polish & OSS)
+- [ ] No coding - just reflection
 
 ### Future Week 2 Features
 - Multilingual Support
