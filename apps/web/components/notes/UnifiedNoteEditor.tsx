@@ -16,6 +16,7 @@ type NoteSection = {
 type UnifiedNote = {
   id?: string;
   title: string;
+  content: string; // Main content (for simple notes without sections)
   tags: string[];
   language: "english" | "hindi" | "hinglish";
   sections: NoteSection[];
@@ -36,12 +37,15 @@ export function UnifiedNoteEditor({
 }: UnifiedNoteEditorProps) {
   const [note, setNote] = useState<UnifiedNote>({
     title: initialNote?.title || "",
+    content: initialNote?.content || "",
     tags: initialNote?.tags || [],
     language: initialNote?.language || "english",
     sections: initialNote?.sections || [],
     source: initialNote?.source || "manual",
     youtubeUrl: initialNote?.youtubeUrl,
   });
+
+  const contentRef = useRef<HTMLTextAreaElement>(null);
 
   const [newTag, setNewTag] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
@@ -96,9 +100,13 @@ export function UnifiedNoteEditor({
         return { text: section.summary, type: "section" as const, sectionId: focusedSectionId };
       }
     }
-    // 4. All content
+    // 4. Main content if available
+    if (note.content) {
+      return { text: note.content, type: "content" as const };
+    }
+    // 5. All sections
     const allText = note.sections.map(s => s.summary).join("\n\n");
-    return { text: allText, type: "all" as const };
+    return { text: allText || "No content", type: "all" as const };
   };
 
   // AI Action handler
@@ -113,9 +121,15 @@ export function UnifiedNoteEditor({
       const result = await onAIAction(action, target.text);
       
       // Apply result based on target type
-      if (target.type === "selection" && "field" in target && target.sectionId) {
+      if (target.type === "selection" && "field" in target) {
         // Replace selected text in the correct field
-        if (target.field === "summary") {
+        if (target.field === "content" || target.sectionId === "main") {
+          const newContent = 
+            note.content.slice(0, target.start) + 
+            result + 
+            note.content.slice(target.end);
+          setNote({ ...note, content: newContent });
+        } else if (target.field === "summary" && target.sectionId) {
           const section = note.sections.find(s => s.id === target.sectionId);
           if (section) {
             const newSummary = 
@@ -124,7 +138,7 @@ export function UnifiedNoteEditor({
               section.summary.slice(target.end);
             updateSection(target.sectionId, { summary: newSummary });
           }
-        } else if (target.field === "bullet" && target.bulletIndex !== undefined) {
+        } else if (target.field === "bullet" && target.sectionId && target.bulletIndex !== undefined) {
           const section = note.sections.find(s => s.id === target.sectionId);
           if (section) {
             const bullet = section.bullets[target.bulletIndex];
@@ -135,6 +149,8 @@ export function UnifiedNoteEditor({
             updateBullet(target.sectionId, target.bulletIndex, newBullet);
           }
         }
+      } else if (target.type === "content") {
+        setNote({ ...note, content: result });
       } else if (target.type === "bullet" && target.sectionId !== undefined && target.bulletIndex !== undefined) {
         updateBullet(target.sectionId, target.bulletIndex, result);
       } else if (target.type === "section" && target.sectionId) {
@@ -155,7 +171,8 @@ export function UnifiedNoteEditor({
       const section = note.sections.find(s => s.id === focusedSectionId);
       return `Section: ${section?.title || "Untitled"}`;
     }
-    return "All sections";
+    if (note.content) return "Main content";
+    return "All content";
   };
 
   // Tag handlers
@@ -234,6 +251,46 @@ export function UnifiedNoteEditor({
   // Language change
   const handleLanguageChange = (lang: "english" | "hindi" | "hinglish") => {
     setNote({ ...note, language: lang });
+  };
+
+  // Insert formatting in content
+  const insertFormat = (before: string, after: string) => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = note.content.slice(start, end);
+    const newContent = note.content.slice(0, start) + before + selected + after + note.content.slice(end);
+    setNote({ ...note, content: newContent });
+    
+    // Restore cursor position
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + before.length, end + before.length);
+    }, 0);
+  };
+
+  // Text selection handler for main content
+  const handleContentSelect = () => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = note.content.slice(start, end);
+    
+    if (text) {
+      setSelectionInfo({
+        text,
+        field: "content" as any,
+        sectionId: "main",
+        start,
+        end,
+      });
+    } else {
+      setSelectionInfo(null);
+    }
   };
 
   // Text selection handler for summary
@@ -378,8 +435,44 @@ export function UnifiedNoteEditor({
         </div>
       </div>
 
+      {/* Main Content (for simple notes) */}
+      <div className="px-6 pt-4">
+        <div className="flex items-center justify-between mb-2">
+          <label className="text-xs text-[var(--color-text-muted)]">Content</label>
+          <div className="flex gap-1">
+            <FormatButton onClick={() => insertFormat("**", "**")} title="Bold">B</FormatButton>
+            <FormatButton onClick={() => insertFormat("*", "*")} title="Italic">I</FormatButton>
+            <FormatButton onClick={() => insertFormat("\n- ", "")} title="List">•</FormatButton>
+            <FormatButton onClick={() => insertFormat("\n## ", "")} title="Heading">H</FormatButton>
+            <FormatButton onClick={() => insertFormat("`", "`")} title="Code">{`</>`}</FormatButton>
+          </div>
+        </div>
+        <textarea
+          ref={contentRef}
+          placeholder="Write your note here... (Markdown supported)"
+          value={note.content}
+          onChange={(e) => setNote({ ...note, content: e.target.value })}
+          onSelect={handleContentSelect}
+          className="w-full min-h-[150px] p-4 text-[var(--color-text)] bg-[var(--color-bg)]/50 rounded-xl border border-[var(--color-border)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] resize-none leading-relaxed"
+        />
+        <div className="mt-1 flex justify-between text-xs text-[var(--color-text-subtle)]">
+          <span>{note.content.split(/\s+/).filter(Boolean).length} words</span>
+          <span>{note.content.length} chars</span>
+        </div>
+      </div>
+
+      {/* Sections (optional, for structured notes) */}
+      {(note.sections.length > 0 || note.source === "youtube") && (
+        <div className="px-6 pt-4">
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-xs text-[var(--color-text-muted)]">Sections</span>
+            <span className="text-xs text-[var(--color-text-subtle)]">(optional, from YouTube or structured notes)</span>
+          </div>
+        </div>
+      )}
+
       {/* Sections */}
-      <div className="p-6 space-y-6">
+      <div className="px-6 pb-6 space-y-6">
         <AnimatePresence>
           {note.sections.map((section, sectionIndex) => {
             const isFocused = focusedSectionId === section.id;
@@ -560,6 +653,26 @@ function AIButton({
       )}
     >
       {loading ? "..." : children}
+    </button>
+  );
+}
+
+function FormatButton({
+  children,
+  onClick,
+  title,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  title: string;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={title}
+      className="p-1.5 min-w-[28px] text-xs font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-md transition-colors"
+    >
+      {children}
     </button>
   );
 }
