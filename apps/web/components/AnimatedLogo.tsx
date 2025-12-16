@@ -159,26 +159,25 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
           </div>
 
           {/* Pen that writes "ly" */}
-          <div className="relative flex items-baseline">
-            {/* Pen SVG */}
+          <div className="relative flex items-center">
+            {/* Pen SVG - zooms out as ly appears */}
             <motion.div
-              className="absolute -left-2 bottom-0"
-              initial={{ opacity: 0, x: -20, y: 20 }}
+              className="absolute left-0 z-10"
+              initial={{ opacity: 0, scale: 0 }}
               animate={{ 
                 opacity: [0, 1, 1, 0],
-                x: [-20, 0, 60, 80],
-                y: [20, 0, 0, -10],
+                scale: [0, 1.2, 1, 0],
               }}
               transition={{
-                duration: 1.4,
+                duration: 1.6,
                 delay: 1.0,
-                times: [0, 0.2, 0.8, 1],
+                times: [0, 0.25, 0.6, 1],
                 ease: "easeInOut",
               }}
             >
               <svg 
                 viewBox="0 0 24 24" 
-                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12"
+                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
                 fill="none"
               >
                 <path
@@ -191,15 +190,10 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   strokeWidth="1.5"
                   strokeLinecap="round"
                 />
-                <path
-                  d="M3 21l1.5-4.5"
-                  className="stroke-[var(--color-primary-dark)]"
-                  strokeWidth="1"
-                />
               </svg>
             </motion.div>
 
-            {/* "ly" - Written by pen */}
+            {/* "ly" - emerges from pen */}
             <div className="flex">
               {lyLetters.map((letter, i) => (
                 <motion.span
@@ -208,23 +202,21 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   style={{
                     fontFamily: "var(--font-outfit), system-ui, sans-serif",
                     letterSpacing: "-0.03em",
-                    transformOrigin: "left bottom",
+                    transformOrigin: "center center",
                   }}
                   initial={{ 
                     opacity: 0, 
-                    scaleX: 0,
-                    x: -10,
+                    scale: 0,
                   }}
                   animate={{ 
                     opacity: 1, 
-                    scaleX: 1,
-                    x: 0,
+                    scale: 1,
                   }}
                   transition={{
                     type: "spring",
-                    stiffness: 200,
-                    damping: 20,
-                    delay: 1.2 + i * 0.2,
+                    stiffness: 250,
+                    damping: 18,
+                    delay: 1.8 + i * 0.15,
                   }}
                 >
                   {letter}
