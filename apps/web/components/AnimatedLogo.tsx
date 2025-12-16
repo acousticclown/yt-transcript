@@ -173,9 +173,9 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   scale: [0, 1, 1, 0],
                 }}
                 transition={{
-                  duration: 1.4,
+                  duration: 1.2,
                   delay: 1.0,
-                  times: [0, 0.25, 0.7, 1],
+                  times: [0, 0.2, 0.7, 1],
                   ease: "easeInOut",
                 }}
               >
@@ -215,10 +215,10 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
 
             {/* "y" - SVG shape transforms into letter */}
             <div className="relative">
-              {/* Notebook SVG - fades out */}
+              {/* Open Book SVG (Y-shaped) - fades out */}
               <motion.svg
-                viewBox="0 0 40 48"
-                className="w-10 h-12 sm:w-12 sm:h-14 md:w-14 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
+                viewBox="0 0 48 48"
+                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
                 fill="none"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ 
@@ -226,25 +226,24 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   scale: [0, 1, 1, 0],
                 }}
                 transition={{
-                  duration: 1.4,
-                  delay: 2.0,
-                  times: [0, 0.25, 0.7, 1],
+                  duration: 1.2,
+                  delay: 1.8,
+                  times: [0, 0.2, 0.7, 1],
                   ease: "easeInOut",
                 }}
               >
-                {/* Notebook cover */}
-                <rect x="6" y="2" width="28" height="44" rx="2" className="fill-[var(--color-primary)]" />
-                {/* Notebook spine */}
-                <rect x="6" y="2" width="4" height="44" className="fill-[var(--color-primary-dark)]" />
-                {/* Pages */}
-                <rect x="12" y="6" width="18" height="36" rx="1" className="fill-[var(--color-bg)]" opacity="0.9" />
-                {/* Lines on page */}
-                <line x1="14" y1="14" x2="28" y2="14" className="stroke-[var(--color-primary)]" strokeWidth="1" opacity="0.3" />
-                <line x1="14" y1="20" x2="28" y2="20" className="stroke-[var(--color-primary)]" strokeWidth="1" opacity="0.3" />
-                <line x1="14" y1="26" x2="28" y2="26" className="stroke-[var(--color-primary)]" strokeWidth="1" opacity="0.3" />
-                <line x1="14" y1="32" x2="24" y2="32" className="stroke-[var(--color-primary)]" strokeWidth="1" opacity="0.3" />
-                {/* Bookmark ribbon */}
-                <path d="M30 2V12L27 9L24 12V2" className="fill-[var(--color-primary-dark)]" />
+                {/* Left page */}
+                <path d="M4 4L20 20V44L4 28V4Z" className="fill-[var(--color-primary)]" />
+                {/* Right page */}
+                <path d="M44 4L28 20V44L44 28V4Z" className="fill-[var(--color-primary)]" />
+                {/* Spine/center line */}
+                <path d="M24 20V48" className="stroke-[var(--color-primary-dark)]" strokeWidth="3" strokeLinecap="round" />
+                {/* Left page lines */}
+                <line x1="8" y1="12" x2="16" y2="18" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
+                <line x1="8" y1="18" x2="16" y2="24" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
+                {/* Right page lines */}
+                <line x1="40" y1="12" x2="32" y2="18" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
+                <line x1="40" y1="18" x2="32" y2="24" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
               </motion.svg>
 
               {/* "y" letter - fades in as SVG fades out */}
