@@ -439,25 +439,104 @@ export function UnifiedNoteEditor({
       <div className="px-6 pt-4">
         <div className="flex items-center justify-between mb-2">
           <label className="text-xs text-[var(--color-text-muted)]">Content</label>
-          <div className="flex gap-1">
-            <FormatButton onClick={() => insertFormat("**", "**")} title="Bold">B</FormatButton>
-            <FormatButton onClick={() => insertFormat("*", "*")} title="Italic">I</FormatButton>
-            <FormatButton onClick={() => insertFormat("\n- ", "")} title="List">•</FormatButton>
-            <FormatButton onClick={() => insertFormat("\n## ", "")} title="Heading">H</FormatButton>
-            <FormatButton onClick={() => insertFormat("`", "`")} title="Code">{`</>`}</FormatButton>
-          </div>
         </div>
+        
+        {/* Formatting Toolbar */}
+        <div className="flex items-center gap-1 p-2 bg-[var(--color-bg)] rounded-t-xl border border-b-0 border-[var(--color-border)] overflow-x-auto">
+          {/* Text formatting */}
+          <FormatButton onClick={() => insertFormat("**", "**")} title="Bold (Ctrl+B)">
+            <strong>B</strong>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("*", "*")} title="Italic (Ctrl+I)">
+            <em>I</em>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("~~", "~~")} title="Strikethrough">
+            <s>S</s>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("<u>", "</u>")} title="Underline">
+            <u>U</u>
+          </FormatButton>
+          
+          <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+          
+          {/* Headings */}
+          <FormatButton onClick={() => insertFormat("\n# ", "")} title="Heading 1">H1</FormatButton>
+          <FormatButton onClick={() => insertFormat("\n## ", "")} title="Heading 2">H2</FormatButton>
+          <FormatButton onClick={() => insertFormat("\n### ", "")} title="Heading 3">H3</FormatButton>
+          
+          <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+          
+          {/* Lists */}
+          <FormatButton onClick={() => insertFormat("\n- ", "")} title="Bullet List">
+            <span className="text-base">•</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("\n1. ", "")} title="Numbered List">
+            <span className="text-xs">1.</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("\n- [ ] ", "")} title="Task List">
+            <span className="text-xs">☐</span>
+          </FormatButton>
+          
+          <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+          
+          {/* Code & Quote */}
+          <FormatButton onClick={() => insertFormat("`", "`")} title="Inline Code">
+            <span className="font-mono text-xs">{`<>`}</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("\n```\n", "\n```")} title="Code Block">
+            <span className="font-mono text-xs">{`{}`}</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("\n> ", "")} title="Quote">
+            <span className="text-base">"</span>
+          </FormatButton>
+          
+          <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+          
+          {/* Links & Media */}
+          <FormatButton onClick={() => insertFormat("[", "](url)")} title="Link">
+            <span className="text-xs">🔗</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("![alt](", ")")} title="Image">
+            <span className="text-xs">🖼️</span>
+          </FormatButton>
+          
+          <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+          
+          {/* Special */}
+          <FormatButton onClick={() => insertFormat("\n---\n", "")} title="Horizontal Rule">
+            <span className="text-xs">—</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("\n| Col 1 | Col 2 |\n|-------|-------|\n| ", " |")} title="Table">
+            <span className="text-xs">⊞</span>
+          </FormatButton>
+          <FormatButton onClick={() => insertFormat("==", "==")} title="Highlight">
+            <span className="text-xs bg-yellow-200 dark:bg-yellow-800 px-0.5">H</span>
+          </FormatButton>
+        </div>
+        
         <textarea
           ref={contentRef}
           placeholder="Write your note here... (Markdown supported)"
           value={note.content}
           onChange={(e) => setNote({ ...note, content: e.target.value })}
           onSelect={handleContentSelect}
-          className="w-full min-h-[150px] p-4 text-[var(--color-text)] bg-[var(--color-bg)]/50 rounded-xl border border-[var(--color-border)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] resize-none leading-relaxed"
+          onKeyDown={(e) => {
+            // Keyboard shortcuts
+            if (e.ctrlKey || e.metaKey) {
+              if (e.key === 'b') { e.preventDefault(); insertFormat("**", "**"); }
+              if (e.key === 'i') { e.preventDefault(); insertFormat("*", "*"); }
+              if (e.key === 'k') { e.preventDefault(); insertFormat("[", "](url)"); }
+            }
+          }}
+          className="w-full min-h-[200px] p-4 text-[var(--color-text)] bg-[var(--color-surface)] rounded-b-xl border border-t-0 border-[var(--color-border)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] resize-y leading-relaxed font-mono text-sm"
         />
-        <div className="mt-1 flex justify-between text-xs text-[var(--color-text-subtle)]">
-          <span>{note.content.split(/\s+/).filter(Boolean).length} words</span>
-          <span>{note.content.length} chars</span>
+        <div className="mt-2 flex justify-between text-xs text-[var(--color-text-subtle)]">
+          <span className="flex items-center gap-3">
+            <span>{note.content.split(/\s+/).filter(Boolean).length} words</span>
+            <span>{note.content.length} chars</span>
+            <span>{note.content.split('\n').length} lines</span>
+          </span>
+          <span className="text-[var(--color-text-muted)]">Markdown supported</span>
         </div>
       </div>
 
