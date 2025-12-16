@@ -521,7 +521,10 @@ export default function Home() {
                       y: 0,
                     }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.25, ease: "easeOut" }}
+                    transition={{ 
+                      duration: 0.2, 
+                      ease: [0.4, 0, 0.2, 1] // Custom easing for smoother feel
+                    }}
                     className={
                       dimmed ? "pointer-events-none" : "pointer-events-auto"
                     }
