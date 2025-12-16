@@ -18,6 +18,7 @@ type Section = {
     bullets: string[];
   };
   language: "english" | "hindi" | "hinglish";
+  hinglishTone?: "neutral" | "casual" | "interview";
 };
 
 function cleanTranscript(
@@ -223,6 +224,65 @@ export function SectionCard({
           </button>
         </div>
       </div>
+
+      {/* Tone selector - Only when Hinglish is active */}
+      {section.language === "hinglish" && (
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-gray-500 dark:text-gray-400">Tone:</span>
+          <select
+            value={section.hinglishTone || "neutral"}
+            onChange={async (e) => {
+              const tone = e.target.value as "neutral" | "casual" | "interview";
+
+              // Tone changes always regenerate from source (prevents quality decay)
+              setSwitchingLanguage(true);
+              try {
+                const res = await fetch(
+                  "http://localhost:3001/ai/transform-language",
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      target: "hinglish",
+                      tone,
+                      section: section.source, // Always use source
+                    }),
+                  }
+                );
+
+                if (!res.ok) {
+                  const errorData = await res
+                    .json()
+                    .catch(() => ({ error: "Unknown error" }));
+                  alert(
+                    `⚠️ Couldn't change tone. ${errorData.error || "Try again."}`
+                  );
+                  return;
+                }
+
+                const transformed = await res.json();
+                onChange({
+                  ...section,
+                  current: transformed,
+                  hinglishTone: tone,
+                });
+              } catch {
+                alert(
+                  "⚠️ Couldn't change tone. Make sure the API server is running."
+                );
+              } finally {
+                setSwitchingLanguage(false);
+              }
+            }}
+            disabled={switchingLanguage}
+            className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="neutral">Neutral</option>
+            <option value="casual">Casual</option>
+            <option value="interview">Interview</option>
+          </select>
+        </div>
+      )}
 
       {/* Summary - Subtle background, looks like a note */}
       <div className="relative group">

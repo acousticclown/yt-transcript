@@ -17,6 +17,7 @@ type Section = {
     bullets: string[];
   };
   language: "english" | "hindi" | "hinglish";
+  hinglishTone?: "neutral" | "casual" | "interview";
 };
 
 export function SortableSectionCard({

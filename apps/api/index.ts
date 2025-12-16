@@ -550,6 +550,7 @@ const server = http.createServer(async (req, res) => {
           summary: string;
           bullets: string[];
         };
+        tone?: "neutral" | "casual" | "interview";
       };
 
       try {
@@ -592,7 +593,9 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Generate transformed section
-      const prompt = languageTransformPrompt(target, section);
+      // Default to "neutral" tone if not provided (backward compatible)
+      const tone = parsedBody.tone || "neutral";
+      const prompt = languageTransformPrompt(target, section, tone);
       const result = await geminiModel.generateContent(prompt);
 
       // Gemini sometimes wraps JSON in markdown code blocks - strip safely
