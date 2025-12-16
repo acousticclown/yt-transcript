@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { NoteList, Note } from "../../../components/notes";
+import { WritingPerson, EmptyStateIllustration } from "../../../components/illustrations";
 
 // Mock data for demo
 const initialNotes: Note[] = [
@@ -63,26 +64,13 @@ export default function DashboardPage() {
             </p>
           </div>
           
-          {/* Floating illustration */}
+          {/* Humaaans-style illustration */}
           <motion.div
-            animate={{ y: [0, -8, 0] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden sm:block"
+            animate={{ y: [0, -6, 0] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="hidden md:block flex-shrink-0"
           >
-            <div className="w-24 h-24 relative">
-              <svg viewBox="0 0 100 100" className="w-full h-full">
-                {/* Notebook */}
-                <rect x="20" y="15" width="60" height="70" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
-                <line x1="35" y1="15" x2="35" y2="85" stroke="var(--color-primary)" strokeWidth="2" opacity="0.5" />
-                {/* Lines */}
-                <line x1="42" y1="30" x2="70" y2="30" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
-                <line x1="42" y1="42" x2="65" y2="42" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
-                <line x1="42" y1="54" x2="68" y2="54" stroke="var(--color-text-muted)" strokeWidth="2" strokeLinecap="round" />
-                {/* Sparkle */}
-                <circle cx="75" cy="20" r="3" fill="var(--color-primary)" />
-                <circle cx="82" cy="28" r="2" fill="var(--color-secondary)" />
-              </svg>
-            </div>
+            <WritingPerson className="w-40 h-40" />
           </motion.div>
         </div>
       </motion.div>
@@ -246,23 +234,10 @@ function FolderIcon() {
 
 function EmptyState() {
   return (
-    <div className="text-center py-16 px-4 bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)]">
-      {/* Illustration */}
-      <div className="w-32 h-32 mx-auto mb-6">
-        <svg viewBox="0 0 120 120" className="w-full h-full">
-          {/* Stack of papers */}
-          <rect x="25" y="35" width="70" height="55" rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="2" />
-          <rect x="30" y="30" width="70" height="55" rx="4" fill="var(--color-bg)" stroke="var(--color-border)" strokeWidth="2" />
-          <rect x="35" y="25" width="70" height="55" rx="4" fill="var(--color-surface)" stroke="var(--color-border)" strokeWidth="2" />
-          {/* Plus icon */}
-          <circle cx="70" cy="52" r="15" fill="var(--color-primary)" opacity="0.15" />
-          <line x1="70" y1="45" x2="70" y2="59" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
-          <line x1="63" y1="52" x2="77" y2="52" stroke="var(--color-primary)" strokeWidth="3" strokeLinecap="round" />
-          {/* Sparkles */}
-          <circle cx="95" cy="30" r="3" fill="var(--color-primary)" />
-          <circle cx="25" cy="45" r="2" fill="var(--color-secondary)" />
-          <circle cx="100" cy="60" r="2" fill="var(--color-secondary)" />
-        </svg>
+    <div className="text-center py-12 px-4 bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)]">
+      {/* Humaaans-style illustration */}
+      <div className="flex justify-center mb-4">
+        <EmptyStateIllustration className="w-48 h-48" />
       </div>
       
       <h3 className="text-xl font-semibold text-[var(--color-text)]">Start your journey</h3>

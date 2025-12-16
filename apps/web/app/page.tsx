@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { WritingPerson, WatchingPerson, IdeaPerson, OrganizingPerson } from "../components/illustrations";
 
 export default function LandingPage() {
   return (
@@ -87,21 +88,47 @@ export default function LandingPage() {
             />
           </motion.div>
 
-          {/* Preview */}
+          {/* Illustration Showcase */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className="mt-24"
           >
-            <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-xl overflow-hidden">
-              <div className="p-4 border-b border-[var(--color-border)] flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-red-400" />
-                <div className="w-3 h-3 rounded-full bg-yellow-400" />
-                <div className="w-3 h-3 rounded-full bg-green-400" />
-              </div>
-              <div className="p-8 bg-[var(--color-bg-alt)] min-h-[300px] flex items-center justify-center text-[var(--color-text-muted)]">
-                <p>App preview coming soon...</p>
+            <div className="bg-gradient-to-br from-[var(--color-primary)]/5 via-[var(--color-secondary)]/5 to-transparent rounded-3xl p-8 sm:p-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-end">
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex flex-col items-center"
+                >
+                  <WritingPerson className="w-32 h-32 sm:w-40 sm:h-40" />
+                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">Take Notes</p>
+                </motion.div>
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, delay: 0.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex flex-col items-center"
+                >
+                  <WatchingPerson className="w-32 h-32 sm:w-40 sm:h-40" />
+                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">Learn from Videos</p>
+                </motion.div>
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, delay: 1, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex flex-col items-center"
+                >
+                  <IdeaPerson className="w-32 h-32 sm:w-40 sm:h-40" />
+                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">Generate Ideas</p>
+                </motion.div>
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, delay: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  className="flex flex-col items-center"
+                >
+                  <OrganizingPerson className="w-32 h-32 sm:w-40 sm:h-40" />
+                  <p className="mt-2 text-sm text-[var(--color-text-muted)]">Stay Organized</p>
+                </motion.div>
               </div>
             </div>
           </motion.div>
