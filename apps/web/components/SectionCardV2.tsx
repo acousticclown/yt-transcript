@@ -336,6 +336,7 @@ export function SectionCardV2({
                 </button>
               </Stack>
             </Stack>
+            </Stack>
 
             {/* Tone selector - Only when Hinglish is active */}
             {section.language === "hinglish" && (
