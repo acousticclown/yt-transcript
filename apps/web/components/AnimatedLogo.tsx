@@ -11,7 +11,7 @@ type AnimatedLogoProps = {
 // Sophisticated animated hero logo for landing page
 export function AnimatedLogo({ className }: AnimatedLogoProps) {
   const noteLetters = ["N", "o", "t", "e"];
-  const lyLetters = ["l", "y"];
+  const yLetter = "y";
   const controls = useAnimation();
 
   useEffect(() => {
@@ -158,71 +158,71 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
-          {/* Pen that writes "ly" */}
-          <div className="relative flex items-center">
-            {/* Pen SVG - zooms out as ly appears */}
+          {/* Pen as "l" + "y" */}
+          <div className="flex items-end">
+            {/* Pen SVG as the "l" */}
             <motion.div
-              className="absolute left-0 z-10"
-              initial={{ opacity: 0, scale: 0 }}
+              className="flex items-end"
+              initial={{ opacity: 0, scale: 0, rotate: -45 }}
               animate={{ 
-                opacity: [0, 1, 1, 0],
-                scale: [0, 1.2, 1, 0],
+                opacity: 1,
+                scale: 1,
+                rotate: 0,
               }}
               transition={{
-                duration: 1.6,
-                delay: 1.0,
-                times: [0, 0.25, 0.6, 1],
-                ease: "easeInOut",
+                type: "spring",
+                stiffness: 200,
+                damping: 15,
+                delay: 1.1,
               }}
             >
               <svg 
-                viewBox="0 0 24 24" 
-                className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14"
+                viewBox="0 0 24 48" 
+                className="w-6 h-12 sm:w-8 sm:h-16 md:w-10 md:h-20 -mr-1"
                 fill="none"
               >
-                <path
-                  d="M3 21l1.5-4.5L17.5 3.5a2.12 2.12 0 013 3L7.5 19.5 3 21z"
+                {/* Pen body as "l" shape */}
+                <rect
+                  x="8" y="0" width="8" height="40" rx="2"
                   className="fill-[var(--color-primary)]"
                 />
+                {/* Pen tip */}
                 <path
-                  d="M15 5l4 4"
-                  className="stroke-[var(--color-primary-dark)]"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
+                  d="M8 40L12 48L16 40"
+                  className="fill-[var(--color-primary-dark)]"
+                />
+                {/* Pen top */}
+                <rect
+                  x="6" y="0" width="12" height="4" rx="1"
+                  className="fill-[var(--color-primary-dark)]"
                 />
               </svg>
             </motion.div>
 
-            {/* "ly" - emerges from pen */}
-            <div className="flex">
-              {lyLetters.map((letter, i) => (
-                <motion.span
-                  key={i}
-                  className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
-                  style={{
-                    fontFamily: "var(--font-outfit), system-ui, sans-serif",
-                    letterSpacing: "-0.03em",
-                    transformOrigin: "center center",
-                  }}
-                  initial={{ 
-                    opacity: 0, 
-                    scale: 0,
-                  }}
-                  animate={{ 
-                    opacity: 1, 
-                    scale: 1,
-                  }}
-                  transition={{
-                    type: "spring",
-                    stiffness: 250,
-                    damping: 18,
-                    delay: 1.8 + i * 0.15,
-                  }}
-                >
-                  {letter}
-                </motion.span>
-              ))}
-            </div>
+            {/* "y" */}
+            <motion.span
+              className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+              style={{
+                fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                letterSpacing: "-0.03em",
+              }}
+              initial={{ 
+                opacity: 0, 
+                scale: 0,
+              }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1,
+              }}
+              transition={{
+                type: "spring",
+                stiffness: 250,
+                damping: 18,
+                delay: 1.3,
+              }}
+            >
+              {yLetter}
+            </motion.span>
           </div>
         </div>
       </div>
