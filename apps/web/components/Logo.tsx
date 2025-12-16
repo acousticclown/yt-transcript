@@ -22,43 +22,45 @@ export function Logo({ size = "md", showIcon = true, href = "/dashboard", classN
     <div className={cn("flex items-center", sizes[size].gap, className)}>
       {showIcon && (
         <div className={cn("relative", sizes[size].icon)}>
-          {/* Sophisticated monochrome logo mark */}
-          <svg viewBox="0 0 32 32" fill="none" className="w-full h-full">
-            {/* Outer rounded square */}
-            <rect 
-              x="2" y="2" width="28" height="28" rx="8" 
+          {/* Paper/Note icon - matches AnimatedLogo */}
+          <svg viewBox="0 0 64 64" fill="none" className="w-full h-full">
+            {/* Main paper shape */}
+            <path
+              d="M8 6C8 3.79086 9.79086 2 12 2H40L56 18V58C56 60.2091 54.2091 62 52 62H12C9.79086 62 8 60.2091 8 58V6Z"
               className="fill-[var(--color-text)]"
             />
             
-            {/* Inner pen/note shape - negative space */}
+            {/* Folded corner */}
             <path
-              d="M10 22V12L16 18L22 12V22"
-              className="stroke-[var(--color-bg)]"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              fill="none"
+              d="M40 2V14C40 16.2091 41.7909 18 44 18H56L40 2Z"
+              className="fill-[var(--color-bg)]"
+              opacity="0.3"
             />
             
-            {/* Dot accent */}
-            <circle cx="16" cy="9" r="1.5" className="fill-[var(--color-bg)]" />
+            {/* Lines on paper */}
+            <rect x="16" y="28" width="28" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
+            <rect x="16" y="38" width="36" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
+            <rect x="16" y="48" width="24" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
+            
+            {/* Accent dot */}
+            <circle cx="50" cy="8" r="3" className="fill-[var(--color-primary)]" />
           </svg>
         </div>
       )}
       
-      {/* Simple text */}
+      {/* Text with subtle accent */}
       <span
         className={cn(
           sizes[size].text,
-          "font-bold tracking-tight text-[var(--color-text)]",
-          "select-none"
+          "font-bold tracking-tight select-none"
         )}
         style={{
-          fontFamily: "var(--font-outfit), 'Inter', system-ui, sans-serif",
+          fontFamily: "var(--font-outfit), system-ui, sans-serif",
           letterSpacing: "-0.02em",
         }}
       >
-        Notely
+        <span className="text-[var(--color-text)]">Note</span>
+        <span className="text-[var(--color-primary)]">ly</span>
       </span>
     </div>
   );

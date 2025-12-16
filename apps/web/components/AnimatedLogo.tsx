@@ -1,124 +1,210 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
+import { useEffect } from "react";
 import { cn } from "../lib/utils";
 
 type AnimatedLogoProps = {
   className?: string;
 };
 
-// Animated hero logo for landing page
+// Sophisticated animated hero logo for landing page
 export function AnimatedLogo({ className }: AnimatedLogoProps) {
   const noteLetters = ["N", "o", "t", "e"];
   const lyLetters = ["l", "y"];
+  const controls = useAnimation();
+
+  useEffect(() => {
+    controls.start("visible");
+  }, [controls]);
+
+  // Spring configurations for fluid motion
+  const springConfig = {
+    type: "spring",
+    stiffness: 100,
+    damping: 15,
+    mass: 1,
+  };
+
+  const letterSpring = {
+    type: "spring",
+    stiffness: 200,
+    damping: 20,
+  };
 
   return (
-    <div className={cn("flex items-center justify-center gap-4", className)}>
-      {/* Animated Note/Paper Vector */}
-      <motion.div
-        className="relative w-20 h-20 sm:w-24 sm:h-24"
-        initial={{ scale: 0, rotate: -180 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-      >
-        <svg viewBox="0 0 80 80" fill="none" className="w-full h-full">
-          {/* Paper/Note shape */}
-          <motion.path
-            d="M12 8h40l16 16v48a4 4 0 01-4 4H12a4 4 0 01-4-4V12a4 4 0 014-4z"
-            className="fill-[var(--color-text)]"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 1, delay: 0.3 }}
-          />
-          
-          {/* Folded corner */}
-          <motion.path
-            d="M52 8v12a4 4 0 004 4h12"
-            className="fill-[var(--color-text-muted)]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.8 }}
-          />
-          
-          {/* Lines on paper */}
-          <motion.g
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 1 }}
-          >
-            <rect x="16" y="36" width="32" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.6" />
-            <rect x="16" y="46" width="40" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.6" />
-            <rect x="16" y="56" width="28" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.6" />
-          </motion.g>
-          
-          {/* Pen/pencil coming out */}
-          <motion.g
-            initial={{ x: 20, y: 20, opacity: 0, rotate: 45 }}
-            animate={{ x: 0, y: 0, opacity: 1, rotate: 0 }}
-            transition={{ duration: 0.6, delay: 1.2, ease: "easeOut" }}
-          >
-            <rect x="54" y="50" width="4" height="24" rx="1" className="fill-[var(--color-primary)]" transform="rotate(-45 56 62)" />
-            <path d="M42 74l4-8 4 4-8 4z" className="fill-[var(--color-primary-dark)]" />
-          </motion.g>
-        </svg>
-      </motion.div>
-
-      {/* Text: "Note" flowing out, then "ly" with fluid animation */}
-      <div className="flex items-baseline">
-        {/* "Note" - fade in from right to left */}
-        <span
-          className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--color-text)] inline-flex"
-          style={{
-            fontFamily: "var(--font-outfit), 'Inter', system-ui, sans-serif",
-            letterSpacing: "-0.03em",
+    <div className={cn("flex flex-col items-center justify-center gap-6", className)}>
+      {/* Main container with staggered children */}
+      <div className="flex items-center gap-5 sm:gap-6">
+        {/* Animated Note/Paper Vector - More sophisticated */}
+        <motion.div
+          className="relative w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24"
+          initial={{ opacity: 0, scale: 0.5, rotateY: -90 }}
+          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+          transition={{
+            ...springConfig,
+            delay: 0.1,
           }}
         >
-          {noteLetters.map((letter, i) => (
-            <motion.span
-              key={i}
-              className="inline-block"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                duration: 0.4,
-                delay: 0.8 + (noteLetters.length - 1 - i) * 0.1, // Right to left
-                ease: "easeOut",
-              }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </span>
-
-        {/* "ly" - fluid wave animation */}
-        <span
-          className="text-5xl sm:text-6xl md:text-7xl font-bold tracking-tight text-[var(--color-primary)] inline-flex"
-          style={{
-            fontFamily: "var(--font-outfit), 'Inter', system-ui, sans-serif",
-            letterSpacing: "-0.03em",
-          }}
-        >
-          {lyLetters.map((letter, i) => (
-            <motion.span
-              key={i}
-              className="inline-block origin-bottom"
-              initial={{ opacity: 0, scaleY: 0, y: 20 }}
+          <motion.svg 
+            viewBox="0 0 64 64" 
+            fill="none" 
+            className="w-full h-full"
+            initial={{ filter: "blur(10px)" }}
+            animate={{ filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            {/* Shadow/depth layer */}
+            <motion.rect
+              x="8" y="8" width="48" height="52" rx="6"
+              className="fill-[var(--color-text)]"
+              opacity="0.1"
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 8, opacity: 0.1 }}
+              transition={{ ...springConfig, delay: 0.3 }}
+            />
+            
+            {/* Main paper shape */}
+            <motion.path
+              d="M8 6C8 3.79086 9.79086 2 12 2H40L56 18V58C56 60.2091 54.2091 62 52 62H12C9.79086 62 8 60.2091 8 58V6Z"
+              className="fill-[var(--color-text)]"
+              initial={{ pathLength: 0, opacity: 0 }}
+              animate={{ pathLength: 1, opacity: 1 }}
+              transition={{ duration: 1, delay: 0.2, ease: "easeInOut" }}
+            />
+            
+            {/* Folded corner with 3D effect */}
+            <motion.path
+              d="M40 2V14C40 16.2091 41.7909 18 44 18H56L40 2Z"
+              className="fill-[var(--color-bg)]"
+              opacity="0.3"
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 0.3 }}
+              transition={{ ...springConfig, delay: 0.8 }}
+            />
+            
+            {/* Animated lines - staggered reveal */}
+            {[0, 1, 2].map((i) => (
+              <motion.rect
+                key={i}
+                x="16"
+                y={28 + i * 10}
+                width={[28, 36, 24][i]}
+                height="3"
+                rx="1.5"
+                className="fill-[var(--color-bg)]"
+                opacity="0.5"
+                initial={{ scaleX: 0, opacity: 0 }}
+                animate={{ scaleX: 1, opacity: 0.5 }}
+                transition={{
+                  ...springConfig,
+                  delay: 1 + i * 0.15,
+                }}
+                style={{ originX: 0 }}
+              />
+            ))}
+            
+            {/* Sparkle/magic dot */}
+            <motion.circle
+              cx="50"
+              cy="8"
+              r="3"
+              className="fill-[var(--color-primary)]"
+              initial={{ scale: 0, opacity: 0 }}
               animate={{ 
-                opacity: 1, 
-                scaleY: 1, 
-                y: [20, -8, 4, -2, 0], // Fluid bounce
+                scale: [0, 1.5, 1],
+                opacity: [0, 1, 0.8],
               }}
               transition={{
-                duration: 0.8,
-                delay: 1.4 + i * 0.15,
+                duration: 0.6,
+                delay: 1.5,
                 ease: "easeOut",
               }}
-            >
-              {letter}
-            </motion.span>
-          ))}
-        </span>
+            />
+          </motion.svg>
+        </motion.div>
+
+        {/* Text container */}
+        <div className="flex items-baseline overflow-hidden">
+          {/* "Note" - Morphing reveal from right */}
+          <div className="flex">
+            {noteLetters.map((letter, i) => (
+              <motion.span
+                key={i}
+                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-text)]"
+                style={{
+                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                  letterSpacing: "-0.03em",
+                }}
+                initial={{ 
+                  opacity: 0, 
+                  y: 60,
+                  rotateX: -90,
+                  filter: "blur(8px)",
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  rotateX: 0,
+                  filter: "blur(0px)",
+                }}
+                transition={{
+                  ...letterSpring,
+                  delay: 0.5 + i * 0.08,
+                }}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </div>
+
+          {/* "ly" - Elastic pop with color */}
+          <div className="flex">
+            {lyLetters.map((letter, i) => (
+              <motion.span
+                key={i}
+                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+                style={{
+                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                  letterSpacing: "-0.03em",
+                  transformOrigin: "bottom center",
+                }}
+                initial={{ 
+                  opacity: 0, 
+                  scale: 0,
+                  y: 40,
+                }}
+                animate={{ 
+                  opacity: 1, 
+                  scale: 1,
+                  y: 0,
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 15,
+                  delay: 1.1 + i * 0.12,
+                }}
+              >
+                {letter}
+              </motion.span>
+            ))}
+          </div>
+        </div>
       </div>
+
+      {/* Tagline with fade up */}
+      <motion.p
+        className="text-base sm:text-lg text-[var(--color-text-muted)] font-medium tracking-wide"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{
+          ...springConfig,
+          delay: 1.8,
+        }}
+      >
+        Smart notes, effortlessly
+      </motion.p>
     </div>
   );
 }
