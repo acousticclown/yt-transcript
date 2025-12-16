@@ -162,10 +162,10 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
           <div className="flex items-end relative">
             {/* Pen that morphs into "l" */}
             <div className="relative">
-              {/* Pen SVG - fades out */}
+              {/* Pen SVG - straight, tip at bottom */}
               <motion.svg 
-                viewBox="0 0 24 24" 
-                className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 absolute bottom-0 left-1/2 -translate-x-1/2"
+                viewBox="0 0 24 48" 
+                className="w-6 h-12 sm:w-7 sm:h-14 md:w-8 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
                 fill="none"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ 
@@ -179,16 +179,12 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   ease: "easeInOut",
                 }}
               >
-                <path
-                  d="M3 21l1.5-4.5L17.5 3.5a2.12 2.12 0 013 3L7.5 19.5 3 21z"
-                  className="fill-[var(--color-primary)]"
-                />
-                <path
-                  d="M15 5l4 4"
-                  className="stroke-[var(--color-primary-dark)]"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
+                {/* Pen body */}
+                <rect x="8" y="0" width="8" height="36" rx="1" className="fill-[var(--color-primary)]" />
+                {/* Pen tip */}
+                <path d="M8 36L12 48L16 36" className="fill-[var(--color-primary-dark)]" />
+                {/* Pen cap */}
+                <rect x="7" y="0" width="10" height="6" rx="1" className="fill-[var(--color-primary-dark)]" />
               </motion.svg>
 
               {/* "l" letter - fades in as pen fades out */}
