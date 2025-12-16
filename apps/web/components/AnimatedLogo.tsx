@@ -125,8 +125,8 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
         </motion.div>
 
         {/* Text container */}
-        <div className="flex items-baseline overflow-hidden">
-          {/* "Note" - Morphing reveal from right */}
+        <div className="flex items-baseline overflow-hidden relative">
+          {/* "Note" - Morphing reveal */}
           <div className="flex">
             {noteLetters.map((letter, i) => (
               <motion.span
@@ -158,6 +158,32 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
+          {/* Animated dot - starts between Note and ly, curves up to icon position */}
+          <motion.span
+            className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+            style={{
+              fontFamily: "var(--font-outfit), system-ui, sans-serif",
+            }}
+            initial={{ 
+              opacity: 0,
+              scale: 0,
+            }}
+            animate={{ 
+              opacity: [0, 1, 1, 0],
+              scale: [0, 1.2, 1, 0.5],
+              x: [0, 0, 0, -120],
+              y: [0, -10, 0, -60],
+            }}
+            transition={{
+              duration: 1.2,
+              delay: 0.9,
+              times: [0, 0.2, 0.5, 1],
+              ease: "easeInOut",
+            }}
+          >
+            .
+          </motion.span>
+
           {/* "ly" - Elastic pop with color */}
           <div className="flex">
             {lyLetters.map((letter, i) => (
@@ -183,7 +209,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   type: "spring",
                   stiffness: 300,
                   damping: 15,
-                  delay: 1.1 + i * 0.12,
+                  delay: 1.4 + i * 0.12,
                 }}
               >
                 {letter}
