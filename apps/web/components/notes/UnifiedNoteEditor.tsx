@@ -48,7 +48,16 @@ export function UnifiedNoteEditor({
   const [focusedSectionId, setFocusedSectionId] = useState<string | null>(null);
   const [focusedBulletKey, setFocusedBulletKey] = useState<string | null>(null); // "sectionId-bulletIndex"
   const [aiLoading, setAiLoading] = useState<string | null>(null);
-  const [textSelection, setTextSelection] = useState("");
+  
+  // Selection tracking
+  const [selectionInfo, setSelectionInfo] = useState<{
+    text: string;
+    field: "summary" | "bullet";
+    sectionId: string;
+    bulletIndex?: number;
+    start: number;
+    end: number;
+  } | null>(null);
 
   // Refs for text inputs
   const summaryRefs = useRef<Record<string, HTMLTextAreaElement | null>>({});
@@ -62,10 +71,14 @@ export function UnifiedNoteEditor({
   const totalPoints = note.sections.reduce((acc, s) => acc + s.bullets.length, 0);
 
   // Get current target for AI action
-  const getAITarget = (): { text: string; type: "selection" | "bullet" | "section" | "all"; sectionId?: string; bulletIndex?: number } => {
-    // 1. Selected text
-    if (textSelection) {
-      return { text: textSelection, type: "selection" };
+  const getAITarget = () => {
+    // 1. Selected text with field info
+    if (selectionInfo && selectionInfo.text) {
+      return { 
+        text: selectionInfo.text, 
+        type: "selection" as const,
+        ...selectionInfo
+      };
     }
     // 2. Focused bullet
     if (focusedBulletKey) {
@@ -73,20 +86,19 @@ export function UnifiedNoteEditor({
       const section = note.sections.find(s => s.id === sectionId);
       const bullet = section?.bullets[parseInt(bulletIdx)];
       if (bullet) {
-        return { text: bullet, type: "bullet", sectionId, bulletIndex: parseInt(bulletIdx) };
+        return { text: bullet, type: "bullet" as const, sectionId, bulletIndex: parseInt(bulletIdx) };
       }
     }
     // 3. Focused section
     if (focusedSectionId) {
       const section = note.sections.find(s => s.id === focusedSectionId);
       if (section) {
-        const fullText = `${section.title}\n${section.summary}\n${section.bullets.join("\n")}`;
-        return { text: fullText, type: "section", sectionId: focusedSectionId };
+        return { text: section.summary, type: "section" as const, sectionId: focusedSectionId };
       }
     }
     // 4. All content
-    const allText = note.sections.map(s => `${s.title}\n${s.summary}\n${s.bullets.join("\n")}`).join("\n\n");
-    return { text: allText, type: "all" };
+    const allText = note.sections.map(s => s.summary).join("\n\n");
+    return { text: allText, type: "all" as const };
   };
 
   // AI Action handler
@@ -101,35 +113,49 @@ export function UnifiedNoteEditor({
       const result = await onAIAction(action, target.text);
       
       // Apply result based on target type
-      if (target.type === "selection") {
-        // For selection, we'd need to track which field - for now just log
-        console.log("AI result for selection:", result);
-        alert("✨ AI Result:\n\n" + result);
+      if (target.type === "selection" && "field" in target && target.sectionId) {
+        // Replace selected text in the correct field
+        if (target.field === "summary") {
+          const section = note.sections.find(s => s.id === target.sectionId);
+          if (section) {
+            const newSummary = 
+              section.summary.slice(0, target.start) + 
+              result + 
+              section.summary.slice(target.end);
+            updateSection(target.sectionId, { summary: newSummary });
+          }
+        } else if (target.field === "bullet" && target.bulletIndex !== undefined) {
+          const section = note.sections.find(s => s.id === target.sectionId);
+          if (section) {
+            const bullet = section.bullets[target.bulletIndex];
+            const newBullet = 
+              bullet.slice(0, target.start) + 
+              result + 
+              bullet.slice(target.end);
+            updateBullet(target.sectionId, target.bulletIndex, newBullet);
+          }
+        }
       } else if (target.type === "bullet" && target.sectionId !== undefined && target.bulletIndex !== undefined) {
         updateBullet(target.sectionId, target.bulletIndex, result);
       } else if (target.type === "section" && target.sectionId) {
-        // For section, update summary
         updateSection(target.sectionId, { summary: result });
-      } else {
-        // For all, show result (can't easily replace everything)
-        console.log("AI result for all:", result);
-        alert("✨ AI Result:\n\n" + result);
       }
+      // For "all", we don't auto-replace
     } finally {
       setAiLoading(null);
-      setTextSelection("");
+      setSelectionInfo(null);
     }
   };
 
   // Get label for current AI target
   const getTargetLabel = () => {
-    if (textSelection) return `Selected text (${textSelection.length} chars)`;
+    if (selectionInfo?.text) return `Selected: "${selectionInfo.text.slice(0, 20)}${selectionInfo.text.length > 20 ? '...' : ''}"`;
     if (focusedBulletKey) return "Focused key point";
     if (focusedSectionId) {
       const section = note.sections.find(s => s.id === focusedSectionId);
       return `Section: ${section?.title || "Untitled"}`;
     }
-    return "All content";
+    return "All sections";
   };
 
   // Tag handlers
@@ -210,10 +236,50 @@ export function UnifiedNoteEditor({
     setNote({ ...note, language: lang });
   };
 
-  // Text selection handler
-  const handleTextSelect = () => {
-    const selected = window.getSelection()?.toString() || "";
-    setTextSelection(selected);
+  // Text selection handler for summary
+  const handleSummarySelect = (sectionId: string) => {
+    const textarea = summaryRefs.current[sectionId];
+    if (!textarea) return;
+    
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value.slice(start, end);
+    
+    if (text) {
+      setSelectionInfo({
+        text,
+        field: "summary",
+        sectionId,
+        start,
+        end,
+      });
+    } else {
+      setSelectionInfo(null);
+    }
+  };
+
+  // Text selection handler for bullet
+  const handleBulletSelect = (sectionId: string, bulletIndex: number) => {
+    const bulletKey = `${sectionId}-${bulletIndex}`;
+    const input = bulletRefs.current[bulletKey];
+    if (!input) return;
+    
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const text = input.value.slice(start, end);
+    
+    if (text) {
+      setSelectionInfo({
+        text,
+        field: "bullet",
+        sectionId,
+        bulletIndex,
+        start,
+        end,
+      });
+    } else {
+      setSelectionInfo(null);
+    }
   };
 
   const handleSave = () => {
@@ -313,7 +379,7 @@ export function UnifiedNoteEditor({
       </div>
 
       {/* Sections */}
-      <div className="p-6 space-y-6" onMouseUp={handleTextSelect}>
+      <div className="p-6 space-y-6">
         <AnimatePresence>
           {note.sections.map((section, sectionIndex) => {
             const isFocused = focusedSectionId === section.id;
@@ -372,6 +438,8 @@ export function UnifiedNoteEditor({
                     placeholder="Write a summary..."
                     value={section.summary}
                     onChange={(e) => updateSection(section.id, { summary: e.target.value })}
+                    onSelect={() => handleSummarySelect(section.id)}
+                    onBlur={() => setTimeout(() => setSelectionInfo(null), 200)}
                     className="w-full min-h-[80px] p-3 text-sm text-[var(--color-text)] bg-[var(--color-surface)] rounded-lg border border-[var(--color-border)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)] resize-none"
                   />
                   <div className="mt-1 text-xs text-[var(--color-text-subtle)] text-right">
@@ -408,6 +476,8 @@ export function UnifiedNoteEditor({
                             value={bullet}
                             onChange={(e) => updateBullet(section.id, bulletIndex, e.target.value)}
                             onFocus={() => setFocusedBulletKey(bulletKey)}
+                            onSelect={() => handleBulletSelect(section.id, bulletIndex)}
+                            onBlur={() => setTimeout(() => setSelectionInfo(null), 200)}
                             className={cn(
                               "flex-1 text-sm text-[var(--color-text)] bg-transparent border-none focus:outline-none placeholder:text-[var(--color-text-subtle)]",
                               isBulletFocused && "text-[var(--color-primary)]"
