@@ -1,0 +1,112 @@
+# YT-Transcript Cursor Rules
+
+## Core Philosophy
+- Build incrementally, day-by-day
+- Start simple and fully working, then add intelligence and playfulness
+- Never jump ahead to future phases unless explicitly asked
+- Prefer clarity, debuggability, and simplicity over clever abstractions
+- This project is for personal use + open source community, not enterprise SaaS
+
+## Architecture (STRICT)
+- **Monorepo Structure:** `apps/web` (Next.js frontend), `apps/api` (Node.js backend), `packages/prompts` (AI prompts), `docs/`
+- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS, Framer Motion, `@dnd-kit`
+- **Backend:** Node.js, TypeScript, Simple REST APIs
+- **AI:** Google Gemini (free tier) - for summaries, section detection, inline actions, section regeneration, and language transformation
+- **Storage:** Local JSON files in `apps/api/data/`
+
+## Development Style
+- Prefer explicit code over magic
+- Write readable TypeScript
+- Avoid premature optimization
+- Explain WHY, not just WHAT, in comments when logic is non-obvious
+- UI should be built after data flow is working
+
+## UI/UX Guidelines (v1.1.0+)
+- **Mobile-First:** Design for smallest screen first, enhance for larger screens
+- **Glassmorphism:** Use subtle frosted glass effects (backdrop-blur, transparency)
+- **Card-Based Layout:** Clear separation, scannable content
+- **Visual Hierarchy:** Content > Actions > Metadata (top to bottom)
+- **Spacing:** Use 4px base unit, generous whitespace, intentional grouping
+- **Color System:** One accent color (indigo), grayscale base, full dark mode support
+- **Typography:** Max 3-4 sizes, system font stack
+- **Animations:** Subtle, purposeful, respect prefers-reduced-motion
+- **Accessibility:** Keyboard navigation, screen readers, WCAG AA contrast
+
+## Component Guidelines
+- **Component Structure:** One component per file, clear props interface
+- **Styling:** Tailwind CSS utility classes, CSS variables for theming
+- **Responsive:** Mobile-first breakpoints (sm: 640px, md: 768px, lg: 1024px, xl: 1280px)
+- **State Management:** React hooks (useState, useEffect), no global state unless necessary
+- **Performance:** Lazy load heavy components, optimize images, monitor bundle size
+
+## Design System Rules
+- **Colors:** Use CSS variables (--primary, --gray-*), support light/dark mode
+- **Spacing:** Use spacing scale (--space-1 through --space-12)
+- **Typography:** Use typography scale (--text-xs through --text-3xl)
+- **Shadows:** Use elevation system (subtle to prominent)
+- **Borders:** 1px solid, use rgba for transparency
+- **Border Radius:** Consistent scale (--radius-sm, --radius-md, --radius-lg)
+
+## Mobile Optimization Rules
+- **Touch Targets:** Minimum 44px × 44px for interactive elements
+- **Gestures:** Support swipe, long-press, pull-to-refresh where appropriate
+- **Layout:** Stack vertically on mobile, side-by-side on desktop
+- **Performance:** 60fps animations, optimize for mobile networks
+- **Testing:** Test on real devices (iOS, Android), multiple screen sizes
+
+## Accessibility Rules
+- **Keyboard Navigation:** All interactive elements must be keyboard accessible
+- **Focus Management:** Clear focus indicators, logical tab order
+- **Screen Readers:** Proper ARIA labels, semantic HTML
+- **Color Contrast:** WCAG AA minimum (4.5:1 for text)
+- **Reduced Motion:** Respect prefers-reduced-motion media query
+
+## AI Integration Rules
+- **Prompts:** All prompts live in `packages/prompts/`, versioned as code
+- **Modular:** Each AI task has its own prompt file
+- **Output Format:** Deterministic JSON where possible
+- **Error Handling:** Graceful failures, clear user messages, no data loss
+- **Caching:** Cache AI results when possible (language variants, categories)
+
+## Code Quality Rules
+- **TypeScript:** Strict mode, no `any` types unless absolutely necessary
+- **Imports:** Use absolute paths where possible, group imports (external, internal, types)
+- **Comments:** Explain WHY for non-obvious logic, not WHAT
+- **Naming:** Clear, descriptive names (components: PascalCase, functions: camelCase)
+- **File Structure:** One component per file, co-locate related files
+
+## Git Rules
+- **Commits:** Descriptive messages, prefix with feature/type (e.g., "feat:", "fix:", "docs:")
+- **Branches:** Use feature branches for major changes
+- **PRs:** Keep focused, one feature/fix per PR
+- **Versioning:** Semantic versioning (MAJOR.MINOR.PATCH)
+
+## Testing Rules
+- **Manual Testing:** Test on multiple browsers, devices, screen sizes
+- **Performance:** Monitor bundle size, runtime performance, Core Web Vitals
+- **Accessibility:** Test with keyboard, screen reader, color contrast tools
+- **Error Cases:** Test error handling, edge cases, network failures
+
+## Documentation Rules
+- **README:** Keep updated, clear setup instructions
+- **Code Comments:** Explain complex logic, not obvious code
+- **API Docs:** Document endpoints in `docs/api.md`
+- **Changelog:** Document breaking changes, new features
+
+## v1.1.0 UI Enhancement Rules
+- **Incremental:** Build one phase at a time, test after each phase
+- **Mobile-First:** Always test mobile layout first
+- **Design System:** Use defined tokens (colors, spacing, typography)
+- **Glassmorphism:** Subtle, not overdone, test on both light/dark modes
+- **Component Reuse:** Create reusable components, avoid duplication
+- **Performance:** Monitor bundle size, lazy load heavy components
+- **Accessibility:** Don't break existing accessibility features
+
+## Default Behavior
+If instructions are ambiguous:
+- Ask for clarification
+- Or choose the simplest working approach aligned with the MVP
+- Prefer mobile-first, accessible solutions
+
+Behave like a thoughtful senior engineer helping build a clean, long-term open-source project.
+
