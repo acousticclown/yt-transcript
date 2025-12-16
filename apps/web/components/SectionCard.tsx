@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { InlineAIButton } from "./InlineAIButton";
+import { LanguageToggle } from "./LanguageToggle";
 
 type Section = {
   id: string;
@@ -99,13 +100,14 @@ export function SectionCard({
             })
           }
         />
-        {/* Language selector - Per section control */}
-        <select
+        {/* Language toggle - Segmented control (better UX) */}
+        <LanguageToggle
           value={section.language}
-          onChange={async (e) => {
-            const target = e.target.value as Section["language"];
+          onChange={async (target) => {
+            // If already on this language, do nothing
+            if (target === section.language) return;
 
-            // If switching to English, restore from source
+            // If switching to English, restore from source instantly
             if (target === "english") {
               onChange({
                 ...section,
@@ -134,8 +136,9 @@ export function SectionCard({
                 const errorData = await res
                   .json()
                   .catch(() => ({ error: "Unknown error" }));
+                // Keep previous language, show toast
                 alert(
-                  `⚠️ Couldn't convert to ${target}. ${errorData.error || "Try again."}`
+                  `⚠️ Couldn't convert language. ${errorData.error || "Try again."}`
                 );
                 return;
               }
@@ -147,6 +150,7 @@ export function SectionCard({
                 language: target,
               });
             } catch {
+              // Keep previous language, show toast
               alert(
                 "⚠️ Couldn't convert language. Make sure the API server is running."
               );
@@ -155,12 +159,7 @@ export function SectionCard({
             }
           }}
           disabled={switchingLanguage}
-          className="text-xs border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <option value="english">English</option>
-          <option value="hinglish">Hinglish</option>
-          <option value="hindi">Hindi</option>
-        </select>
+        />
         {/* 5. Secondary actions - Regenerate, Focus (smaller, lighter) */}
         <div className="flex gap-2">
           {onFocus && !isFocused && (
@@ -227,17 +226,34 @@ export function SectionCard({
 
       {/* Summary - Subtle background, looks like a note */}
       <div className="relative group">
-        <textarea
-          className="w-full bg-gray-50 dark:bg-gray-800 rounded-lg p-3 resize-none outline-none text-base text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[60px]"
-          placeholder="Summary..."
-          value={section.current.summary}
-          onChange={(e) =>
-            onChange({
-              ...section,
-              current: { ...section.current, summary: e.target.value },
-            })
-          }
-        />
+        {/* Visual indicator: "Viewing in ..." */}
+        {section.language !== "english" && (
+          <div className="mb-1 text-xs text-gray-400 dark:text-gray-500">
+            Viewing in {section.language === "hinglish" ? "Hinglish" : "Hindi"}
+            {section.current.summary !== section.source.summary &&
+              section.current.summary.trim() !== "" && (
+                <span className="ml-2">✏️ Editing {section.language} version</span>
+              )}
+          </div>
+        )}
+        <motion.div
+          key={section.language}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+        >
+          <textarea
+            className="w-full bg-gray-50 dark:bg-gray-800 rounded-lg p-3 resize-none outline-none text-base text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[60px]"
+            placeholder="Summary..."
+            value={section.current.summary}
+            onChange={(e) =>
+              onChange({
+                ...section,
+                current: { ...section.current, summary: e.target.value },
+              })
+            }
+          />
+        </motion.div>
               {/* 4. Inline actions - Appear on hover, contextual */}
               <div className="absolute top-2 right-2 hidden group-hover:flex gap-1">
           <InlineAIButton
@@ -292,7 +308,13 @@ export function SectionCard({
       </div>
 
       {/* Bullets - Soft rows, feels like writing notes */}
-      <ul className="space-y-2">
+      <motion.ul
+        key={section.language}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+        className="space-y-2"
+      >
         {section.current.bullets.map((bullet, i) => (
           <li key={i} className="flex items-start gap-2 group/bullet">
             <span className="mt-1 text-gray-400 dark:text-gray-500">•</span>
@@ -402,7 +424,7 @@ export function SectionCard({
             </div>
           </li>
         ))}
-      </ul>
+      </motion.ul>
     </motion.div>
   );
 }
