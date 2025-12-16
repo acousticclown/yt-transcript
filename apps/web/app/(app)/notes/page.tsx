@@ -134,15 +134,25 @@ export default function NotesPage() {
           </div>
 
           {/* Sort */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as SortOption)}
-            className="px-3 py-1.5 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none"
-          >
-            <option value="recent">Recent</option>
-            <option value="title">Title A-Z</option>
-            <option value="favorites">Favorites first</option>
-          </select>
+          <div className="relative">
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as SortOption)}
+              className="appearance-none pl-3 pr-8 py-2 text-sm bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]/30 cursor-pointer"
+            >
+              <option value="recent">Recent</option>
+              <option value="title">Title A-Z</option>
+              <option value="favorites">Favorites first</option>
+            </select>
+            <svg
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[var(--color-text-muted)] pointer-events-none"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </div>
 
           {/* Tag filter */}
           {allTags.length > 0 && (
