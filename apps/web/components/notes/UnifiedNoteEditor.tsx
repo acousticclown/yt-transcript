@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -92,12 +93,30 @@ function AIActionsMenu({
   onLanguageChange: (lang: "english" | "hindi" | "hinglish") => void;
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Update menu position when opening
+  useEffect(() => {
+    if (isOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect();
+      setMenuPosition({
+        top: rect.bottom + 8,
+        right: window.innerWidth - rect.right,
+      });
+    }
+  }, [isOpen]);
 
   // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+      if (
+        menuRef.current && 
+        !menuRef.current.contains(e.target as Node) &&
+        buttonRef.current &&
+        !buttonRef.current.contains(e.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -125,9 +144,10 @@ function AIActionsMenu({
   };
 
   return (
-    <div className="relative z-50" ref={menuRef}>
+    <div className="relative">
       {/* Trigger Button */}
       <button
+        ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
@@ -151,27 +171,30 @@ function AIActionsMenu({
         </svg>
       </button>
 
-      {/* Dropdown Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[100]"
-              onClick={() => setIsOpen(false)}
-            />
-            
-            {/* Menu */}
-            <motion.div
-              initial={{ opacity: 0, y: -8, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -8, scale: 0.95 }}
-              transition={{ duration: 0.15 }}
-              className="absolute right-0 mt-2 w-80 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-2xl z-[101] overflow-hidden"
-            >
+      {/* Dropdown Menu - Portal to body */}
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-[9998]"
+                onClick={() => setIsOpen(false)}
+              />
+              
+              {/* Menu */}
+              <motion.div
+                ref={menuRef}
+                initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                transition={{ duration: 0.15 }}
+                style={{ top: menuPosition.top, right: menuPosition.right }}
+                className="fixed w-80 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-2xl z-[9999] overflow-hidden"
+              >
               {/* Header */}
               <div className="px-4 py-3 border-b border-[var(--color-border)] bg-gradient-to-r from-violet-500/5 to-purple-500/5">
                 <div className="flex items-center gap-2">
@@ -254,7 +277,9 @@ function AIActionsMenu({
             </motion.div>
           </>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
     </div>
   );
 }
