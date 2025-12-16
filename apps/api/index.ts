@@ -280,10 +280,19 @@ const server = http.createServer(async (req, res) => {
       const result = await geminiModel.generateContent(prompt);
 
       // Gemini sometimes wraps JSON in markdown code blocks - strip safely
-      const jsonText = result
+      let jsonText = result
         .replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();
+
+      // Fix common JSON issues from AI
+      // Remove control characters that break JSON
+      jsonText = jsonText.replace(/[\x00-\x1F\x7F]/g, (char) => {
+        if (char === '\n' || char === '\r' || char === '\t') return char;
+        return '';
+      });
+      // Fix unescaped quotes in strings (common AI mistake)
+      jsonText = jsonText.replace(/(?<!\\)\\(?!["\\/bfnrtu])/g, '\\\\');
 
       const sections = JSON.parse(jsonText);
 
