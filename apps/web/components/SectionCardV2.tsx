@@ -447,7 +447,7 @@ export function SectionCardV2({
                 className="flex-1 relative"
               >
                 <textarea
-                  className="w-full h-full bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm rounded-lg p-3 resize-none outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[120px] focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all"
+                  className="w-full h-full bg-white/30 dark:bg-gray-900/30 backdrop-blur-sm rounded-lg p-3 sm:p-3 resize-none outline-none text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 min-h-[140px] sm:min-h-[120px] focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all touch-manipulation"
                   placeholder="Summary..."
                   value={section.current.summary}
                   onChange={(e) =>
@@ -538,14 +538,14 @@ export function SectionCardV2({
                   transition={{ duration: 0.2, delay: i * 0.05 }}
                   className="group/bullet"
                 >
-                  <div className="flex items-start gap-3 p-2 rounded-lg hover:bg-white/20 dark:hover:bg-gray-900/20 transition-colors">
+                  <div className="flex items-start gap-2 sm:gap-3 p-2 sm:p-2.5 rounded-lg hover:bg-white/20 dark:hover:bg-gray-900/20 active:bg-white/30 dark:active:bg-gray-900/30 transition-colors touch-manipulation">
                     {/* Bullet Indicator - Visual Bar */}
-                    <div className="flex-shrink-0 mt-1">
-                      <div className="w-1 h-full min-h-[20px] bg-indigo-500 dark:bg-indigo-400 rounded-full opacity-60 group-hover/bullet:opacity-100 transition-opacity" />
+                    <div className="flex-shrink-0 mt-1.5 sm:mt-1">
+                      <div className="w-1 sm:w-1 h-full min-h-[24px] sm:min-h-[20px] bg-indigo-500 dark:bg-indigo-400 rounded-full opacity-60 group-hover/bullet:opacity-100 transition-opacity" />
                     </div>
                     <div className="flex-1 relative min-w-0">
                       <input
-                        className="w-full outline-none bg-transparent text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/50 rounded px-2 py-1 -mx-2 -my-1 transition-all"
+                        className="w-full outline-none bg-transparent text-sm sm:text-sm text-gray-700 dark:text-gray-300 placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-indigo-500/50 rounded px-2 py-2 sm:py-1 -mx-2 -my-2 sm:-my-1 transition-all min-h-[44px] sm:min-h-0"
                         placeholder="Bullet point..."
                         value={bullet}
                         onChange={(e) => {
