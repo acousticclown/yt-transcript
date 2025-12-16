@@ -4,18 +4,28 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { SectionCard } from "./SectionCard";
 
+type LanguageVariant = {
+  title: string;
+  summary: string;
+  bullets: string[];
+};
+
 type Section = {
   id: string;
-  source: {
-    title: string;
-    summary: string;
-    bullets: string[];
+  // Source of truth (always English)
+  source: LanguageVariant;
+  // Cached variants
+  variants: {
+    english: LanguageVariant;
+    hindi?: LanguageVariant;
+    hinglish?: {
+      neutral?: LanguageVariant;
+      casual?: LanguageVariant;
+      interview?: LanguageVariant;
+    };
   };
-  current: {
-    title: string;
-    summary: string;
-    bullets: string[];
-  };
+  // Current view state
+  current: LanguageVariant;
   language: "english" | "hindi" | "hinglish";
   hinglishTone?: "neutral" | "casual" | "interview";
 };

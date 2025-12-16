@@ -10,18 +10,28 @@ import {
 } from "@dnd-kit/sortable";
 import { SortableSectionCard } from "../components/SortableSectionCard";
 
+type LanguageVariant = {
+  title: string;
+  summary: string;
+  bullets: string[];
+};
+
 type Section = {
   id: string;
-  source: {
-    title: string;
-    summary: string;
-    bullets: string[];
+  // Source of truth (always English)
+  source: LanguageVariant;
+  // Cached variants
+  variants: {
+    english: LanguageVariant;
+    hindi?: LanguageVariant;
+    hinglish?: {
+      neutral?: LanguageVariant;
+      casual?: LanguageVariant;
+      interview?: LanguageVariant;
+    };
   };
-  current: {
-    title: string;
-    summary: string;
-    bullets: string[];
-  };
+  // Current view state
+  current: LanguageVariant;
   language: "english" | "hindi" | "hinglish";
   hinglishTone?: "neutral" | "casual" | "interview";
 };
@@ -84,13 +94,17 @@ export default function Home() {
         return;
       }
 
-      // Initialize sections with source, current, and language
+      // Initialize sections with variants cache
       // source = always English (stable, editable)
+      // variants = cached language versions (no re-generation needed)
       // current = what user sees & edits
       const sectionsWithIds = (sectionsData.sections || []).map(
         (section: { title: string; summary: string; bullets: string[] }) => ({
           id: crypto.randomUUID(),
           source: section, // Always English from backend
+          variants: {
+            english: section, // Cache English version
+          },
           current: section, // Initially same as source
           language: "english" as const,
         })

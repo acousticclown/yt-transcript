@@ -5,18 +5,28 @@ import { motion } from "framer-motion";
 import { InlineAIButton } from "./InlineAIButton";
 import { LanguageToggle } from "./LanguageToggle";
 
+type LanguageVariant = {
+  title: string;
+  summary: string;
+  bullets: string[];
+};
+
 type Section = {
   id: string;
-  source: {
-    title: string;
-    summary: string;
-    bullets: string[];
+  // Source of truth (always English)
+  source: LanguageVariant;
+  // Cached variants
+  variants: {
+    english: LanguageVariant;
+    hindi?: LanguageVariant;
+    hinglish?: {
+      neutral?: LanguageVariant;
+      casual?: LanguageVariant;
+      interview?: LanguageVariant;
+    };
   };
-  current: {
-    title: string;
-    summary: string;
-    bullets: string[];
-  };
+  // Current view state
+  current: LanguageVariant;
   language: "english" | "hindi" | "hinglish";
   hinglishTone?: "neutral" | "casual" | "interview";
 };
@@ -238,7 +248,19 @@ export function SectionCard({
             onChange={async (e) => {
               const tone = e.target.value as "neutral" | "casual" | "interview";
 
-              // Tone changes always regenerate from source (prevents quality decay)
+              // Check cache first
+              const cached = section.variants.hinglish?.[tone];
+              if (cached) {
+                // Use cached version (instant)
+                onChange({
+                  ...section,
+                  current: cached,
+                  hinglishTone: tone,
+                });
+                return;
+              }
+
+              // Generate and cache (tone changes always regenerate from source)
               setSwitchingLanguage(true);
               try {
                 const res = await fetch(
@@ -267,6 +289,13 @@ export function SectionCard({
                 const transformed = await res.json();
                 onChange({
                   ...section,
+                  variants: {
+                    ...section.variants,
+                    hinglish: {
+                      ...(section.variants.hinglish || {}),
+                      [tone]: transformed,
+                    },
+                  },
                   current: transformed,
                   hinglishTone: tone,
                 });
