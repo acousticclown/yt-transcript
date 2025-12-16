@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 
@@ -76,6 +76,149 @@ type UnifiedNoteEditorProps = {
 };
 
 // Helper components (defined before main component)
+
+// AI Actions Menu - Notion/Linear style collapsed menu
+function AIActionsMenu({
+  onAction,
+  loading,
+  targetLabel,
+}: {
+  onAction: (action: "simplify" | "expand" | "regenerate") => void;
+  loading: string | null;
+  targetLabel: string;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
+  }, [isOpen]);
+
+  const actions = [
+    { id: "simplify" as const, icon: "✨", label: "Simplify", desc: "Make it clearer and shorter" },
+    { id: "expand" as const, icon: "📝", label: "Expand", desc: "Add more detail and depth" },
+    { id: "regenerate" as const, icon: "🔄", label: "Regenerate", desc: "Rewrite from scratch" },
+  ];
+
+  const handleAction = (actionId: "simplify" | "expand" | "regenerate") => {
+    onAction(actionId);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={menuRef}>
+      {/* Trigger Button */}
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className={cn(
+          "flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all",
+          "bg-gradient-to-r from-violet-500/10 to-purple-500/10",
+          "border border-violet-500/20 hover:border-violet-500/40",
+          "text-violet-600 dark:text-violet-400",
+          "hover:shadow-md hover:shadow-violet-500/10",
+          loading && "opacity-70"
+        )}
+      >
+        <span className="text-base">🪄</span>
+        <span>AI Assist</span>
+        {loading && (
+          <svg className="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+        )}
+        <svg className={cn("w-4 h-4 transition-transform", isOpen && "rotate-180")} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+
+      {/* Dropdown Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40"
+              onClick={() => setIsOpen(false)}
+            />
+            
+            {/* Menu */}
+            <motion.div
+              initial={{ opacity: 0, y: -8, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -8, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute right-0 mt-2 w-72 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-xl z-50 overflow-hidden"
+            >
+              {/* Header */}
+              <div className="px-4 py-3 border-b border-[var(--color-border)] bg-gradient-to-r from-violet-500/5 to-purple-500/5">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🪄</span>
+                  <div>
+                    <p className="text-sm font-semibold text-[var(--color-text)]">AI Actions</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Apply to: <span className="font-medium text-violet-600 dark:text-violet-400">{targetLabel}</span>
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="p-2">
+                {actions.map((action) => (
+                  <button
+                    key={action.id}
+                    onClick={() => handleAction(action.id)}
+                    disabled={!!loading}
+                    className={cn(
+                      "w-full flex items-start gap-3 p-3 rounded-xl transition-all text-left",
+                      "hover:bg-[var(--color-bg)]",
+                      loading === action.id && "bg-violet-500/10"
+                    )}
+                  >
+                    <span className="text-xl mt-0.5">{action.icon}</span>
+                    <div className="flex-1">
+                      <p className="font-medium text-[var(--color-text)] flex items-center gap-2">
+                        {action.label}
+                        {loading === action.id && (
+                          <svg className="w-3.5 h-3.5 animate-spin text-violet-500" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        )}
+                      </p>
+                      <p className="text-xs text-[var(--color-text-muted)] mt-0.5">{action.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              {/* Footer tip */}
+              <div className="px-4 py-2.5 border-t border-[var(--color-border)] bg-[var(--color-bg)]/50">
+                <p className="text-xs text-[var(--color-text-subtle)]">
+                  💡 Select text first for precise editing
+                </p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
 function FormatButton({
   children,
   onClick,
@@ -450,21 +593,14 @@ export function UnifiedNoteEditor({
           </svg>
         </button>
         
-        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
+        <div className="flex-1" />
         
-        <span className="text-xs text-[var(--color-text-muted)] whitespace-nowrap">
-          AI on: <span className="font-medium text-[var(--color-text)]">{getTargetLabel()}</span>
-        </span>
-        <div className="w-px h-5 bg-[var(--color-border)] mx-1" />
-        <AIButton onClick={() => handleAI("simplify")} loading={aiLoading === "simplify"}>
-          ✨ Simplify
-        </AIButton>
-        <AIButton onClick={() => handleAI("expand")} loading={aiLoading === "expand"}>
-          📝 Expand
-        </AIButton>
-        <AIButton onClick={() => handleAI("regenerate")} loading={aiLoading === "regenerate"}>
-          🔄 Regenerate
-        </AIButton>
+        {/* AI Actions - Collapsed Menu */}
+        <AIActionsMenu
+          onAction={handleAI}
+          loading={aiLoading}
+          targetLabel={getTargetLabel()}
+        />
       </div>
 
       {/* Header */}
