@@ -39,6 +39,12 @@ type Section = {
     confidence: number;
   };
   personalTags?: string[];
+  sectionType?: {
+    type: string;
+    confidence: number;
+  };
+  createdAt?: string; // ISO timestamp
+  lastEditedAt?: string; // ISO timestamp
 };
 
 function cleanTranscript(
@@ -151,12 +157,12 @@ export function SectionCardV2({
                 placeholder="Section title..."
                 value={section.current.title}
                 onChange={(e) =>
-                onChange={{
-                  ...section,
-                  current: { ...section.current, title: e.target.value },
-                  lastEditedAt: new Date().toISOString(),
-                })
-              }
+                  onChange({
+                    ...section,
+                    current: { ...section.current, title: e.target.value },
+                    lastEditedAt: new Date().toISOString(),
+                  })
+                }
             />
             
             {/* Header Actions */}
@@ -565,6 +571,7 @@ export function SectionCardV2({
                           onChange({
                             ...section,
                             current: { ...section.current, bullets },
+                            lastEditedAt: new Date().toISOString(),
                           });
                         }}
                       />
@@ -693,9 +700,10 @@ export function SectionCardV2({
                 )}
                 <span>{section.current.bullets.length} points</span>
               </div>
-              <div className="text-gray-400 dark:text-gray-500">
-                {/* Placeholder for future metadata */}
-              </div>
+              <SectionMetadata
+                createdAt={section.createdAt}
+                lastEditedAt={section.lastEditedAt}
+              />
             </Stack>
           </Stack>
         </div>
