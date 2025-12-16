@@ -84,6 +84,8 @@ export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [selectedSectionType, setSelectedSectionType] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState<"relevance" | "title" | "date">("relevance");
 
   // Mobile-optimized drag sensors - allow touch drag with delay to prevent conflicts
   const sensors = useSensors(
