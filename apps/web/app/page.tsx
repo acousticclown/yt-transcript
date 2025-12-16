@@ -59,7 +59,7 @@ export default function Home() {
     // This is a rough heuristic - we can't know video length without fetching
     // Just set expectations, don't block
     const isLongVideo = false; // Could be enhanced with video metadata later
-    
+
     setLoading(true);
     setSections([]);
     // Random loading message for micro-playfulness
@@ -78,10 +78,11 @@ export default function Home() {
 
       if (transcriptData.error) {
         // Human-friendly error message
-        const errorMsg = transcriptData.error.includes("captions") || 
-                        transcriptData.error.includes("Transcript not available")
-          ? "This video doesn't have captions yet. Try another video with captions enabled."
-          : transcriptData.error;
+        const errorMsg =
+          transcriptData.error.includes("captions") ||
+          transcriptData.error.includes("Transcript not available")
+            ? "This video doesn't have captions yet. Try another video with captions enabled."
+            : transcriptData.error;
         alert(`⚠️ ${errorMsg}`);
         setLoading(false);
         return;
@@ -100,7 +101,11 @@ export default function Home() {
 
       if (sectionsData.error) {
         // Human-friendly error message
-        alert(`⚠️ Couldn't generate notes right now. ${sectionsData.error || "Please try again."}`);
+        alert(
+          `⚠️ Couldn't generate notes right now. ${
+            sectionsData.error || "Please try again."
+          }`
+        );
         setLoading(false);
         return;
       }
@@ -233,7 +238,9 @@ export default function Home() {
                   const errorData = await res
                     .json()
                     .catch(() => ({ error: "Unknown error" }));
-                  alert(`⚠️ ${errorData.error || `Failed to export: ${res.status}`}`);
+                  alert(
+                    `⚠️ ${errorData.error || `Failed to export: ${res.status}`}`
+                  );
                   return;
                 }
 

@@ -67,8 +67,37 @@ This document outlines the planned features and improvements for YT-Transcript.
 - [x] English always recoverable
 - [x] Editing works correctly (edits current, not source)
 
-### Day 16 (Planned)
-- Inline language switch (per section)
+### Day 16 ✅ (Complete)
+- [x] LanguageToggle segmented control (pills)
+- [x] Visual indicator for current language
+- [x] Smooth opacity transitions
+- [x] Better error handling
+- [x] Zero friction language switching
+
+### Day 17 ✅ (Complete)
+- [x] 3 Hinglish tone presets (Neutral, Casual, Interview)
+- [x] Tone-aware language transformation
+- [x] Tone selector UI (only when Hinglish active)
+- [x] Tone changes regenerate from source
+- [x] Backward compatible backend
+
+### Day 18 ✅ (Complete)
+- [x] Variants cache structure (future-proof)
+- [x] Language switching checks cache first
+- [x] Tone switching uses cache
+- [x] Save/load preserves all variants
+- [x] Instant switching when cached
+
+### Day 19 ✅ (Complete)
+- [x] Human-friendly error messages
+- [x] AI failures keep existing content
+- [x] Proper loading states everywhere
+- [x] Clear micro-copy
+- [x] Graceful error handling
+- [x] Edge case handling
+
+### Day 20 (Planned)
+- Pause & real usage test
 
 ### Future Week 2 Features
 - Multilingual Support
