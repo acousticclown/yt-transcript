@@ -125,7 +125,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
         </motion.div>
 
         {/* Text container */}
-        <div className="flex items-baseline overflow-hidden relative">
+        <div className="flex items-baseline overflow-visible relative">
           {/* "Note" - Morphing reveal */}
           <div className="flex">
             {noteLetters.map((letter, i) => (
@@ -160,29 +160,42 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
 
           {/* Animated dot - starts between Note and ly, curves up to icon position */}
           <motion.span
-            className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+            className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)] absolute"
             style={{
               fontFamily: "var(--font-outfit), system-ui, sans-serif",
+              left: "100%",
+              marginLeft: "-0.1em",
             }}
             initial={{ 
               opacity: 0,
               scale: 0,
             }}
             animate={{ 
-              opacity: [0, 1, 1, 0],
-              scale: [0, 1.2, 1, 0.5],
-              x: [0, 0, 0, -120],
-              y: [0, -10, 0, -60],
+              opacity: [0, 1, 1, 1, 0],
+              scale: [0, 1.3, 1, 1, 0.3],
+              x: [0, 0, 0, -60, -150],
+              y: [0, -15, 0, -40, -80],
             }}
             transition={{
-              duration: 1.2,
+              duration: 2.2,
               delay: 0.9,
-              times: [0, 0.2, 0.5, 1],
-              ease: "easeInOut",
+              times: [0, 0.15, 0.35, 0.7, 1],
+              ease: [0.4, 0, 0.2, 1],
             }}
           >
             .
           </motion.span>
+
+          {/* Spacer that shrinks after dot leaves */}
+          <motion.div
+            initial={{ width: "0.3em" }}
+            animate={{ width: "0em" }}
+            transition={{
+              duration: 0.4,
+              delay: 2.4,
+              ease: "easeInOut",
+            }}
+          />
 
           {/* "ly" - Elastic pop with color */}
           <div className="flex">
@@ -209,7 +222,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   type: "spring",
                   stiffness: 300,
                   damping: 15,
-                  delay: 1.4 + i * 0.12,
+                  delay: 2.0 + i * 0.12,
                 }}
               >
                 {letter}
