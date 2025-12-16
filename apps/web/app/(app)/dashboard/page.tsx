@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { NoteList, Note } from "../../../components/notes";
-import { WritingPerson, EmptyStateIllustration } from "../../../components/illustrations";
+import { EmptyStateIllustration } from "../../../components/illustrations";
 
 // Mock data for demo
 const initialNotes: Note[] = [
@@ -33,45 +33,100 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* Hero Section with Illustration */}
+      {/* Hero Section with Abstract Wave Art */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative mb-8 p-6 sm:p-8 bg-gradient-to-br from-[var(--color-primary)]/10 via-[var(--color-secondary)]/5 to-transparent rounded-3xl overflow-hidden"
+        className="relative mb-8 p-6 sm:p-8 bg-gradient-to-br from-[var(--color-primary)]/8 via-[var(--color-secondary)]/5 to-[var(--color-bg)] rounded-3xl overflow-hidden"
       >
-        {/* Background decoration */}
-        <div className="absolute top-0 right-0 w-64 h-64 opacity-20 pointer-events-none">
-          <svg viewBox="0 0 200 200" className="w-full h-full">
+        {/* Abstract wave background */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <svg viewBox="0 0 800 400" className="absolute -right-20 -top-20 w-[140%] h-[140%] opacity-[0.15]" preserveAspectRatio="none">
             <defs>
-              <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style={{ stopColor: "var(--color-primary)", stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: "var(--color-secondary)", stopOpacity: 1 }} />
+              <linearGradient id="waveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="var(--color-primary)" />
+                <stop offset="50%" stopColor="var(--color-secondary)" />
+                <stop offset="100%" stopColor="var(--color-primary)" />
+              </linearGradient>
+              <linearGradient id="waveGrad2" x1="100%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stopColor="var(--color-secondary)" />
+                <stop offset="100%" stopColor="var(--color-primary)" />
               </linearGradient>
             </defs>
-            <circle cx="100" cy="100" r="80" fill="none" stroke="url(#grad1)" strokeWidth="2" opacity="0.5" />
-            <circle cx="100" cy="100" r="60" fill="none" stroke="url(#grad1)" strokeWidth="2" opacity="0.3" />
-            <circle cx="100" cy="100" r="40" fill="url(#grad1)" opacity="0.2" />
+            {/* Flowing wave 1 */}
+            <path 
+              d="M0,200 Q150,100 300,180 T600,160 T900,200 L900,400 L0,400 Z" 
+              fill="url(#waveGrad1)" 
+              opacity="0.6"
+            />
+            {/* Flowing wave 2 */}
+            <path 
+              d="M0,250 Q200,150 400,220 T800,180 L800,400 L0,400 Z" 
+              fill="url(#waveGrad2)" 
+              opacity="0.4"
+            />
+            {/* Accent circles */}
+            <circle cx="650" cy="100" r="60" fill="var(--color-primary)" opacity="0.3" />
+            <circle cx="720" cy="150" r="30" fill="var(--color-secondary)" opacity="0.4" />
+            <circle cx="580" cy="80" r="20" fill="var(--color-primary)" opacity="0.2" />
+          </svg>
+          
+          {/* Floating dots pattern */}
+          <svg viewBox="0 0 100 100" className="absolute right-8 top-8 w-32 h-32 opacity-20">
+            <circle cx="20" cy="20" r="3" fill="var(--color-primary)" />
+            <circle cx="50" cy="15" r="2" fill="var(--color-secondary)" />
+            <circle cx="80" cy="25" r="4" fill="var(--color-primary)" />
+            <circle cx="30" cy="50" r="2" fill="var(--color-secondary)" />
+            <circle cx="70" cy="55" r="3" fill="var(--color-primary)" />
+            <circle cx="15" cy="80" r="2" fill="var(--color-primary)" />
+            <circle cx="55" cy="75" r="3" fill="var(--color-secondary)" />
+            <circle cx="85" cy="70" r="2" fill="var(--color-primary)" />
           </svg>
         </div>
 
         <div className="relative z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
+          <div className="max-w-lg">
             <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
               {getGreeting()}! 👋
             </h1>
-            <p className="mt-2 text-[var(--color-text-muted)] max-w-md">
+            <p className="mt-2 text-[var(--color-text-muted)]">
               Capture ideas, transform videos into notes, and let AI help you organize your thoughts.
             </p>
           </div>
           
-          {/* Humaaans-style illustration */}
-          <motion.div
-            animate={{ y: [0, -6, 0] }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="hidden md:block flex-shrink-0"
-          >
-            <WritingPerson className="w-40 h-40" />
-          </motion.div>
+          {/* Abstract shape accent */}
+          <div className="hidden md:flex items-center gap-3">
+            <motion.div
+              animate={{ rotate: [0, 360] }}
+              transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+              className="w-16 h-16"
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <polygon 
+                  points="50,5 95,30 95,70 50,95 5,70 5,30" 
+                  fill="none" 
+                  stroke="var(--color-primary)" 
+                  strokeWidth="2" 
+                  opacity="0.5"
+                />
+                <polygon 
+                  points="50,20 80,35 80,65 50,80 20,65 20,35" 
+                  fill="var(--color-primary)" 
+                  opacity="0.15"
+                />
+              </svg>
+            </motion.div>
+            <motion.div
+              animate={{ scale: [1, 1.1, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+              className="w-12 h-12"
+            >
+              <svg viewBox="0 0 100 100" className="w-full h-full">
+                <circle cx="50" cy="50" r="40" fill="var(--color-secondary)" opacity="0.2" />
+                <circle cx="50" cy="50" r="25" fill="none" stroke="var(--color-secondary)" strokeWidth="2" opacity="0.4" />
+              </svg>
+            </motion.div>
+          </div>
         </div>
       </motion.div>
 
