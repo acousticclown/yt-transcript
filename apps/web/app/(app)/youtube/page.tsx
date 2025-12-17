@@ -749,7 +749,7 @@ function YouTubeNotesSection() {
           Previous Transcripts
         </h2>
         <Link
-          href="/notes?filter=youtube"
+          href="/youtube/transcripts"
           className="text-sm text-[var(--color-primary)] hover:underline"
         >
           View all →
@@ -765,7 +765,7 @@ function YouTubeNotesSection() {
   );
 }
 
-// YouTube Note Card Component
+// YouTube Note Card Component with consistent sizing
 function YouTubeNoteCard({ note }: { note: Note }) {
   const videoId = note.youtubeUrl ? extractVideoIdFromUrl(note.youtubeUrl) : null;
   const thumbnail = videoId ? getYouTubeThumbnail(videoId) : null;
@@ -774,11 +774,11 @@ function YouTubeNoteCard({ note }: { note: Note }) {
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="group relative bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-primary)]/50 hover:shadow-lg transition-all"
+      className="group flex flex-col h-full bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-primary)]/50 hover:shadow-lg transition-all"
     >
       {/* Thumbnail */}
       {thumbnail && (
-        <div className="relative aspect-video bg-black">
+        <div className="relative aspect-video bg-black flex-shrink-0">
           <img
             src={thumbnail}
             alt={note.title}
@@ -800,13 +800,14 @@ function YouTubeNoteCard({ note }: { note: Note }) {
         </div>
       )}
 
-      {/* Content */}
-      <div className="p-4">
-        <h3 className="font-medium text-[var(--color-text)] line-clamp-2 mb-2">
+      {/* Content - flex-1 to fill remaining space */}
+      <div className="flex-1 flex flex-col p-4">
+        {/* Title - max 2 lines with fixed height */}
+        <h3 className="font-medium text-[var(--color-text)] line-clamp-2 h-12 mb-2">
           {note.title}
         </h3>
         
-        <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)] mb-3">
           <span className="flex items-center gap-1">
             <ClockIcon className="w-3 h-3" />
             {formatDate(note.createdAt)}
@@ -815,8 +816,11 @@ function YouTubeNoteCard({ note }: { note: Note }) {
           <span>{note.sections.reduce((acc, s) => acc + s.bullets.length, 0)} points</span>
         </div>
         
-        {/* Actions */}
-        <div className="mt-3 flex gap-2">
+        {/* Spacer to push buttons to bottom */}
+        <div className="flex-1" />
+        
+        {/* Actions - always at bottom */}
+        <div className="flex gap-2 mt-auto">
           <Link
             href={`/youtube/${note.id}`}
             className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 text-red-600 text-sm font-medium hover:bg-red-500/20 transition-colors"
@@ -833,6 +837,6 @@ function YouTubeNoteCard({ note }: { note: Note }) {
           </Link>
         </div>
       </div>
-                  </motion.div>
+    </motion.div>
   );
 }

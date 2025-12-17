@@ -295,12 +295,12 @@ export default function YouTubeViewerPage() {
       <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm px-4 sm:px-6 py-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           <div className="flex items-center gap-3 min-w-0">
-            <Link
-              href={`/notes/${noteId}`}
+            <button
+              onClick={() => router.back()}
               className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-lg transition-colors"
             >
               <ArrowLeftIcon className="w-5 h-5" />
-            </Link>
+            </button>
             <div className="min-w-0">
               <h1 className="text-lg font-semibold text-[var(--color-text)] truncate">
                 {note.title}

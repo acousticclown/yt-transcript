@@ -137,12 +137,12 @@ function NotePageContent() {
         className="sticky top-0 z-10 bg-[var(--color-bg)]/80 backdrop-blur-lg border-b border-[var(--color-border)] px-4 sm:px-6 lg:px-8 py-3"
       >
         <div className="max-w-3xl mx-auto flex items-center gap-4">
-          <Link
-            href="/notes"
+          <button
+            onClick={() => router.back()}
             className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
           >
             ←
-          </Link>
+          </button>
           
           <div className="flex-1" />
           

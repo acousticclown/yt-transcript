@@ -68,7 +68,7 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
     >
       <Link
         href={`/notes/${note.id}`}
-        className="block p-5 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:shadow-lg transition-all group"
+        className="flex flex-col h-full p-5 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-border-strong)] hover:shadow-lg transition-all group"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         onTouchCancel={handleTouchEnd}
@@ -76,29 +76,40 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
       >
         <div className="flex items-start gap-3">
           <div
-            className="w-1.5 h-12 rounded-full flex-shrink-0"
+            className="w-1.5 rounded-full flex-shrink-0 self-stretch min-h-[3rem]"
             style={{ backgroundColor: note.color }}
           />
           <div className="flex-1 min-w-0">
+            {/* Title - single line with ellipsis */}
             <h3 className="font-semibold text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">
               {note.title}
             </h3>
-            <p className="mt-1 text-sm text-[var(--color-text-muted)] line-clamp-2">
-              {note.preview}
+            {/* Summary - exactly 2 lines height, with or without content */}
+            <p className="mt-1 text-sm text-[var(--color-text-muted)] line-clamp-2 h-10">
+              {note.preview || "\u00A0"}
             </p>
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
-          <div className="flex gap-1.5 flex-wrap">
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Tags - single line, overflow hidden */}
+        <div className="mt-4 flex items-center justify-between gap-2">
+          <div className="flex gap-1.5 overflow-hidden h-6 items-center">
             {note.tags.slice(0, 3).map((tag) => (
               <span
                 key={tag}
-                className="text-xs px-2 py-0.5 bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)]"
+                className="text-xs px-2 py-0.5 bg-[var(--color-bg)] rounded-full text-[var(--color-text-muted)] whitespace-nowrap"
               >
                 #{tag}
               </span>
             ))}
+            {note.tags.length > 3 && (
+              <span className="text-xs text-[var(--color-text-subtle)]">
+                +{note.tags.length - 3}
+              </span>
+            )}
           </div>
           <span className="text-xs text-[var(--color-text-subtle)] flex-shrink-0">
             {note.date}
