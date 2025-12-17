@@ -74,6 +74,7 @@ export type Note = {
   language: "english" | "hindi" | "hinglish";
   source: "manual" | "youtube";
   youtubeUrl?: string;
+  videoId?: string;
   isFavorite: boolean;
   color?: string;
   createdAt: string;
