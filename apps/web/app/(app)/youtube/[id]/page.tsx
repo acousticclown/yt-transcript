@@ -312,11 +312,11 @@ export default function YouTubeViewerPage() {
           </div>
 
           <Link
-            href={`/notes/${noteId}?edit=true`}
+            href={`/notes/${noteId}`}
             className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-lg transition-colors"
           >
             <PenIcon className="w-4 h-4" />
-            Edit Note
+            View Note
           </Link>
         </div>
       </div>
