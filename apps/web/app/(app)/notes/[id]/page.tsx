@@ -8,6 +8,7 @@ import { UnifiedNoteEditor } from "../../../../components/notes";
 import { SaveIndicator } from "../../../../components/ui";
 import { useNote, useUpdateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
+import { downloadMarkdown, copyMarkdownToClipboard } from "../../../../lib/exportNote";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -96,6 +97,29 @@ export default function NoteEditorPage() {
           </Link>
           <h1 className="text-xl font-semibold text-[var(--color-text)]">Edit Note</h1>
           <SaveIndicator state={saveState} />
+          
+          {/* Export dropdown */}
+          <div className="ml-auto relative group">
+            <button className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+            </button>
+            <div className="absolute right-0 top-full mt-1 w-48 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-20">
+              <button
+                onClick={() => downloadMarkdown(note)}
+                className="w-full px-4 py-2.5 text-left text-sm text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-t-xl flex items-center gap-2"
+              >
+                <span>📥</span> Download .md
+              </button>
+              <button
+                onClick={() => copyMarkdownToClipboard(note).then(() => alert("Copied!"))}
+                className="w-full px-4 py-2.5 text-left text-sm text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-b-xl flex items-center gap-2"
+              >
+                <span>📋</span> Copy as Markdown
+              </button>
+            </div>
+          </div>
         </div>
       </motion.div>
 

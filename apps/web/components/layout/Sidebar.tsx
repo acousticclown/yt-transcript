@@ -11,6 +11,7 @@ import { useUser } from "../../lib/UserContext";
 type SidebarProps = {
   isOpen: boolean;
   onClose: () => void;
+  onSearchClick?: () => void;
 };
 
 const navItems = [
@@ -20,7 +21,7 @@ const navItems = [
   { icon: "🏷️", label: "Tags", href: "/tags" },
 ];
 
-export function Sidebar({ isOpen, onClose }: SidebarProps) {
+export function Sidebar({ isOpen, onClose, onSearchClick }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useUser();
@@ -70,17 +71,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
         {/* Search */}
         <div className="p-4">
-          <div className="flex items-center gap-2 px-3 py-2.5 bg-[var(--color-bg)] rounded-xl border border-[var(--color-border)]">
+          <button
+            onClick={onSearchClick}
+            className="w-full flex items-center gap-2 px-3 py-2.5 bg-[var(--color-bg)] rounded-xl border border-[var(--color-border)] hover:border-[var(--color-primary)] transition-colors"
+          >
             <span className="text-[var(--color-text-muted)]">🔍</span>
-            <input
-              type="text"
-              placeholder="Search..."
-              className="flex-1 bg-transparent text-sm text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none"
-            />
+            <span className="flex-1 text-left text-sm text-[var(--color-text-subtle)]">Search...</span>
             <kbd className="hidden sm:inline text-xs text-[var(--color-text-subtle)] bg-[var(--color-surface-muted)] px-1.5 py-0.5 rounded">
-              /
+              ⌘K
             </kbd>
-          </div>
+          </button>
         </div>
 
         {/* Navigation */}

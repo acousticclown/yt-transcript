@@ -1,14 +1,23 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../components/layout/Sidebar";
 import { MobileNav } from "../../components/layout/MobileNav";
+import { SearchModal } from "../../components/SearchModal";
 import { useUser } from "../../lib/UserContext";
+import { useKeyboardShortcuts } from "../../lib/useKeyboardShortcuts";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { authState } = useUser();
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    onSearch: () => setSearchOpen(true),
+    enabled: authState === "authenticated",
+  });
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -36,7 +45,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-full">
         {/* Sidebar - Desktop only, fixed height */}
         <div className="hidden lg:block h-full">
-          <Sidebar isOpen={true} onClose={() => {}} />
+          <Sidebar isOpen={true} onClose={() => {}} onSearchClick={() => setSearchOpen(true)} />
         </div>
 
         {/* Main content - independent scroll */}
@@ -49,6 +58,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile bottom navigation */}
       <MobileNav />
+
+      {/* Global search modal */}
+      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 }
