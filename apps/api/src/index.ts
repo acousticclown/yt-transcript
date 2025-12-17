@@ -11,12 +11,16 @@ import aiRouter from "./routes/ai";
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
 import { geminiModel, getUserApiKey } from "../ai/gemini";
-import { sectionDetectionPrompt, sectionDetectionWithTimestampsPrompt } from "../../../packages/prompts/sectionDetection";
+import {
+  sectionDetectionPrompt,
+  sectionDetectionWithTimestampsPrompt,
+} from "../../../packages/prompts/sectionDetection";
 import { basicSummaryPrompt } from "../../../packages/prompts/basicSummary";
 import { cleanTranscript } from "../utils/cleanTranscript";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
+const JWT_SECRET =
+  process.env.JWT_SECRET || "notely-secret-key-change-in-production";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -45,14 +49,14 @@ app.post("/transcript", async (req, res) => {
   try {
     const { url } = req.body;
     console.log("[Transcript] Extracting from:", url);
-    
+
     if (!url) {
       return res.status(400).json({ error: "URL is required" });
     }
 
     const videoId = extractVideoId(url);
     console.log("[Transcript] Video ID:", videoId);
-    
+
     if (!videoId) {
       return res.status(400).json({ error: "Invalid YouTube URL" });
     }
@@ -60,7 +64,7 @@ app.post("/transcript", async (req, res) => {
     console.log("[Transcript] Fetching subtitles...");
     const subtitles = await getSubtitles({ videoID: videoId, lang: "en" });
     console.log("[Transcript] Got subtitles:", subtitles?.length || 0);
-    
+
     if (!subtitles || subtitles.length === 0) {
       return res.status(404).json({ error: "No captions found" });
     }
@@ -148,16 +152,24 @@ app.post("/sections", async (req, res) => {
     }
 
     const { transcript, subtitles } = req.body;
-    console.log("[Sections] Received - transcript:", !!transcript, "subtitles:", subtitles?.length || 0);
-    
+    console.log(
+      "[Sections] Received - transcript:",
+      !!transcript,
+      "subtitles:",
+      subtitles?.length || 0
+    );
+
     if (!transcript && !subtitles) {
-      return res.status(400).json({ error: "Transcript or subtitles required" });
+      return res
+        .status(400)
+        .json({ error: "Transcript or subtitles required" });
     }
 
     // Use timestamps if available, otherwise estimate
-    const prompt = subtitles && subtitles.length > 0
-      ? sectionDetectionWithTimestampsPrompt(subtitles)
-      : sectionDetectionPrompt(transcript);
+    const prompt =
+      subtitles && subtitles.length > 0
+        ? sectionDetectionWithTimestampsPrompt(subtitles)
+        : sectionDetectionPrompt(transcript);
 
     console.log("[Sections] Calling Gemini with user's API key...");
     const text = await geminiModel.generateContent(prompt, userApiKey);
@@ -187,7 +199,14 @@ app.post("/sections", async (req, res) => {
       tags = ["youtube", ...tags];
     }
 
-    console.log("[Sections] Parsed sections:", sections.length, "summary:", summary ? summary.substring(0, 50) : "(none)", "tags:", tags);
+    console.log(
+      "[Sections] Parsed sections:",
+      sections.length,
+      "summary:",
+      summary ? summary.substring(0, 50) : "(none)",
+      "tags:",
+      tags
+    );
     res.json({ sections, summary, tags });
   } catch (error: any) {
     console.error("[Sections] Error:", error?.message || error);
@@ -223,4 +242,3 @@ app.listen(PORT, () => {
   console.log(`📝 Notes API: http://localhost:${PORT}/api/notes`);
   console.log(`🏷️  Tags API: http://localhost:${PORT}/api/tags`);
 });
-

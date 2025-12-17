@@ -4,11 +4,12 @@
  * Using new @google/genai SDK
  */
 
-import type { Response } from "express";
+import type { Response, Request } from "express";
 import { GoogleGenAI } from "@google/genai";
+import jwt from "jsonwebtoken";
+import { getUserApiKey } from "../../ai/gemini";
 
-// Initialize Gemini with new SDK
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
+const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
 
 // Model chain for fallback
 const MODELS = [
@@ -42,11 +43,29 @@ export function setupSSE(res: Response) {
 }
 
 /**
- * Get working model with fallback
+ * Extract user ID from request
  */
-async function tryGenerateWithFallback(prompt: string): Promise<string> {
+export async function getUserIdFromRequest(req: Request): Promise<string | null> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith("Bearer ")) return null;
+  
+  try {
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+    return decoded.userId;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get working model with fallback using user's API key
+ */
+async function tryGenerateWithFallback(prompt: string, apiKey: string): Promise<string> {
   console.log("🔄 [AI Fallback] Trying models:", MODELS.join(", "));
-  console.log("🔑 [AI Fallback] API Key present:", !!process.env.GEMINI_API_KEY);
+  console.log("🔑 [AI Fallback] API Key present:", !!apiKey);
+  
+  const ai = new GoogleGenAI({ apiKey });
   
   for (const modelName of MODELS) {
     try {
@@ -59,7 +78,6 @@ async function tryGenerateWithFallback(prompt: string): Promise<string> {
       return response.text || "";
     } catch (error: any) {
       console.log(`❌ [AI Fallback] ${modelName} failed:`, error.message);
-      console.log(`❌ [AI Fallback] Full error:`, JSON.stringify(error, null, 2));
       continue;
     }
   }
@@ -73,9 +91,18 @@ export async function streamAIGeneration(
   res: Response,
   systemPrompt: string,
   userPrompt: string,
-  steps: { id: string; message: string }[]
+  steps: { id: string; message: string }[],
+  apiKey: string
 ): Promise<void> {
   console.log("🚀 [AI Stream] Starting generation...");
+  
+  if (!apiKey) {
+    sendSSE(res, { type: "error", message: "API_KEY_REQUIRED" });
+    res.end();
+    return;
+  }
+  
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     // Step 1: Analyzing
@@ -124,7 +151,7 @@ export async function streamAIGeneration(
     } catch (streamError: any) {
       console.log("⚠️ [AI Stream] Streaming failed:", streamError.message);
       console.log("🔄 [AI Stream] Using non-streaming fallback...");
-      fullText = await tryGenerateWithFallback(fullPrompt);
+      fullText = await tryGenerateWithFallback(fullPrompt, apiKey);
       console.log("✅ [AI Stream] Fallback complete. Length:", fullText.length);
       sendSSE(res, { type: "chunk", content: fullText });
     }
@@ -164,10 +191,14 @@ export async function streamAIGeneration(
  */
 export async function generateAI(
   systemPrompt: string,
-  userPrompt: string
+  userPrompt: string,
+  apiKey: string
 ): Promise<string> {
+  if (!apiKey) {
+    throw new Error("API_KEY_REQUIRED");
+  }
   const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-  return await tryGenerateWithFallback(fullPrompt);
+  return await tryGenerateWithFallback(fullPrompt, apiKey);
 }
 
 /**
