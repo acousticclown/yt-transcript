@@ -42,44 +42,38 @@ export function sectionDetectionWithTimestampsPrompt(
   const lastSub = subtitles[subtitles.length - 1];
   const videoDuration = Math.ceil(lastSub.start + lastSub.dur);
   
-  // Format subtitles with raw seconds for AI
+  // Format subtitles with raw seconds for AI - include actual second values
   const formattedTranscript = subtitles
-    .map((s) => `[${Math.round(s.start)}s] ${s.text}`)
+    .map((s) => {
+      const sec = Math.round(s.start);
+      return `[${sec}] ${s.text}`;
+    })
     .join("\n");
 
-  return `You are given a YouTube video transcript with timestamps in seconds.
+  return `Analyze this YouTube video transcript and create sections.
 
-Video duration: ${videoDuration} seconds
+VIDEO DURATION: ${videoDuration} seconds
 
-Your task:
-- Identify major topic changes
-- Break the transcript into logical sections (3-6 sections typically)
-- Each section must represent one clear idea
-- Use the EXACT timestamps from the transcript for startTime
-- endTime should be the startTime of the next section (or video duration for last section)
+TRANSCRIPT (format: [second] text):
+${formattedTranscript}
 
-CRITICAL RULES:
-- Return ONLY valid JSON, no explanations
-- startTime and endTime must be integers IN SECONDS
-- startTime values must come from the [Xs] timestamps in the transcript
-- endTime must NOT exceed ${videoDuration} seconds (the video duration)
-- Do NOT invent timestamps - use only what appears in the transcript
+INSTRUCTIONS:
+1. Group the transcript into 3-6 logical sections based on topic changes
+2. For each section, use the [second] value from the FIRST line of that section as startTime
+3. endTime = startTime of next section (or ${videoDuration} for last section)
 
-JSON format:
+EXAMPLE: If section starts at "[32] docker containers..." then startTime = 32
+
+Return ONLY this JSON (no other text):
 {
   "sections": [
     {
-      "title": string,
-      "summary": string,
-      "bullets": string[],
-      "startTime": number,
-      "endTime": number
+      "title": "Section Title",
+      "summary": "Brief summary",
+      "bullets": ["point 1", "point 2"],
+      "startTime": 0,
+      "endTime": 32
     }
   ]
-}
-
-Transcript with timestamps:
-"""
-${formattedTranscript}
-"""`;
+}`;
 }
