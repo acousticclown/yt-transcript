@@ -159,119 +159,51 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
-          {/* Pen transforms into "l" + "y" */}
-          <div className="flex items-end relative gap-1 sm:gap-1.5">
-            {/* Pen that morphs into "l" */}
-            <div className="relative">
-              {/* Pen SVG - straight, tip at bottom */}
-              <motion.svg 
-                viewBox="0 0 24 48" 
-                className="w-6 h-12 sm:w-7 sm:h-14 md:w-8 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
-                fill="none"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ 
-                  opacity: [0, 1, 1, 0],
-                  scale: [0, 1, 1, 0],
-                }}
-                transition={{
-                  duration: 1.2,
-                  delay: 1.0,
-                  times: [0, 0.2, 0.7, 1],
-                  ease: "easeInOut",
-                }}
-              >
-                {/* Pen body */}
-                <rect x="8" y="0" width="8" height="36" rx="1" className="fill-[var(--color-primary)]" />
-                {/* Pen tip */}
-                <path d="M8 36L12 48L16 36" className="fill-[var(--color-primary-dark)]" />
-                {/* Pen cap */}
-                <rect x="7" y="0" width="10" height="6" rx="1" className="fill-[var(--color-primary-dark)]" />
-              </motion.svg>
-
-              {/* "l" letter - fades in as pen fades out */}
-              <motion.span
-                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
-                style={{
-                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
-                  letterSpacing: "-0.03em",
-                }}
-                initial={{ 
-                  opacity: 0,
-                  scale: 0.5,
-                }}
-                animate={{ 
-                  opacity: 1,
-                  scale: 1,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 15,
-                  delay: 1.85,
-                }}
-              >
-                l
-              </motion.span>
+          {/* AI thinking dots transform into "ly" - repeats 3 times */}
+          <div className="flex items-end relative">
+            {/* Three bouncing dots */}
+            <div className="flex items-center gap-1 absolute bottom-4 left-1/2 -translate-x-1/2">
+              {[0, 1, 2].map((i) => (
+                <motion.div
+                  key={i}
+                  className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-[var(--color-primary)]"
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{
+                    opacity: [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
+                    scale: [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
+                    y: [0, 0, -8, 0, -8, 0, 0, 0, 0, -8, 0, -8, 0, 0, 0, 0, -8, 0, -8, 0, 0],
+                  }}
+                  transition={{
+                    duration: 4.5,
+                    delay: 1.0 + i * 0.1,
+                    times: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.33, 0.38, 0.43, 0.48, 0.53, 0.58, 0.63, 0.66, 0.71, 0.76, 0.81, 0.86, 0.91, 1],
+                    ease: "easeInOut",
+                  }}
+                />
+              ))}
             </div>
 
-            {/* "y" - SVG shape transforms into letter */}
-            <div className="relative">
-              {/* Open Book SVG (Y-shaped) - fades out */}
-              <motion.svg
-                viewBox="0 0 48 48"
-                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 absolute bottom-0 left-1/2 -translate-x-1/2"
-                fill="none"
-                initial={{ opacity: 0, scale: 0 }}
-                animate={{ 
-                  opacity: [0, 1, 1, 0],
-                  scale: [0, 1, 1, 0],
-                }}
-                transition={{
-                  duration: 1.2,
-                  delay: 1.0,
-                  times: [0, 0.2, 0.7, 1],
-                  ease: "easeInOut",
-                }}
-              >
-                {/* Left page */}
-                <path d="M4 4L20 20V44L4 28V4Z" className="fill-[var(--color-primary)]" />
-                {/* Right page */}
-                <path d="M44 4L28 20V44L44 28V4Z" className="fill-[var(--color-primary)]" />
-                {/* Spine/center line */}
-                <path d="M24 20V48" className="stroke-[var(--color-primary-dark)]" strokeWidth="3" strokeLinecap="round" />
-                {/* Left page lines */}
-                <line x1="8" y1="12" x2="16" y2="18" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
-                <line x1="8" y1="18" x2="16" y2="24" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
-                {/* Right page lines */}
-                <line x1="40" y1="12" x2="32" y2="18" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
-                <line x1="40" y1="18" x2="32" y2="24" className="stroke-[var(--color-bg)]" strokeWidth="1.5" opacity="0.5" />
-              </motion.svg>
-
-              {/* "y" letter - fades in as SVG fades out */}
-              <motion.span
-                className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
-                style={{
-                  fontFamily: "var(--font-outfit), system-ui, sans-serif",
-                  letterSpacing: "-0.03em",
-                }}
-                initial={{ 
-                  opacity: 0,
-                  scale: 0.5,
-                }}
-                animate={{ 
-                  opacity: 1,
-                  scale: 1,
-                }}
-                transition={{
-                  type: "spring",
-                  stiffness: 200,
-                  damping: 15,
-                  delay: 1.85,
-                }}
-              >
-                y
-              </motion.span>
-            </div>
+            {/* "ly" letters - appear after each dot cycle */}
+            <motion.span
+              className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
+              style={{
+                fontFamily: "var(--font-outfit), system-ui, sans-serif",
+                letterSpacing: "-0.03em",
+              }}
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{
+                opacity: [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
+                scale: [0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 1],
+              }}
+              transition={{
+                duration: 4.5,
+                delay: 1.0,
+                times: [0, 0.25, 0.28, 0.32, 0.33, 0.58, 0.61, 0.64, 0.68, 0.69, 0.91, 0.94, 0.97, 1],
+                ease: "easeOut",
+              }}
+            >
+              ly
+            </motion.span>
           </div>
         </div>
       </div>
