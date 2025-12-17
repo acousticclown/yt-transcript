@@ -1,8 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import type { Note } from "../../lib/api";
-import { YouTubeIcon, StarIcon, ExternalLinkIcon } from "../Icons";
+import { YouTubeIcon, StarIcon, ExternalLinkIcon, PlayIcon } from "../Icons";
 
 // Simple inline markdown parser (bold, italic, code)
 function parseInlineMarkdown(text: string): string {
@@ -73,6 +74,17 @@ export function NoteViewer({ note }: NoteViewerProps) {
             </>
           )}
         </div>
+
+        {/* Interactive Video Mode Button for YouTube notes */}
+        {note.source === "youtube" && note.youtubeUrl && (
+          <Link
+            href={`/youtube/${note.id}`}
+            className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/10 text-red-600 hover:bg-red-500/20 transition-colors text-sm font-medium"
+          >
+            <PlayIcon className="w-4 h-4" />
+            Watch with Timestamps
+          </Link>
+        )}
       </header>
 
       {/* Content */}

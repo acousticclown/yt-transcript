@@ -424,9 +424,9 @@ export default function YouTubePage() {
 
         {/* Split View */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full max-w-7xl mx-auto flex flex-col lg:flex-row">
-            {/* Video Panel */}
-            <div className="lg:w-1/2 xl:w-3/5 flex-shrink-0 p-4 sm:p-6 flex flex-col gap-4">
+          <div className="h-full max-w-7xl mx-auto flex flex-col lg:flex-row lg:overflow-hidden">
+            {/* Video Panel - fixed, no scroll */}
+            <div className="lg:w-1/2 xl:w-3/5 flex-shrink-0 p-4 sm:p-6 flex flex-col gap-4 lg:overflow-hidden">
               <YouTubePlayer
                 videoId={generatedNote.videoId}
                 onTimeUpdate={setCurrentTime}
@@ -461,8 +461,8 @@ export default function YouTubePage() {
               </div>
             </div>
 
-            {/* Sections Panel */}
-            <div className="lg:w-1/2 xl:w-2/5 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6">
+            {/* Sections Panel - scrollable independently */}
+            <div className="lg:w-1/2 xl:w-2/5 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6 lg:h-full">
               <div className="space-y-3">
                 <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
                   Sections ({generatedNote.sections.length})

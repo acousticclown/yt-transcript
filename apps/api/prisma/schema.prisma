@@ -42,12 +42,14 @@ model Note {
 }
 
 model Section {
-  id       String @id @default(uuid())
-  title    String
-  summary  String
-  bullets  String // JSON array stored as string
-  language String @default("english")
-  order    Int
+  id        String @id @default(uuid())
+  title     String
+  summary   String
+  bullets   String // JSON array stored as string
+  language  String @default("english")
+  order     Int
+  startTime Int?   // Start timestamp in seconds (for YouTube)
+  endTime   Int?   // End timestamp in seconds (for YouTube)
 
   noteId String
   note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)

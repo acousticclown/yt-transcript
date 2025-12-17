@@ -40,6 +40,8 @@ router.get("/", async (req: Request, res: Response) => {
         summary: s.summary,
         bullets: JSON.parse(s.bullets),
         language: s.language,
+        startTime: s.startTime,
+        endTime: s.endTime,
       })),
     }));
 
@@ -84,6 +86,8 @@ router.get("/:id", async (req: Request, res: Response) => {
         summary: s.summary,
         bullets: JSON.parse(s.bullets),
         language: s.language,
+        startTime: s.startTime,
+        endTime: s.endTime,
       })),
     });
   } catch (error) {
@@ -118,6 +122,8 @@ router.post("/", async (req: Request, res: Response) => {
                 bullets: JSON.stringify(s.bullets || []),
                 language: s.language || "english",
                 order: i,
+                startTime: s.startTime ?? null,
+                endTime: s.endTime ?? null,
               })),
             }
           : undefined,
@@ -197,6 +203,8 @@ router.put("/:id", async (req: Request, res: Response) => {
           language: s.language || "english",
           order: i,
           noteId: note.id,
+          startTime: s.startTime ?? null,
+          endTime: s.endTime ?? null,
         })),
       });
     }
