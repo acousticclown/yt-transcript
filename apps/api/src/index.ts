@@ -10,9 +10,13 @@ import aiRouter from "./routes/ai";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
-import { geminiModel } from "../ai/gemini";
+import { geminiModel, getUserApiKey } from "../ai/gemini";
 import { sectionDetectionPrompt, sectionDetectionWithTimestampsPrompt } from "../../../packages/prompts/sectionDetection";
+import { basicSummaryPrompt } from "../../../packages/prompts/basicSummary";
 import { cleanTranscript } from "../utils/cleanTranscript";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -83,13 +87,34 @@ app.post("/transcript", async (req, res) => {
 // POST /summary - Generate AI summary
 app.post("/summary", async (req, res) => {
   try {
+    // Require authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    let userId: string;
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      userId = decoded.userId;
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Get user's API key
+    const userApiKey = await getUserApiKey(userId);
+    if (!userApiKey) {
+      return res.status(400).json({ error: "API_KEY_REQUIRED" });
+    }
+
     const { transcript } = req.body;
     if (!transcript) {
       return res.status(400).json({ error: "Transcript is required" });
     }
 
     const prompt = basicSummaryPrompt(transcript);
-    const summary = await geminiModel.generateContent(prompt);
+    const summary = await geminiModel.generateContent(prompt, userApiKey);
 
     res.json({ summary });
   } catch (error) {
@@ -101,6 +126,27 @@ app.post("/summary", async (req, res) => {
 // POST /sections - Generate structured sections with timestamps
 app.post("/sections", async (req, res) => {
   try {
+    // Require authentication
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "Authentication required" });
+    }
+
+    let userId: string;
+    try {
+      const token = authHeader.substring(7);
+      const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+      userId = decoded.userId;
+    } catch {
+      return res.status(401).json({ error: "Invalid token" });
+    }
+
+    // Get user's API key
+    const userApiKey = await getUserApiKey(userId);
+    if (!userApiKey) {
+      return res.status(400).json({ error: "API_KEY_REQUIRED" });
+    }
+
     const { transcript, subtitles } = req.body;
     console.log("[Sections] Received - transcript:", !!transcript, "subtitles:", subtitles?.length || 0);
     
@@ -113,9 +159,8 @@ app.post("/sections", async (req, res) => {
       ? sectionDetectionWithTimestampsPrompt(subtitles)
       : sectionDetectionPrompt(transcript);
 
-    console.log("[Sections] Calling Gemini...");
-    // geminiModel.generateContent returns string directly
-    const text = await geminiModel.generateContent(prompt);
+    console.log("[Sections] Calling Gemini with user's API key...");
+    const text = await geminiModel.generateContent(prompt, userApiKey);
     console.log("[Sections] Got response, length:", text.length);
 
     // Parse JSON from response - handle both array and object formats
