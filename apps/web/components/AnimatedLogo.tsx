@@ -96,9 +96,8 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 stroke="white"
                 className=""
                 strokeWidth="1"
-                opacity="0.9"
                 initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 0.5 }}
+                animate={{ scaleX: 1, opacity: 1 }}
                 transition={{
                   ...springConfig,
                   delay: 1 + i * 0.15,
