@@ -6,6 +6,8 @@ import { motion } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
 import { ActionButton } from "../../../components/ActionButton";
 import { UnifiedNoteEditor } from "../../../components/notes";
+import { useCreateNote } from "../../../lib/hooks";
+import { youtubeApi, aiApi } from "../../../lib/api";
 
 const loadingMessages = [
   "🧠 Listening to the video…",
@@ -38,6 +40,8 @@ export default function YouTubePage() {
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
 
+  const createNote = useCreateNote();
+
   async function generateNotes() {
     if (!url.trim()) return;
 
@@ -48,43 +52,22 @@ export default function YouTubePage() {
     );
 
     try {
-      // 1. Fetch transcript
-      const transcriptRes = await fetch("http://localhost:3001/transcript", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-      const transcriptData = await transcriptRes.json();
+      // Use API client
+      const result = await youtubeApi.generate(url);
 
-      if (transcriptData.error) {
+      if (result.error) {
         const errorMsg =
-          transcriptData.error.includes("captions") ||
-          transcriptData.error.includes("Transcript not available")
+          result.error.includes("captions") ||
+          result.error.includes("Transcript not available")
             ? "This video doesn't have captions yet. Try another video with captions enabled."
-            : transcriptData.error;
+            : result.error;
         alert(`⚠️ ${errorMsg}`);
         setLoading(false);
         return;
       }
 
-      // 2. Fetch sections
-      const sectionsRes = await fetch("http://localhost:3001/sections", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript: transcriptData.transcript }),
-      });
-      const sectionsData = await sectionsRes.json();
-
-      if (sectionsData.error) {
-        alert(
-          `⚠️ Couldn't generate notes right now. ${sectionsData.error || "Please try again."}`
-        );
-        setLoading(false);
-        return;
-      }
-
       // Convert to unified note format
-      const sections: NoteSection[] = (sectionsData.sections || []).map(
+      const sections: NoteSection[] = (result.sections || []).map(
         (section: { title: string; summary: string; bullets: string[] }) => ({
           id: crypto.randomUUID(),
           title: section.title,
@@ -114,28 +97,34 @@ export default function YouTubePage() {
     }
   }
 
-  const handleSave = (note: any) => {
-    console.log("Saving YouTube note:", note);
-    // Would save via API
-    const id = crypto.randomUUID();
-    router.push(`/notes/${id}`);
+  const handleSave = async (note: any) => {
+    try {
+      const result = await createNote.mutateAsync({
+        title: note.title || "YouTube Notes",
+        content: note.content || "",
+        tags: note.tags || ["youtube"],
+        language: note.language || "english",
+        source: "youtube",
+        youtubeUrl: generatedNote?.youtubeUrl || url,
+        sections: note.sections || [],
+      });
+      router.push(`/notes/${result.id}`);
+    } catch (err) {
+      console.error("Failed to save note:", err);
+      alert("Failed to save note. Please try again.");
+    }
   };
 
   const handleAIAction = async (action: string, text: string): Promise<string> => {
     try {
-      const res = await fetch("http://localhost:3001/ai/inline", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, text }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.text || text;
+      if (action === "simplify" || action === "expand" || action === "example") {
+        return await aiApi.inline(text, action);
       }
+      return text;
     } catch (e) {
       console.error("AI action failed:", e);
+      return text;
     }
-    return text;
   };
 
   // If note is generated, show the editor
@@ -170,6 +159,12 @@ export default function YouTubePage() {
             onSave={handleSave}
             onAIAction={handleAIAction}
           />
+          
+          {createNote.isPending && (
+            <div className="fixed bottom-4 right-4 bg-[var(--color-surface)] px-4 py-2 rounded-xl shadow-lg border border-[var(--color-border)]">
+              Saving...
+            </div>
+          )}
         </Stack>
       </Container>
     );

@@ -1,36 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { UnifiedNoteEditor } from "../../../../components/notes";
+import { useCreateNote } from "../../../../lib/hooks";
+import { aiApi } from "../../../../lib/api";
 
-export default function NewNotePage() {
+function NewNotePageContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const prompt = searchParams.get("prompt");
+  
+  const createNote = useCreateNote();
 
-  const handleSave = (note: any) => {
-    // Mock save - would create note via API
-    console.log("Saving note:", note);
-    const id = crypto.randomUUID();
-    router.push(`/notes/${id}`);
+  const handleSave = async (note: any) => {
+    try {
+      const result = await createNote.mutateAsync({
+        title: note.title || "Untitled",
+        content: note.content || "",
+        tags: note.tags || [],
+        language: note.language || "english",
+        source: note.source || "manual",
+        youtubeUrl: note.youtubeUrl,
+        sections: note.sections || [],
+      });
+      router.push(`/notes/${result.id}`);
+    } catch (err) {
+      console.error("Failed to save note:", err);
+    }
   };
 
   const handleAIAction = async (action: string, text: string): Promise<string> => {
-    // Call actual API
     try {
-      const res = await fetch("http://localhost:3001/ai/inline", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action, text }),
-      });
-      if (res.ok) {
-        const data = await res.json();
-        return data.text || text;
+      if (action === "simplify" || action === "expand" || action === "example") {
+        return await aiApi.inline(text, action);
       }
+      return text;
     } catch (e) {
       console.error("AI action failed:", e);
+      return text;
     }
-    return text;
   };
 
   return (
@@ -48,6 +59,9 @@ export default function NewNotePage() {
           ← Back
         </Link>
         <h1 className="text-xl font-semibold text-[var(--color-text)]">New Note</h1>
+        {createNote.isPending && (
+          <span className="text-sm text-[var(--color-text-muted)]">Saving...</span>
+        )}
       </motion.div>
 
       {/* Editor */}
@@ -56,8 +70,20 @@ export default function NewNotePage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
       >
-        <UnifiedNoteEditor onSave={handleSave} onAIAction={handleAIAction} />
+        <UnifiedNoteEditor 
+          onSave={handleSave} 
+          onAIAction={handleAIAction}
+          initialNote={prompt ? { title: prompt } : undefined}
+        />
       </motion.div>
     </div>
+  );
+}
+
+export default function NewNotePage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <NewNotePageContent />
+    </Suspense>
   );
 }

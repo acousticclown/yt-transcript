@@ -144,6 +144,35 @@ export const youtubeApi = {
     if (!res.ok) throw new Error("Failed to generate sections");
     return res.json();
   },
+
+  // Combined: fetch transcript + generate sections
+  async generate(url: string): Promise<{ sections: any[]; error?: string }> {
+    // 1. Get transcript
+    const transcriptRes = await fetch(`${API_BASE}/transcript`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    const transcriptData = await transcriptRes.json();
+
+    if (transcriptData.error) {
+      return { sections: [], error: transcriptData.error };
+    }
+
+    // 2. Generate sections
+    const sectionsRes = await fetch(`${API_BASE}/sections`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ transcript: transcriptData.transcript }),
+    });
+    const sectionsData = await sectionsRes.json();
+
+    if (sectionsData.error) {
+      return { sections: [], error: sectionsData.error };
+    }
+
+    return { sections: sectionsData.sections || [] };
+  },
 };
 
 // AI API
