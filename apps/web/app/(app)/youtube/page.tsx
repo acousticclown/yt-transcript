@@ -252,11 +252,19 @@ function Timeline({
   );
 }
 
+type RawTranscript = {
+  transcript: string;
+  videoId: string;
+  subtitles: { text: string; start: number; dur: number }[];
+};
+
 export default function YouTubePage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
+  const [refining, setRefining] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
+  const [rawTranscript, setRawTranscript] = useState<RawTranscript | null>(null);
   const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -337,92 +345,149 @@ export default function YouTubePage() {
       return;
     }
 
-    // Just start generating - API will fail if no key
-    await doGenerate(videoId);
+    // Step 1: Fetch transcript (no AI needed)
+    await fetchTranscript(videoId);
   }
 
-  async function doGenerate(videoId: string) {
+  // Step 1: Fetch raw transcript (no AI, no API key needed)
+  async function fetchTranscript(videoId: string) {
     setLoading(true);
+    setRawTranscript(null);
     setGeneratedNote(null);
-    setLoadingMessage(
-      loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
-    );
+    setLoadingMessage("Fetching transcript...");
 
     try {
-      const result = await youtubeApi.generate(url);
+      const res = await fetch("http://localhost:3001/transcript", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+      const data = await res.json();
 
-      if (result.error) {
-        // Show API key prompt if user hasn't set up their key
-        if (result.error === "API_KEY_REQUIRED") {
-          setShowApiKeyPrompt(true);
-          setLoading(false);
-          return;
-        }
-        
+      if (data.error) {
         const errorMsg =
-          result.error.includes("captions") ||
-          result.error.includes("Transcript not available")
+          data.error.includes("captions") || data.error.includes("No captions")
             ? "This video doesn't have captions yet. Try another video with captions enabled."
-            : result.error;
+            : data.error;
         alert(`⚠️ ${errorMsg}`);
         setLoading(false);
         return;
       }
 
-      // Convert to unified note format with timestamps
-      const sections: NoteSection[] = (result.sections || []).map(
-        (section: any) => ({
-          id: crypto.randomUUID(),
-          title: section.title,
-          summary: section.summary,
-          bullets: section.bullets,
-          language: "english" as const,
-          startTime: section.startTime,
-          endTime: section.endTime,
-        })
-      );
+      setRawTranscript({
+        transcript: data.transcript,
+        videoId: data.videoId || videoId,
+        subtitles: data.subtitles || [],
+      });
+    } catch (error) {
+      alert("⚠️ Couldn't fetch transcript. Make sure the API server is running.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
-      const videoTitle = sections[0]?.title || "YouTube Notes";
-      const videoId = result.videoId || extractVideoId(url) || "";
-      const videoSummary = result.summary || "";
-      const videoTags = result.tags || ["youtube"];
+  // Step 2: Refine with AI (requires API key)
+  async function refineWithAI() {
+    if (!rawTranscript) return;
+
+    setRefining(true);
+    setLoadingMessage("AI is analyzing...");
+
+    try {
+      const token = localStorage.getItem("notely-token");
+      const res = await fetch("http://localhost:3001/sections", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          transcript: rawTranscript.transcript,
+          subtitles: rawTranscript.subtitles,
+        }),
+      });
+      const data = await res.json();
+
+      if (data.error === "API_KEY_REQUIRED") {
+        setShowApiKeyPrompt(true);
+        setRefining(false);
+        return;
+      }
+
+      if (data.error) {
+        alert(`⚠️ ${data.error}`);
+        setRefining(false);
+        return;
+      }
+
+      // Convert to note format
+      const sections: NoteSection[] = (data.sections || []).map((s: any) => ({
+        id: crypto.randomUUID(),
+        title: s.title,
+        summary: s.summary,
+        bullets: s.bullets,
+        language: "english" as const,
+        startTime: s.startTime,
+        endTime: s.endTime,
+      }));
 
       const noteData = {
-        title: videoTitle,
-        tags: videoTags,
+        title: sections[0]?.title || "YouTube Notes",
+        tags: data.tags || ["youtube"],
         language: "english" as const,
         sections,
-        content: videoSummary,
+        content: data.summary || "",
         source: "youtube" as const,
         youtubeUrl: url,
-        videoId,
+        videoId: rawTranscript.videoId,
       };
 
-      // Auto-save the note
+      // Auto-save
       try {
         const savedNote = await createNote.mutateAsync({
           title: noteData.title,
-          content: videoSummary,
-          tags: videoTags,
+          content: noteData.content,
+          tags: noteData.tags,
           language: noteData.language,
           source: "youtube",
           youtubeUrl: noteData.youtubeUrl,
           sections: noteData.sections,
         });
-        
         setGeneratedNote({ ...noteData, id: savedNote.id });
         setSaveState("saved");
-      } catch (saveErr) {
-        console.error("Auto-save failed:", saveErr);
-        // Still show the note even if save failed
+      } catch {
         setGeneratedNote(noteData);
       }
+
+      setRawTranscript(null); // Clear raw transcript view
     } catch (error) {
-      alert(
-        "⚠️ Couldn't generate notes right now. Make sure the API server is running on port 3001."
-      );
+      alert("⚠️ AI refinement failed. Please try again.");
     } finally {
-      setLoading(false);
+      setRefining(false);
+    }
+  }
+
+  // Save raw transcript as simple note (no AI)
+  async function saveAsRawNote() {
+    if (!rawTranscript) return;
+
+    setSaveState("saving");
+
+    try {
+      const savedNote = await createNote.mutateAsync({
+        title: "YouTube Transcript",
+        content: rawTranscript.transcript,
+        tags: ["youtube", "transcript"],
+        language: "english",
+        source: "youtube",
+        youtubeUrl: url,
+        sections: [],
+      });
+
+      router.push(`/notes/${savedNote.id}?edit=true`);
+    } catch {
+      alert("⚠️ Failed to save note");
+      setSaveState("error");
     }
   }
 
@@ -460,6 +525,118 @@ export default function YouTubePage() {
       setSaveState("error");
     }
   };
+
+  // Raw transcript state - show transcript with options
+  if (rawTranscript) {
+    const videoId = rawTranscript.videoId;
+    return (
+      <div className="h-[calc(100vh-5rem)] lg:h-screen flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm px-4 sm:px-6 py-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0">
+              <button
+                onClick={() => setRawTranscript(null)}
+                className="p-2 hover:bg-[var(--color-bg)] rounded-lg transition-colors"
+              >
+                ←
+              </button>
+              <div className="min-w-0">
+                <h1 className="font-semibold text-[var(--color-text)] truncate">
+                  Transcript Ready
+                </h1>
+                <p className="text-sm text-[var(--color-text-muted)]">
+                  {rawTranscript.subtitles.length} segments
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={saveAsRawNote}
+                disabled={saveState === "saving"}
+                className="px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-xl transition-colors"
+              >
+                Save as Text
+              </button>
+              <button
+                onClick={refineWithAI}
+                disabled={refining}
+                className="px-4 py-2 bg-[var(--color-primary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-primary-dark)] disabled:opacity-50 flex items-center gap-2"
+              >
+                {refining ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Refining...
+                  </>
+                ) : (
+                  <>
+                    <SparklesIcon className="w-4 h-4" />
+                    Refine with AI
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-hidden">
+          <div className="h-full flex flex-col lg:flex-row">
+            {/* Video Panel */}
+            <div className="lg:w-1/2 flex-shrink-0 bg-black">
+              <div className="aspect-video lg:aspect-auto lg:h-full">
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+            </div>
+
+            {/* Transcript Panel */}
+            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
+              <div className="max-w-2xl mx-auto">
+                <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <p className="text-sm text-[var(--color-text)]">
+                    <strong>Raw transcript extracted!</strong> You can save it as-is or let AI organize it into structured notes with summaries and key points.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  {rawTranscript.subtitles.map((sub, i) => (
+                    <div
+                      key={i}
+                      className="flex gap-3 p-2 rounded-lg hover:bg-[var(--color-surface)]"
+                    >
+                      <span className="text-xs text-[var(--color-text-subtle)] font-mono w-12 flex-shrink-0">
+                        {formatTime(sub.start)}
+                      </span>
+                      <span className="text-sm text-[var(--color-text)]">
+                        {sub.text}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* API Key Prompt */}
+        <ApiKeyPrompt
+          isOpen={showApiKeyPrompt}
+          onClose={() => setShowApiKeyPrompt(false)}
+          onSuccess={() => {
+            setShowApiKeyPrompt(false);
+            refineWithAI();
+          }}
+          context="youtube"
+        />
+      </div>
+    );
+  }
 
   // Generated state - Split view with video
   if (generatedNote) {
