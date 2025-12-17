@@ -80,43 +80,48 @@ export default function NoteEditorPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
-      {/* Header */}
+    <div className="h-full flex flex-col">
+      {/* Sticky Header */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="flex items-center gap-4 mb-6"
+        className="sticky top-0 z-10 bg-[var(--color-bg)] border-b border-[var(--color-border)] px-4 sm:px-6 lg:px-8 py-3"
       >
-        <Link
-          href="/notes"
-          className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-lg transition-colors"
-        >
-          ← Back
-        </Link>
-        <h1 className="text-xl font-semibold text-[var(--color-text)]">Edit Note</h1>
-        <SaveIndicator state={saveState} />
+        <div className="max-w-4xl mx-auto flex items-center gap-4">
+          <Link
+            href="/notes"
+            className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
+          >
+            ← Back
+          </Link>
+          <h1 className="text-xl font-semibold text-[var(--color-text)]">Edit Note</h1>
+          <SaveIndicator state={saveState} />
+        </div>
       </motion.div>
 
-      {/* Editor */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1 }}
-      >
-        <UnifiedNoteEditor
-          initialNote={{
-            title: note.title,
-            content: note.content,
-            tags: note.tags,
-            language: note.language,
-            sections: note.sections,
-            source: note.source as "manual" | "youtube",
-            youtubeUrl: note.youtubeUrl,
-          }}
-          onSave={handleSave}
-          onAIAction={handleAIAction}
-        />
-      </motion.div>
+      {/* Scrollable Editor */}
+      <div className="flex-1 overflow-y-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto"
+        >
+          <UnifiedNoteEditor
+            initialNote={{
+              title: note.title,
+              content: note.content,
+              tags: note.tags,
+              language: note.language,
+              sections: note.sections,
+              source: note.source as "manual" | "youtube",
+              youtubeUrl: note.youtubeUrl,
+            }}
+            onSave={handleSave}
+            onAIAction={handleAIAction}
+          />
+        </motion.div>
+      </div>
     </div>
   );
 }
