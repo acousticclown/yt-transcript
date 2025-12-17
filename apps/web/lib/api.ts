@@ -98,7 +98,10 @@ export const tagsApi = {
     return res.json();
   },
 
-  async update(id: string, data: { name?: string; color?: string }): Promise<Tag> {
+  async update(
+    id: string,
+    data: { name?: string; color?: string }
+  ): Promise<Tag> {
     const res = await fetch(`${API_BASE}/api/tags/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
@@ -118,7 +121,9 @@ export const tagsApi = {
 
 // YouTube API (legacy endpoints)
 export const youtubeApi = {
-  async getTranscript(url: string): Promise<{ transcript: string; videoId: string }> {
+  async getTranscript(
+    url: string
+  ): Promise<{ transcript: string; videoId: string }> {
     const res = await fetch(`${API_BASE}/transcript`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -128,7 +133,9 @@ export const youtubeApi = {
     return res.json();
   },
 
-  async generateSections(transcript: string): Promise<{ sections: NoteSection[] }> {
+  async generateSections(
+    transcript: string
+  ): Promise<{ sections: NoteSection[] }> {
     const res = await fetch(`${API_BASE}/sections`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -141,7 +148,10 @@ export const youtubeApi = {
 
 // AI API
 export const aiApi = {
-  async inline(text: string, action: "simplify" | "expand" | "example"): Promise<string> {
+  async inline(
+    text: string,
+    action: "simplify" | "expand" | "example"
+  ): Promise<string> {
     const res = await fetch(`${API_BASE}/ai/inline`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -167,4 +177,3 @@ export const aiApi = {
     return data.result;
   },
 };
-

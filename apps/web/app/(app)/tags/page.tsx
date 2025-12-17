@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { tagsApi, Tag as ApiTag } from "../../../lib/api";
+import { useTags, useCreateTag, useDeleteTag } from "../../../lib/hooks";
 
 type Tag = {
   id: string;
@@ -122,65 +122,46 @@ const COLORS = [
 ];
 
 export default function TagsPage() {
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(true);
+  // TanStack Query hooks
+  const { data: apiTags = [], isLoading } = useTags();
+  const createTag = useCreateTag();
+  const deleteTag = useDeleteTag();
+
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState(COLORS[0]);
   const [filter, setFilter] = useState("");
 
-  // Fetch tags from API
-  useEffect(() => {
-    async function fetchTags() {
-      try {
-        setLoading(true);
-        const data = await tagsApi.list();
-        setTags(data.map((t: ApiTag) => ({
-          id: t.id,
-          name: t.name,
-          color: t.color || COLORS[Math.floor(Math.random() * COLORS.length)],
-          count: t.noteCount,
-        })));
-      } catch (err) {
-        console.error("Failed to fetch tags:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchTags();
-  }, []);
+  // Transform API tags
+  const tags: Tag[] = apiTags.map((t) => ({
+    id: t.id,
+    name: t.name,
+    color: t.color || COLORS[Math.floor(Math.random() * COLORS.length)],
+    count: t.noteCount,
+  }));
 
-  const handleCreateTag = async () => {
+  const handleCreateTag = () => {
     if (!newTagName.trim()) return;
-    try {
-      const newTag = await tagsApi.create(newTagName.trim().toLowerCase(), newTagColor);
-      setTags([...tags, {
-        id: newTag.id,
-        name: newTag.name,
-        color: newTag.color || newTagColor,
-        count: 0,
-      }]);
-      setNewTagName("");
-      setShowNewTag(false);
-    } catch (err) {
-      console.error("Failed to create tag:", err);
-    }
+    createTag.mutate(
+      { name: newTagName.trim().toLowerCase(), color: newTagColor },
+      {
+        onSuccess: () => {
+          setNewTagName("");
+          setShowNewTag(false);
+        },
+      }
+    );
   };
 
-  const handleDeleteTag = async (id: string) => {
-    try {
-      await tagsApi.delete(id);
-      setTags(tags.filter((t) => t.id !== id));
-    } catch (err) {
-      console.error("Failed to delete tag:", err);
-    }
+  const handleDeleteTag = (id: string) => {
+    deleteTag.mutate(id);
   };
 
   const filteredTags = tags.filter((t) =>
     t.name.toLowerCase().includes(filter.toLowerCase())
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
@@ -248,9 +229,10 @@ export default function TagsPage() {
               <div className="flex gap-2 mt-4">
                 <button
                   onClick={handleCreateTag}
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm"
+                  disabled={createTag.isPending}
+                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm disabled:opacity-50"
                 >
-                  Create
+                  {createTag.isPending ? "Creating..." : "Create"}
                 </button>
                 <button
                   onClick={() => setShowNewTag(false)}

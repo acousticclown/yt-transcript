@@ -5,7 +5,8 @@ import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { NoteList } from "../../../components/notes";
-import { notesApi, Note as ApiNote } from "../../../lib/api";
+import { useNotes, useDeleteNote, useToggleFavorite } from "../../../lib/hooks";
+import { Note as ApiNote } from "../../../lib/api";
 
 type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites";
@@ -41,31 +42,15 @@ function NotesPageContent() {
   const router = useRouter();
   const tagFromUrl = searchParams.get("tag");
 
-  const [notes, setNotes] = useState<ApiNote[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // TanStack Query hooks
+  const { data: notes = [], isLoading, error } = useNotes();
+  const deleteNote = useDeleteNote();
+  const toggleFavorite = useToggleFavorite();
+
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
   const [filter, setFilter] = useState<FilterOption>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(tagFromUrl);
-
-  // Fetch notes from API
-  useEffect(() => {
-    async function fetchNotes() {
-      try {
-        setLoading(true);
-        const data = await notesApi.list();
-        setNotes(data);
-        setError(null);
-      } catch (err) {
-        setError("Failed to load notes");
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchNotes();
-  }, []);
 
   // Sync tag from URL
   useEffect(() => {
@@ -82,22 +67,12 @@ function NotesPageContent() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      await notesApi.delete(id);
-      setNotes(notes.filter((n) => n.id !== id));
-    } catch (err) {
-      console.error("Failed to delete note:", err);
-    }
+  const handleDelete = (id: string) => {
+    deleteNote.mutate(id);
   };
 
-  const handleToggleFavorite = async (id: string) => {
-    try {
-      const { isFavorite } = await notesApi.toggleFavorite(id);
-      setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite } : n)));
-    } catch (err) {
-      console.error("Failed to toggle favorite:", err);
-    }
+  const handleToggleFavorite = (id: string) => {
+    toggleFavorite.mutate(id);
   };
 
   // Get all unique tags
@@ -138,7 +113,6 @@ function NotesPageContent() {
     } else if (sort === "favorites") {
       result.sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
     } else {
-      // recent
       result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }
 
@@ -148,7 +122,7 @@ function NotesPageContent() {
   // Transform to card format
   const cardNotes = filteredNotes.map(toCardNote);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 flex items-center justify-center">
         <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
@@ -159,7 +133,7 @@ function NotesPageContent() {
   if (error) {
     return (
       <div className="p-6 text-center">
-        <p className="text-[var(--color-danger)]">{error}</p>
+        <p className="text-[var(--color-danger)]">Failed to load notes</p>
         <button
           onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl"
