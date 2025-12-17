@@ -49,7 +49,7 @@ app.use("/api/ai", aiRouter);
 app.use("/api/sync", syncRouter);
 
 // Health check
-app.get("/health", (req, res) => {
+app.get("/health", (req: express.Request, res: express.Response) => {
   res.json({ status: "ok", version: "1.3.0" });
 });
 
@@ -58,7 +58,7 @@ app.get("/health", (req, res) => {
 // ============================================
 
 // POST /transcript - Extract YouTube transcript
-app.post("/transcript", async (req, res) => {
+app.post("/transcript", async (req: express.Request, res: express.Response) => {
   try {
     const { url } = req.body;
     console.log("[Transcript] Extracting from:", url);
@@ -102,7 +102,7 @@ app.post("/transcript", async (req, res) => {
 });
 
 // POST /summary - Generate AI summary
-app.post("/summary", async (req, res) => {
+app.post("/summary", async (req: express.Request, res: express.Response) => {
   try {
     // Require authentication
     const authHeader = req.headers.authorization;
@@ -141,7 +141,7 @@ app.post("/summary", async (req, res) => {
 });
 
 // POST /sections - Generate structured sections with timestamps
-app.post("/sections", async (req, res) => {
+app.post("/sections", async (req: express.Request, res: express.Response) => {
   try {
     // Require authentication
     const authHeader = req.headers.authorization;
@@ -235,7 +235,7 @@ function extractVideoId(url: string): string | null {
   ];
   for (const pattern of patterns) {
     const match = url.match(pattern);
-    if (match) return match[1];
+    if (match && match[1]) return match[1];
   }
   return null;
 }
