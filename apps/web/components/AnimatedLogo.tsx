@@ -159,7 +159,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
           </div>
 
           {/* Pen transforms into "l" + "y" */}
-          <div className="flex items-end relative">
+          <div className="flex items-end relative gap-1 sm:gap-1.5">
             {/* Pen that morphs into "l" */}
             <div className="relative">
               {/* Pen SVG - straight, tip at bottom */}
