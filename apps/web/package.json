@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "generate-icons": "node scripts/generate-icons-sharp.js",
+    "pwa-benchmark": "node scripts/pwa-benchmark.js"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
@@ -27,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "sharp": "^0.34.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
