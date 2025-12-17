@@ -1,13 +1,14 @@
 /**
  * AI Streaming Utilities
  * SSE-based streaming for AI responses with thinking states
+ * Using new @google/genai SDK
  */
 
 import type { Response } from "express";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+// Initialize Gemini with new SDK
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // Model chain for fallback
 const MODELS = [
@@ -40,17 +41,18 @@ export function setupSSE(res: Response) {
 }
 
 /**
- * Get working Gemini model with fallback
+ * Get working model with fallback
  */
-async function getWorkingModel() {
+async function tryGenerateWithFallback(prompt: string): Promise<string> {
   for (const modelName of MODELS) {
     try {
-      const model = genAI.getGenerativeModel({ model: modelName });
-      // Quick test
-      await model.generateContent("test");
-      return model;
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+      });
+      return response.text || "";
     } catch (error: any) {
-      console.log(`Model ${modelName} failed, trying next...`);
+      console.log(`Model ${modelName} failed:`, error.message);
       continue;
     }
   }
@@ -71,26 +73,37 @@ export async function streamAIGeneration(
     sendSSE(res, { type: "thinking", step: "analyzing", message: steps[0]?.message || "Analyzing..." });
     await delay(300);
 
-    // Get model
-    const model = await getWorkingModel();
-
     // Step 2: Structuring
     sendSSE(res, { type: "thinking", step: "structuring", message: steps[1]?.message || "Structuring..." });
     await delay(200);
 
-    // Generate with streaming
-    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
-    
     // Step 3: Generating
     sendSSE(res, { type: "thinking", step: "generating", message: steps[2]?.message || "Generating..." });
     
-    const result = await model.generateContentStream(fullPrompt);
+    const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
     
+    // Try streaming first, fallback to non-streaming
     let fullText = "";
-    for await (const chunk of result.stream) {
-      const text = chunk.text();
-      fullText += text;
-      sendSSE(res, { type: "chunk", content: text });
+    
+    try {
+      // Try streaming with new SDK
+      const response = await ai.models.generateContentStream({
+        model: MODELS[0],
+        contents: fullPrompt,
+      });
+      
+      for await (const chunk of response) {
+        const text = chunk.text || "";
+        fullText += text;
+        if (text) {
+          sendSSE(res, { type: "chunk", content: text });
+        }
+      }
+    } catch (streamError) {
+      // Fallback to non-streaming
+      console.log("Streaming failed, using non-streaming fallback");
+      fullText = await tryGenerateWithFallback(fullPrompt);
+      sendSSE(res, { type: "chunk", content: fullText });
     }
 
     // Step 4: Finalizing
@@ -121,9 +134,8 @@ export async function generateAI(
   systemPrompt: string,
   userPrompt: string
 ): Promise<string> {
-  const model = await getWorkingModel();
-  const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`);
-  return result.response.text();
+  const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+  return await tryGenerateWithFallback(fullPrompt);
 }
 
 /**
@@ -142,4 +154,3 @@ export function sanitizeJson(text: string): string {
 function delay(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-
