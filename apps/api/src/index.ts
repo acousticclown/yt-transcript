@@ -135,7 +135,7 @@ app.post("/sections", async (req, res) => {
       throw new Error("No valid JSON found in response");
     }
 
-    console.log("[Sections] Parsed sections:", sections.length, "summary:", !!summary);
+    console.log("[Sections] Parsed sections:", sections.length, "summary:", summary ? summary.substring(0, 100) : "(none)");
     res.json({ sections, summary });
   } catch (error: any) {
     console.error("[Sections] Error:", error?.message || error);
