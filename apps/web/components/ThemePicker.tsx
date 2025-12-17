@@ -2,46 +2,32 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { themes, lightThemes, darkThemes, applyTheme, getTheme, type ThemeId, type ThemeMode } from "../lib/themes";
+import { themes, lightThemes, darkThemes, type ThemeId } from "../lib/themes";
+import { useTheme } from "../app/components/ThemeProvider";
 
 export function ThemePicker() {
-  const [currentTheme, setCurrentTheme] = useState<ThemeId>("morning-mist");
+  const { themeId, setThemeId } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
-  const [systemMode, setSystemMode] = useState<ThemeMode>("light");
+  const [mounted, setMounted] = useState(false);
 
-  // Detect system preference
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    setSystemMode(mediaQuery.matches ? "dark" : "light");
-    
-    const handler = (e: MediaQueryListEvent) => setSystemMode(e.matches ? "dark" : "light");
-    mediaQuery.addEventListener("change", handler);
-    return () => mediaQuery.removeEventListener("change", handler);
+    setMounted(true);
   }, []);
 
-  // Load saved theme
-  useEffect(() => {
-    const saved = localStorage.getItem("theme") as ThemeId | null;
-    if (saved && (saved === "auto" || themes[saved])) {
-      setCurrentTheme(saved);
-    }
-  }, []);
-
-  // Apply theme when it changes
-  useEffect(() => {
-    const theme = getTheme(currentTheme, systemMode);
-    applyTheme(theme);
-    localStorage.setItem("theme", currentTheme);
-  }, [currentTheme, systemMode]);
+  if (!mounted) {
+    return (
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--color-surface)] border border-[var(--color-border)] h-10 w-36" />
+    );
+  }
 
   const handleSelect = (id: ThemeId) => {
-    setCurrentTheme(id);
+    setThemeId(id);
     setIsOpen(false);
   };
 
-  const currentThemeData = currentTheme === "auto" 
+  const currentThemeData = themeId === "auto" 
     ? { name: "Auto", preview: `linear-gradient(135deg, #faf9f7 0%, #1a1a1a 100%)` }
-    : themes[currentTheme];
+    : themes[themeId];
 
   return (
     <div className="relative">
@@ -83,7 +69,7 @@ export function ThemePicker() {
                 <button
                   onClick={() => handleSelect("auto")}
                   className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors ${
-                    currentTheme === "auto" 
+                    themeId === "auto" 
                       ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]" 
                       : "hover:bg-[var(--color-bg)]"
                   }`}
@@ -96,7 +82,7 @@ export function ThemePicker() {
                     <p className="font-medium text-[var(--color-text)]">Auto</p>
                     <p className="text-xs text-[var(--color-text-muted)]">Match system preference</p>
                   </div>
-                  {currentTheme === "auto" && (
+                  {themeId === "auto" && (
                     <span className="ml-auto text-[var(--color-primary)]">✓</span>
                   )}
                 </button>
@@ -111,7 +97,7 @@ export function ThemePicker() {
                       key={theme.id}
                       onClick={() => handleSelect(theme.id)}
                       className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                        currentTheme === theme.id
+                        themeId === theme.id
                           ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]"
                           : "hover:bg-[var(--color-bg)] border border-transparent"
                       }`}
@@ -135,7 +121,7 @@ export function ThemePicker() {
                       key={theme.id}
                       onClick={() => handleSelect(theme.id)}
                       className={`flex items-center gap-2 p-2 rounded-lg transition-colors ${
-                        currentTheme === theme.id
+                        themeId === theme.id
                           ? "bg-[var(--color-primary)]/10 border border-[var(--color-primary)]"
                           : "hover:bg-[var(--color-bg)] border border-transparent"
                       }`}
@@ -156,4 +142,3 @@ export function ThemePicker() {
     </div>
   );
 }
-

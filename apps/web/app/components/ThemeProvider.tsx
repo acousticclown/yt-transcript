@@ -1,101 +1,62 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-
-type Theme = "light" | "dark" | "system";
-type GlassStyle = "default" | "matte" | "glossy";
+import { themes, getTheme, applyTheme, type ThemeId, type ThemeMode } from "../../lib/themes";
 
 type ThemeContextType = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  resolvedTheme: "light" | "dark";
-  glassStyle: GlassStyle;
-  setGlassStyle: (style: GlassStyle) => void;
+  themeId: ThemeId;
+  setThemeId: (id: ThemeId) => void;
+  resolvedMode: ThemeMode;
 };
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-  const [glassStyle, setGlassStyleState] = useState<GlassStyle>("default");
+  const [themeId, setThemeIdState] = useState<ThemeId>("morning-mist");
+  const [resolvedMode, setResolvedMode] = useState<ThemeMode>("light");
+  const [mounted, setMounted] = useState(false);
 
+  // Load saved theme on mount
   useEffect(() => {
-    // Load theme from localStorage
-    const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored && ["light", "dark", "system"].includes(stored)) {
-      setThemeState(stored);
+    const saved = localStorage.getItem("notely-theme") as ThemeId | null;
+    if (saved && (saved === "auto" || themes[saved])) {
+      setThemeIdState(saved);
     }
-    
-    // Load glass style from localStorage
-    const storedGlassStyle = localStorage.getItem("glassStyle") as GlassStyle | null;
-    if (storedGlassStyle && ["default", "matte", "glossy"].includes(storedGlassStyle)) {
-      setGlassStyleState(storedGlassStyle);
-    }
+    setMounted(true);
   }, []);
 
+  // Get system preference
   useEffect(() => {
-    // Determine resolved theme
-    const root = window.document.documentElement;
-    
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
-      setResolvedTheme(systemTheme);
-      root.classList.remove("light", "dark");
-      root.style.colorScheme = systemTheme;
-    } else {
-      setResolvedTheme(theme);
-      root.classList.remove("light", "dark");
-      root.classList.add(theme);
-      root.style.colorScheme = theme;
-    }
-  }, [theme]);
-
-  // Listen for system theme changes
-  useEffect(() => {
-    if (theme !== "system") return;
-
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleChange = (e: MediaQueryListEvent) => {
-      setResolvedTheme(e.matches ? "dark" : "light");
-      document.documentElement.style.colorScheme = e.matches ? "dark" : "light";
+    setResolvedMode(mediaQuery.matches ? "dark" : "light");
+
+    const handler = (e: MediaQueryListEvent) => {
+      setResolvedMode(e.matches ? "dark" : "light");
     };
+    mediaQuery.addEventListener("change", handler);
+    return () => mediaQuery.removeEventListener("change", handler);
+  }, []);
 
-    mediaQuery.addEventListener("change", handleChange);
-    return () => mediaQuery.removeEventListener("change", handleChange);
-  }, [theme]);
-
-  const setTheme = (newTheme: Theme) => {
-    setThemeState(newTheme);
-    localStorage.setItem("theme", newTheme);
-  };
-
-  const setGlassStyle = (style: GlassStyle) => {
-    setGlassStyleState(style);
-    localStorage.setItem("glassStyle", style);
-    
-    // Apply glass style class to root
-    const root = document.documentElement;
-    root.classList.remove("glass-default", "glass-matte", "glass-glossy");
-    if (style !== "default") {
-      root.classList.add(`glass-${style}`);
-    }
-  };
-
-  // Apply glass style on mount and change
+  // Apply theme whenever themeId or system mode changes
   useEffect(() => {
-    const root = document.documentElement;
-    root.classList.remove("glass-default", "glass-matte", "glass-glossy");
-    if (glassStyle !== "default") {
-      root.classList.add(`glass-${glassStyle}`);
-    }
-  }, [glassStyle]);
+    if (!mounted) return;
+    
+    const theme = getTheme(themeId, resolvedMode);
+    applyTheme(theme);
+  }, [themeId, resolvedMode, mounted]);
+
+  const setThemeId = (id: ThemeId) => {
+    setThemeIdState(id);
+    localStorage.setItem("notely-theme", id);
+  };
+
+  // Prevent flash by not rendering until mounted
+  if (!mounted) {
+    return <div style={{ visibility: "hidden" }}>{children}</div>;
+  }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, glassStyle, setGlassStyle }}>
+    <ThemeContext.Provider value={{ themeId, setThemeId, resolvedMode }}>
       {children}
     </ThemeContext.Provider>
   );
@@ -104,8 +65,12 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 export function useTheme() {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme must be used within a ThemeProvider");
+    // Return safe defaults for SSR/static generation
+    return {
+      themeId: "morning-mist" as ThemeId,
+      setThemeId: () => {},
+      resolvedMode: "light" as ThemeMode,
+    };
   }
   return context;
 }
-
