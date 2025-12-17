@@ -7,6 +7,7 @@ import notesRouter from "./routes/notes";
 import tagsRouter from "./routes/tags";
 import authRouter from "./routes/auth";
 import aiRouter from "./routes/ai";
+import publicRouter from "./routes/public";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -29,7 +30,10 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// API Routes
+// Public Routes (no auth required)
+app.use("/api/public", publicRouter);
+
+// API Routes (auth required)
 app.use("/api/auth", authRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/tags", tagsRouter);

@@ -55,23 +55,24 @@
 - Record player loading animation
 - YouTube note caching (skip AI for duplicates)
 
+### v1.7.0 - Refinement & Gemini Connect ✅
+- ✅ Error handling improvements (graceful failures, clear messages)
+- ✅ Loading states consistency with skeletons
+- ✅ Empty states for all views
+- ✅ Form validation and feedback (inline, real-time)
+- ✅ Keyboard navigation improvements (Cmd+Y, Escape)
+- ✅ Performance optimization (lazy loading)
+- ✅ User-provided Gemini API key
+- ✅ API key validation and secure storage (encrypted)
+- ✅ Fallback when no key provided
+- ✅ Better feedback on AI operations
+- ✅ Consistent button/action placement
+
 ---
 
 ## Planned
 
-### v1.7.0 - Refinement & Gemini Connect
-
-**Core Focus:** Polish, UX improvements, end-to-end robustness
-
-**Must-Have Features:**
-- [ ] End-to-end flow testing and fixes
-- [ ] Error handling improvements (graceful failures, clear messages)
-- [ ] Loading states consistency across all pages
-- [ ] Empty states for all views
-- [ ] Form validation and feedback
-- [ ] Keyboard navigation improvements
-- [ ] Mobile touch interactions refinement
-- [ ] Performance optimization (bundle size, lazy loading)
+### v1.8.0 - Collaboration & Sharing
 
 **Gemini API Connect:**
 - [ ] User-provided Gemini API key

@@ -1,5 +1,7 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma";
 import { authMiddleware } from "../middleware/auth";
 
@@ -43,6 +45,9 @@ router.get("/", async (req: Request, res: Response) => {
         startTime: s.startTime,
         endTime: s.endTime,
       })),
+      isPublic: note.isPublic,
+      shareToken: note.shareToken,
+      shareExpiresAt: note.shareExpiresAt?.toISOString(),
     }));
 
     res.json(transformed);
@@ -89,6 +94,9 @@ router.get("/:id", async (req: Request, res: Response) => {
         startTime: s.startTime,
         endTime: s.endTime,
       })),
+      isPublic: note.isPublic,
+      shareToken: note.shareToken,
+      shareExpiresAt: note.shareExpiresAt?.toISOString(),
     });
   } catch (error) {
     console.error("Error fetching note:", error);
@@ -284,6 +292,90 @@ router.post("/:id/favorite", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Error toggling favorite:", error);
     res.status(500).json({ error: "Failed to toggle favorite" });
+  }
+});
+
+// POST /notes/:id/share - Enable sharing
+router.post("/:id/share", async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+    const { password, expiresInDays } = req.body;
+
+    const note = await prisma.note.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!note || note.userId !== userId) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    // Generate unique share token
+    const shareToken = crypto.randomBytes(16).toString("hex");
+
+    // Hash password if provided
+    let sharePassword = null;
+    if (password) {
+      sharePassword = await bcrypt.hash(password, 10);
+    }
+
+    // Calculate expiration if provided
+    let shareExpiresAt = null;
+    if (expiresInDays && expiresInDays > 0) {
+      shareExpiresAt = new Date();
+      shareExpiresAt.setDate(shareExpiresAt.getDate() + expiresInDays);
+    }
+
+    const updated = await prisma.note.update({
+      where: { id: req.params.id },
+      data: {
+        isPublic: true,
+        shareToken,
+        sharePassword,
+        shareExpiresAt,
+      },
+    });
+
+    console.log("🔗 Note shared:", req.params.id, "token:", shareToken);
+    res.json({
+      shareToken,
+      shareUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/share/${shareToken}`,
+      isPasswordProtected: !!sharePassword,
+      expiresAt: shareExpiresAt?.toISOString() || null,
+    });
+  } catch (error) {
+    console.error("Error sharing note:", error);
+    res.status(500).json({ error: "Failed to share note" });
+  }
+});
+
+// DELETE /notes/:id/share - Disable sharing
+router.delete("/:id/share", async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId!;
+
+    const note = await prisma.note.findUnique({
+      where: { id: req.params.id },
+    });
+
+    if (!note || note.userId !== userId) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+
+    await prisma.note.update({
+      where: { id: req.params.id },
+      data: {
+        isPublic: false,
+        shareToken: null,
+        sharePassword: null,
+        shareExpiresAt: null,
+      },
+    });
+
+    console.log("🔒 Note sharing disabled:", req.params.id);
+    res.json({ message: "Sharing disabled" });
+  } catch (error) {
+    console.error("Error disabling sharing:", error);
+    res.status(500).json({ error: "Failed to disable sharing" });
   }
 });
 

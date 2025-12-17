@@ -7,9 +7,11 @@ import { motion } from "framer-motion";
 import { NoteViewer } from "../../../../components/notes/NoteViewer";
 import { UnifiedNoteEditor } from "../../../../components/notes";
 import { SaveIndicator } from "../../../../components/ui";
+import { ShareModal } from "../../../../components/ShareModal";
 import { useNote, useUpdateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
 import { downloadMarkdown, copyMarkdownToClipboard } from "../../../../lib/exportNote";
+import { ShareIcon } from "../../../../components/Icons";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -24,6 +26,7 @@ function NotePageContent() {
   const updateNote = useUpdateNote();
   const [isEditing, setIsEditing] = useState(editMode);
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [shareModalOpen, setShareModalOpen] = useState(false);
 
   const handleSave = async (data: any) => {
     setSaveState("saving");
@@ -155,6 +158,14 @@ function NotePageContent() {
             <PenIcon />
           </button>
           
+          <button
+            onClick={() => setShareModalOpen(true)}
+            className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
+            title="Share"
+          >
+            <ShareIcon className="w-5 h-5" />
+          </button>
+          
           <div className="relative group">
             <button className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors">
               <ExportIcon />
@@ -184,6 +195,14 @@ function NotePageContent() {
       >
         <NoteViewer note={note} />
       </div>
+
+      {/* Share Modal */}
+      <ShareModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        noteId={noteId}
+        note={note}
+      />
     </div>
   );
 }

@@ -36,12 +36,19 @@ model Note {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
+  // Sharing fields
+  isPublic       Boolean   @default(false)
+  shareToken     String?   @unique // Unique token for public access
+  sharePassword  String?   // Optional password hash for protected shares
+  shareExpiresAt DateTime? // Optional expiration date
+
   userId   String
   user     User      @relation(fields: [userId], references: [id])
   sections Section[]
   noteTags NoteTag[]
 
   @@index([userId])
+  @@index([shareToken])
 }
 
 model Section {

@@ -83,6 +83,10 @@ export type Note = {
   updatedAt: string;
   tags: string[];
   sections: NoteSection[];
+  // Sharing fields
+  isPublic?: boolean;
+  shareToken?: string;
+  shareExpiresAt?: string;
 };
 
 export type Tag = {
@@ -143,6 +147,51 @@ export const notesApi = {
       headers: { ...authHeaders() },
     });
     if (!res.ok) throw new Error("Failed to toggle favorite");
+    return res.json();
+  },
+
+  async share(
+    id: string,
+    options?: { password?: string; expiresInDays?: number }
+  ): Promise<{
+    shareToken: string;
+    shareUrl: string;
+    isPasswordProtected: boolean;
+    expiresAt: string | null;
+  }> {
+    const res = await fetch(`${API_BASE}/api/notes/${id}/share`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify(options || {}),
+    });
+    if (!res.ok) throw new Error("Failed to share note");
+    return res.json();
+  },
+
+  async unshare(id: string): Promise<void> {
+    const res = await fetch(`${API_BASE}/api/notes/${id}/share`, {
+      method: "DELETE",
+      headers: { ...authHeaders() },
+    });
+    if (!res.ok) throw new Error("Failed to unshare note");
+  },
+};
+
+// Public API (no auth required)
+export const publicApi = {
+  async getSharedNote(token: string): Promise<Note & { isPasswordProtected: boolean; author: { name: string; avatar?: string } }> {
+    const res = await fetch(`${API_BASE}/api/public/notes/${token}`);
+    if (!res.ok) throw new Error("Failed to fetch shared note");
+    return res.json();
+  },
+
+  async verifyPassword(token: string, password: string): Promise<{ verified: boolean }> {
+    const res = await fetch(`${API_BASE}/api/public/notes/${token}/verify`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    if (!res.ok) throw new Error("Invalid password");
     return res.json();
   },
 };
