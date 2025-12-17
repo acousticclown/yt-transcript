@@ -1,14 +1,15 @@
 import { cn } from "../../lib/utils";
+import type { ElementType, ReactNode } from "react";
 
 type StackProps = {
-  children: React.ReactNode;
+  children: ReactNode;
   className?: string;
   direction?: "row" | "col";
   gap?: 1 | 2 | 3 | 4 | 5 | 6 | 8;
   align?: "start" | "center" | "end" | "stretch";
   justify?: "start" | "center" | "end" | "between" | "around" | "evenly";
   wrap?: boolean;
-  as?: keyof JSX.IntrinsicElements;
+  as?: ElementType;
 };
 
 const gapClasses = {

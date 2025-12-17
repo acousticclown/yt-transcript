@@ -1,146 +1,92 @@
-# YT-Transcript
+# Notely
 
-> **v1.0.0** - Convert YouTube videos into clean transcripts, structured notes, and editable summaries.
+> **v1.2.0** - AI-Powered Notes Application with YouTube Transcript Integration
 
-YT-Transcript is a personal-first, open-source web app that transforms YouTube videos into clean transcripts, structured notes, and editable summaries. Built with AI-powered structuring, multilingual support (English, Hindi, Hinglish), and a playful, thoughtful UX.
+Notely is a modern, personal-first notes application with AI-powered features and YouTube transcript integration. Create smart notes manually or import from YouTube videos with automatic structuring, multilingual support, and a beautiful, playful UX.
 
 ## Features
 
+### Notes & Editor
+- ✅ **Rich note editor** - Create notes with title, tags, sections, and content
+- ✅ **AI-powered actions** - Simplify, expand, regenerate, or translate text
+- ✅ **Multilingual support** - English, Hindi, and Hinglish
+- ✅ **Formatting toolbar** - Bold, italic, headings, lists, code, quotes, and more
+- ✅ **Undo/Redo** - Full history support with keyboard shortcuts
+- ✅ **Tags & organization** - Tag notes for easy filtering
+
+### YouTube Integration
 - ✅ **YouTube transcript extraction** - Fast, reliable caption extraction
-- ✅ **AI-powered summaries** - Generate concise summaries using Gemini AI
-- ✅ **Structured section detection** - Automatically break content into logical sections
-- ✅ **Editable note blocks** - Inline editing for titles, summaries, and bullets
-- ✅ **Local saving** - Save notes as JSON files
-- ✅ **Markdown export** - Export notes as Markdown files
-- ✅ **Inline AI actions** - Simplify, expand, or add examples to text (contextual, on hover)
-- ✅ **Partial regeneration** - Regenerate one section at a time without affecting others
-- ✅ **Smooth animations** - Subtle, premium feel with Framer Motion
-- ✅ **Drag & drop reordering** - Reorder sections to organize thoughts
-- ✅ **Focus mode** - Distraction-free editing by dimming other sections
-- ✅ **Dark mode** - System-based dark theme support
-- ✅ **Visual polish** - Clear hierarchy, typography discipline, intentional design
-- ✅ **Section-level language switching** - Switch each section to English, Hindi, or Hinglish independently
-- ✅ **Hinglish tone presets** - Choose between Neutral, Casual, or Interview tone for Hinglish
-- ✅ **Language variant caching** - Generated language versions are cached (no re-generation needed)
-- ✅ **Reliable error handling** - Graceful failures, clear messages, content preservation
+- ✅ **AI-powered structuring** - Automatically break content into sections
+- ✅ **Section summaries** - Generate concise summaries with key points
+
+### Design & UX
+- ✅ **Modern design** - Warm color palette with glassmorphism effects
+- ✅ **Multiple themes** - 8 themes (4 light, 4 dark) with creative names
+- ✅ **Mobile-first** - Responsive design with bottom navigation
+- ✅ **Smooth animations** - Framer Motion powered transitions
+- ✅ **Dark mode** - Full dark mode support with system preference
+
+### Technical
+- ✅ **Local storage** - Save notes as JSON files
+- ✅ **Markdown export** - Export notes as Markdown
+- ✅ **AI model fallback** - Automatic fallback between Gemini models
 
 ## Tech Stack
 
-- **Frontend:** Next.js (App Router), TypeScript, Tailwind CSS
-- **Backend:** Node.js, TypeScript
-- **AI:** Google Gemini (free tier) - for summaries and section detection
-- **Transcription:** OpenAI Whisper API (fallback) - for videos without captions
-- **YouTube:** `youtube-caption-extractor` - for transcript extraction
+- **Frontend:** Next.js 15 (App Router), TypeScript, Tailwind CSS, Framer Motion
+- **Backend:** Node.js, TypeScript, Express
+- **AI:** Google Gemini (free tier) - summaries, structuring, inline actions
+- **YouTube:** `youtube-caption-extractor` - transcript extraction
 
-## Philosophy
-
-- **Incremental development** - Build day-by-day, feature-by-feature
-- **Free tools first** - Use free tiers and open-source tools
-- **Replaceable AI providers** - AI logic is modular and swappable
-- **Playful but focused UX** - Delightful without being distracting
-- **Personal-first** - Built for daily use, open-source for community
-
-## Status
-
-**v1.0.0** - Production Ready ✅
-
-YT-Transcript is a fully functional, production-ready application with:
-- Complete transcript extraction and AI-powered structuring
-- Multilingual support (English, Hindi, Hinglish with tone presets)
-- Language variant caching for instant switching
-- Reliable error handling and graceful degradation
-- Polished UX with animations, drag & drop, and focus mode
-
-**Note:** Audio extraction fallback is implemented but YouTube often blocks it (403 errors). The app works best with videos that have captions enabled.
-
-## Setup
+## Quick Start
 
 ### Prerequisites
-
 - Node.js 20+
-- npm or yarn
-- API keys:
-  - Gemini API key (free tier, no credit card required)
-  - OpenAI API key (optional, for fallback transcription)
+- Gemini API key (free, no credit card required)
 
-### Backend (API)
+### Setup
 
-1. Navigate to `apps/api`
-2. Copy `.env.example` to `.env`
-3. Add your API keys:
-   ```bash
-   GEMINI_API_KEY=your_key_here
-   OPENAI_API_KEY=your_key_here  # Optional, for fallback
-   ```
-4. Install dependencies: `npm install`
-5. Run: `npm run dev` (for hot reload) or `npm run start`
+```bash
+# Clone the repo
+git clone https://github.com/yourusername/yt-transcript.git
+cd yt-transcript
 
-### Frontend (Web)
+# Backend
+cd apps/api
+cp .env.example .env  # Add your GEMINI_API_KEY
+npm install
+npm run dev
 
-1. Navigate to `apps/web`
-2. Install dependencies: `npm install`
-3. Run: `npm run dev`
-4. Open http://localhost:3000
+# Frontend (new terminal)
+cd apps/web
+npm install
+npm run dev
+```
 
-## Usage
-
-1. Paste a YouTube URL in the input field
-2. Click "Generate" to extract transcript and generate structured notes
-3. Edit sections inline (titles, summaries, bullets)
-4. Click "Save Notes" to save locally
-5. Click "Export Markdown" to download as `.md` file
-
-## API Endpoints
-
-See [docs/api.md](./docs/api.md) for detailed API documentation.
-
-- `POST /transcript` - Extract transcript from YouTube URL
-- `POST /summary` - Generate AI summary from transcript
-- `POST /sections` - Generate structured sections
-- `POST /save` - Save notes to local storage
-- `POST /export/markdown` - Export notes as Markdown
-- `POST /ai/inline` - Inline AI actions (simplify, expand, example)
-- `POST /ai/regenerate-section` - Regenerate one section surgically
-- `POST /ai/transform-language` - Transform section to different language
-
-## Cost
-
-- **Gemini API:** Free tier (no credit card required)
-- **OpenAI Whisper API:** 
-  - Free tier: $5 credit on signup
-  - After that: ~$0.006 per minute (~$0.36/hour of audio)
-  - Example: A 10-minute video costs ~$0.06
+Open http://localhost:3000
 
 ## Project Structure
 
 ```
-yt-transcript/
+notely/
 ├── apps/
-│   ├── web/          # Next.js frontend
+│   ├── web/           # Next.js frontend
 │   └── api/           # Node.js backend
 ├── packages/
 │   └── prompts/       # AI prompts (versioned as code)
-├── docs/              # Documentation
-│   ├── api.md         # API flow documentation
-│   ├── roadmap.md     # Feature roadmap
-│   └── vision.md      # Product vision
-└── README.md
+└── docs/              # Documentation
 ```
 
-## Roadmap
+## Versions
 
-See [docs/roadmap.md](./docs/roadmap.md) for planned features.
-
-## Contributing
-
-Contributions are welcome! This is an open-source project built with intention.
-
-See [docs/roadmap.md](./docs/roadmap.md) for planned features and [docs/vision.md](./docs/vision.md) for project philosophy.
+- **v1.0.0** - YouTube transcript extraction with AI structuring
+- **v1.1.0** - UI enhancement with design system, dark mode, mobile optimization
+- **v1.2.0** - Full notes app with editor, themes, and YouTube integration
 
 ## License
 
-MIT License - See [LICENSE](./LICENSE) file for details.
+MIT License
 
 ---
 
-**Built with intention, one day at a time.** 🚀
+**Built with intention, one day at a time.** ✨

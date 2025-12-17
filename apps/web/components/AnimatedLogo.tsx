@@ -20,14 +20,14 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
 
   // Spring configurations for fluid motion
   const springConfig = {
-    type: "spring",
+    type: "spring" as const,
     stiffness: 100,
     damping: 15,
     mass: 1,
   };
 
   const letterSpring = {
-    type: "spring",
+    type: "spring" as const,
     stiffness: 200,
     damping: 20,
   };

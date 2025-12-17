@@ -337,7 +337,7 @@ export function UnifiedNoteEditor({
   // Selection tracking
   const [selectionInfo, setSelectionInfo] = useState<{
     text: string;
-    field: "summary" | "bullet";
+    field: "summary" | "bullet" | "content";
     sectionId: string;
     bulletIndex?: number;
     start: number;
@@ -360,7 +360,6 @@ export function UnifiedNoteEditor({
     // 1. Selected text with field info
     if (selectionInfo && selectionInfo.text) {
       return { 
-        text: selectionInfo.text, 
         type: "selection" as const,
         ...selectionInfo
       };

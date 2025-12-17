@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { NoteList, Note } from "../../../components/notes";
@@ -17,7 +17,7 @@ const initialNotes: Note[] = [
 type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites";
 
-export default function NotesPage() {
+function NotesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tagFromUrl = searchParams.get("tag");
@@ -203,6 +203,14 @@ export default function NotesPage() {
         emptyMessage={search || selectedTag ? "No notes match your filters" : "No notes yet. Create your first note!"}
       />
     </div>
+  );
+}
+
+export default function NotesPage() {
+  return (
+    <Suspense fallback={<div className="p-6">Loading...</div>}>
+      <NotesPageContent />
+    </Suspense>
   );
 }
 
