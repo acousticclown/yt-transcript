@@ -3,7 +3,7 @@
  * SSE-based streaming for AI responses with thinking states
  */
 
-import { Response } from "express";
+import type { Response } from "express";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Initialize Gemini
