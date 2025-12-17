@@ -82,19 +82,19 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
             style={{ backgroundColor: note.color }}
           />
           <div className="flex-1 min-w-0">
-            {/* AI Badge */}
-            {(note.source === "ai" || note.source === "youtube" || note.isAIGenerated) && (
+            {/* AI Badge - only show for AI-enhanced notes */}
+            {(note.source === "ai" || note.isAIGenerated) && (
               <div className="flex items-center gap-1.5 mb-1">
                 <span className={cn(
                   "inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-full",
-                  note.source === "youtube" 
+                  note.source === "youtube" && note.isAIGenerated
                     ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
                     : "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                 )}>
                   <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
                   </svg>
-                  {note.source === "youtube" ? "YouTube AI" : "AI Generated"}
+                  {note.source === "youtube" && note.isAIGenerated ? "YouTube AI" : "AI Generated"}
                 </span>
               </div>
             )}
