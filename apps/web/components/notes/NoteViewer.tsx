@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import type { Note } from "../../lib/api";
+import { YouTubeIcon, StarIcon, ExternalLinkIcon } from "../Icons";
 
 // Simple inline markdown parser (bold, italic, code)
 function parseInlineMarkdown(text: string): string {
@@ -56,16 +57,19 @@ export function NoteViewer({ note }: NoteViewerProps) {
           {note.source === "youtube" && (
             <>
               <span>•</span>
-              <span className="flex items-center gap-1">
-                <YouTubeIcon />
-                YouTube Import
+              <span className="flex items-center gap-1.5">
+                <YouTubeIcon className="w-4 h-4" />
+                YouTube
               </span>
             </>
           )}
           {note.isFavorite && (
             <>
               <span>•</span>
-              <span>⭐ Favorite</span>
+              <span className="flex items-center gap-1.5">
+                <StarIcon className="w-4 h-4" filled />
+                Favorite
+              </span>
             </>
           )}
         </div>
@@ -148,9 +152,9 @@ export function NoteViewer({ note }: NoteViewerProps) {
             onClick={(e) => e.stopPropagation()}
             className="inline-flex items-center gap-2 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-primary)] transition-colors"
           >
-            <YouTubeIcon />
+            <YouTubeIcon className="w-4 h-4" />
             Watch original video
-            <ExternalLinkIcon />
+            <ExternalLinkIcon className="w-3.5 h-3.5" />
           </a>
         </div>
       )}
@@ -165,19 +169,4 @@ export function NoteViewer({ note }: NoteViewerProps) {
   );
 }
 
-function YouTubeIcon() {
-  return (
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-    </svg>
-  );
-}
-
-function ExternalLinkIcon() {
-  return (
-    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-    </svg>
-  );
-}
 

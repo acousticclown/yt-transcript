@@ -3,13 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "../../lib/utils";
+import { HomeIcon, NotesIcon, YouTubeIcon, TagIcon, SettingsIcon } from "../Icons";
 
 const navItems = [
-  { icon: "🏠", label: "Home", href: "/dashboard" },
-  { icon: "📝", label: "Notes", href: "/notes" },
-  { icon: "🎬", label: "YouTube", href: "/youtube" },
-  { icon: "🏷️", label: "Tags", href: "/tags" },
-  { icon: "⚙️", label: "Settings", href: "/settings" },
+  { icon: HomeIcon, label: "Home", href: "/dashboard" },
+  { icon: NotesIcon, label: "Notes", href: "/notes" },
+  { icon: YouTubeIcon, label: "YouTube", href: "/youtube" },
+  { icon: TagIcon, label: "Tags", href: "/tags" },
+  { icon: SettingsIcon, label: "Settings", href: "/settings" },
 ];
 
 export function MobileNav() {
@@ -20,6 +21,7 @@ export function MobileNav() {
       <ul className="flex items-center justify-around py-2">
         {navItems.map((item) => {
           const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+          const Icon = item.icon;
           return (
             <li key={item.href}>
               <Link
@@ -31,7 +33,7 @@ export function MobileNav() {
                     : "text-[var(--color-text-muted)]"
                 )}
               >
-                <span className="text-xl">{item.icon}</span>
+                <Icon className="w-5 h-5" />
                 <span className="text-xs font-medium">{item.label}</span>
               </Link>
             </li>
@@ -41,4 +43,3 @@ export function MobileNav() {
     </nav>
   );
 }
-

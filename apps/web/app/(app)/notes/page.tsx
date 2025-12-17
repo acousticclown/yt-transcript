@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { NoteList } from "../../../components/notes";
 import { useNotes, useDeleteNote, useToggleFavorite } from "../../../lib/hooks";
 import { Note as ApiNote } from "../../../lib/api";
+import { StarIcon, YouTubeIcon, SparklesIcon } from "../../../components/Icons";
 
 type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites" | "youtube" | "ai";
@@ -198,33 +199,36 @@ function NotesPageContent() {
             </button>
             <button
               onClick={() => setFilter("favorites")}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center justify-center ${
                 filter === "favorites"
                   ? "bg-[var(--color-primary)] text-white"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               }`}
+              title="Favorites"
             >
-              ⭐
+              <StarIcon className="w-4 h-4" />
             </button>
             <button
               onClick={() => setFilter("youtube")}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center justify-center ${
                 filter === "youtube"
                   ? "bg-red-500 text-white"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               }`}
+              title="YouTube"
             >
-              📺
+              <YouTubeIcon className="w-4 h-4" />
             </button>
             <button
               onClick={() => setFilter("ai")}
-              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center justify-center ${
                 filter === "ai"
                   ? "bg-purple-500 text-white"
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               }`}
+              title="AI Generated"
             >
-              ✨
+              <SparklesIcon className="w-4 h-4" />
             </button>
           </div>
 
