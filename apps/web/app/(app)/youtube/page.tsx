@@ -179,14 +179,31 @@ function SectionCard({
 
         <div className="flex-1 min-w-0">
           {/* Title */}
-          <h3 className="font-semibold text-[var(--color-text)] mb-1 line-clamp-1">
+          <h3 className="font-semibold text-[var(--color-text)] mb-1">
             {section.title}
           </h3>
 
-          {/* Summary - truncated with ellipsis */}
-          <p className="text-sm text-[var(--color-text-muted)] line-clamp-3">
+          {/* Summary */}
+          <p className="text-sm text-[var(--color-text-muted)] mb-2 line-clamp-2">
             {section.summary}
           </p>
+
+          {/* Bullets preview */}
+          {section.bullets.length > 0 && (
+            <ul className="text-xs text-[var(--color-text-subtle)] space-y-0.5">
+              {section.bullets.slice(0, 2).map((bullet, i) => (
+                <li key={i} className="flex items-start gap-1">
+                  <span className="text-[var(--color-primary)]">•</span>
+                  <span className="line-clamp-1">{bullet}</span>
+                </li>
+              ))}
+              {section.bullets.length > 2 && (
+                <li className="text-[var(--color-text-subtle)]">
+                  +{section.bullets.length - 2} more
+                </li>
+              )}
+            </ul>
+          )}
         </div>
       </div>
     </motion.div>
@@ -498,9 +515,9 @@ export default function YouTubePage() {
                 />
               </div>
 
-              {/* Video info */}
-              <div className="hidden lg:block text-sm text-[var(--color-text-muted)]">
-                <p className="flex items-center gap-2">
+              {/* Video info & summary */}
+              <div className="hidden lg:block space-y-2">
+                <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
                   <ClockIcon className="w-4 h-4" />
                   {generatedNote.sections.length} sections •{" "}
                   {generatedNote.sections.reduce(
@@ -509,6 +526,12 @@ export default function YouTubePage() {
                   )}{" "}
                   key points
                 </p>
+                {/* Video summary - first section summary truncated */}
+                {generatedNote.sections[0]?.summary && (
+                  <p className="text-xs text-[var(--color-text-subtle)] line-clamp-2">
+                    {generatedNote.sections[0].summary}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -585,12 +608,33 @@ export default function YouTubePage() {
             animate={{ opacity: 1 }}
             className="text-center py-16"
           >
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-primary)]/10 mb-4">
+            {/* Animated Record Player */}
+            <div className="relative w-20 h-20 mb-4">
+              {/* Record disc */}
               <motion.div
+                className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 shadow-lg"
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
               >
-                <SparklesIcon className="w-8 h-8 text-[var(--color-primary)]" />
+                {/* Grooves */}
+                <div className="absolute inset-2 rounded-full border border-gray-700" />
+                <div className="absolute inset-4 rounded-full border border-gray-700" />
+                <div className="absolute inset-6 rounded-full border border-gray-700" />
+                {/* Center label */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-6 h-6 rounded-full bg-[var(--color-primary)] flex items-center justify-center">
+                    <div className="w-2 h-2 rounded-full bg-white" />
+                  </div>
+                </div>
+              </motion.div>
+              {/* Tonearm */}
+              <motion.div
+                className="absolute -right-1 top-1 w-10 h-1 bg-gray-400 rounded-full origin-right"
+                style={{ transformOrigin: "right center" }}
+                animate={{ rotate: [0, -5, 0] }}
+                transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+              >
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-gray-500" />
               </motion.div>
             </div>
             <p className="text-lg text-[var(--color-text)]">{loadingMessage}</p>
