@@ -46,7 +46,7 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
         setError(data.error || "Invalid API key");
       } else {
         onSuccess?.();
-        onClose();
+        // Don't call onClose here - onSuccess handles it
       }
     } catch (err) {
       setError("Failed to connect. Please try again.");
