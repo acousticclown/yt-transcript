@@ -387,7 +387,7 @@ export default function YouTubePage() {
   // Generated state - Split view with video
   if (generatedNote) {
     return (
-      <div className="h-full flex flex-col">
+      <div className="h-[calc(100vh-5rem)] lg:h-screen flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex-shrink-0 border-b border-[var(--color-border)] bg-[var(--color-surface)]/80 backdrop-blur-sm px-4 sm:px-6 py-4">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
@@ -423,10 +423,10 @@ export default function YouTubePage() {
         </div>
 
         {/* Split View */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full max-w-7xl mx-auto flex flex-col lg:flex-row lg:overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full max-w-7xl mx-auto flex flex-col lg:flex-row">
             {/* Video Panel - fixed, no scroll */}
-            <div className="lg:w-1/2 xl:w-3/5 flex-shrink-0 p-4 sm:p-6 flex flex-col gap-4 lg:overflow-hidden">
+            <div className="lg:w-1/2 xl:w-3/5 flex-shrink-0 p-4 sm:p-6 flex flex-col gap-4 overflow-hidden">
               <YouTubePlayer
                 videoId={generatedNote.videoId}
                 onTimeUpdate={setCurrentTime}
@@ -462,7 +462,7 @@ export default function YouTubePage() {
             </div>
 
             {/* Sections Panel - scrollable independently */}
-            <div className="lg:w-1/2 xl:w-2/5 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6 lg:h-full">
+            <div className="lg:w-1/2 xl:w-2/5 min-h-0 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6">
               <div className="space-y-3">
                 <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
                   Sections ({generatedNote.sections.length})
