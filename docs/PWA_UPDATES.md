@@ -77,4 +77,3 @@ npm run inject-sw-version
 - Hard refresh (Cmd+Shift+R / Ctrl+Shift+R)
 - Clear site data in browser settings
 - Unregister service worker in DevTools and reload
-

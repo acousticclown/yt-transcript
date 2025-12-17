@@ -44,7 +44,7 @@ export function UpdateNotification() {
     // Check immediately
     checkForUpdates();
 
-    // Check every 5 minutes
+    // Check every 5 minutes (good balance between responsiveness and battery/data usage)
     const interval = setInterval(checkForUpdates, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
@@ -112,4 +112,3 @@ export function UpdateNotification() {
     </AnimatePresence>
   );
 }
-
