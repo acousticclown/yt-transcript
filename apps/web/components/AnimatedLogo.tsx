@@ -92,7 +92,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 width={[28, 36, 24][i]}
                 height="3"
                 rx="1.5"
-                fill="#FBBF24"
+                className="fill-[var(--color-primary)]"
                 stroke="white"
                 className=""
                 strokeWidth="1"
