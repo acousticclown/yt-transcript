@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { NoteList } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
+import { ApiKeyBanner } from "../../../components/ApiKeyBanner";
 import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
 import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
@@ -68,6 +69,9 @@ export default function DashboardPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+      {/* API Key Banner - subtle reminder */}
+      <ApiKeyBanner />
+
       {/* Hero Section with Wave Art */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
