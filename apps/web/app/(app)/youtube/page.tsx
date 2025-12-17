@@ -261,6 +261,7 @@ type RawTranscript = {
 export default function YouTubePage() {
   const router = useRouter();
   const [url, setUrl] = useState("");
+  const [urlError, setUrlError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [refining, setRefining] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
@@ -315,17 +316,40 @@ export default function YouTubePage() {
     }
   }, []);
 
+  // Validate URL in real-time
+  function validateUrl(inputUrl: string): { isValid: boolean; error: string | null } {
+    if (!inputUrl.trim()) {
+      return { isValid: false, error: null };
+    }
+    const videoId = extractVideoId(inputUrl);
+    if (!videoId) {
+      return {
+        isValid: false,
+        error: "Invalid YouTube URL. Use: youtube.com/watch?v=... or youtu.be/...",
+      };
+    }
+    return { isValid: true, error: null };
+  }
+
+  function handleUrlChange(newUrl: string) {
+    setUrl(newUrl);
+    const validation = validateUrl(newUrl);
+    setUrlError(validation.error);
+  }
+
   async function generateNotes() {
     if (!url.trim()) {
-      alert("⚠️ Please enter a YouTube URL");
+      setUrlError("Please enter a YouTube URL");
       return;
     }
 
     const videoId = extractVideoId(url);
     if (!videoId) {
-      alert("⚠️ Invalid YouTube URL\n\nPlease use a valid YouTube link like:\n• https://www.youtube.com/watch?v=VIDEO_ID\n• https://youtu.be/VIDEO_ID");
+      setUrlError("Invalid YouTube URL. Use: youtube.com/watch?v=... or youtu.be/...");
       return;
     }
+
+    setUrlError(null);
 
     // Check if we already have a note for this video (cache check)
     const existingNote = youtubeNotes.find(
@@ -831,29 +855,45 @@ export default function YouTubePage() {
         </div>
 
         {/* URL Input */}
-        <Stack direction="row" gap={3} className="flex-col sm:flex-row">
-          <input
-            className="flex-1 border border-[var(--color-border)] rounded-xl px-4 py-3 text-base text-[var(--color-text)] bg-[var(--color-surface)] placeholder-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-all"
-            placeholder="Paste YouTube URL"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !loading) {
-                generateNotes();
-              }
-            }}
-          />
-          <ActionButton
-            onClick={generateNotes}
-            disabled={loading || !url.trim()}
-            loading={loading}
-            variant="primary"
-            size="lg"
-            icon={<SparklesIcon className="w-5 h-5" />}
-            className="w-full sm:w-auto"
-          >
-            Generate Notes
-          </ActionButton>
+        <Stack gap={2}>
+          <Stack direction="row" gap={3} className="flex-col sm:flex-row">
+            <div className="flex-1">
+              <input
+                className={`w-full border rounded-xl px-4 py-3 text-base text-[var(--color-text)] bg-[var(--color-surface)] placeholder-[var(--color-text-subtle)] focus:outline-none focus:ring-2 transition-all ${
+                  urlError
+                    ? "border-red-500 focus:ring-red-500/20 focus:border-red-500"
+                    : "border-[var(--color-border)] focus:ring-[var(--color-primary)] focus:border-transparent"
+                }`}
+                placeholder="Paste YouTube URL (e.g., https://youtube.com/watch?v=...)"
+                value={url}
+                onChange={(e) => handleUrlChange(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !loading && !urlError) {
+                    generateNotes();
+                  }
+                }}
+              />
+              {urlError && (
+                <p className="mt-1.5 text-sm text-red-600 dark:text-red-400 flex items-center gap-1.5">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {urlError}
+                </p>
+              )}
+            </div>
+            <ActionButton
+              onClick={generateNotes}
+              disabled={loading || !url.trim() || !!urlError}
+              loading={loading}
+              variant="primary"
+              size="lg"
+              icon={<SparklesIcon className="w-5 h-5" />}
+              className="w-full sm:w-auto"
+            >
+              Generate Notes
+            </ActionButton>
+          </Stack>
         </Stack>
 
         {/* Loading state */}

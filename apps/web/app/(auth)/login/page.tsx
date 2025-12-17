@@ -13,7 +13,21 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  function validateEmail(emailValue: string) {
+    if (!emailValue) {
+      setEmailError("");
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailValue)) {
+      setEmailError("Please enter a valid email address");
+    } else {
+      setEmailError("");
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,12 +72,23 @@ export default function LoginPage() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                validateEmail(e.target.value);
+              }}
+              onBlur={() => validateEmail(email)}
               required
               autoFocus
-              className="w-full px-4 py-2.5 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+              className={`w-full px-4 py-2.5 bg-[var(--color-bg)] border rounded-xl text-[var(--color-text)] focus:outline-none focus:ring-2 transition-all ${
+                emailError
+                  ? "border-red-500 focus:ring-red-500/20 focus:border-red-500"
+                  : "border-[var(--color-border)] focus:ring-[var(--color-primary)]"
+              }`}
               placeholder="you@example.com"
             />
+            {emailError && (
+              <p className="mt-1.5 text-sm text-red-600 dark:text-red-400">{emailError}</p>
+            )}
           </div>
 
           <div>
