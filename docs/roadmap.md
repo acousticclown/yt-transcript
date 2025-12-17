@@ -45,19 +45,25 @@
 - Markdown export
 - Auto-save on navigation
 
+### v1.6.0 - YouTube Experience Revamp
+
+- Embedded YouTube player in-app
+- Timeline sync with transcript sections
+- Clickable timestamps (jump to video position)
+- AI-generated timestamps and overall summary
+- AI-generated intelligent tags
+- Split view: video + notes side by side
+- Current position indicator in sections
+- Interactive video mode for saved notes
+- Previous transcripts gallery page
+- Consistent card heights and layouts
+- Proper back navigation (history-aware)
+- Record player loading animation
+- YouTube note caching (skip AI for duplicates)
+
 ---
 
 ## Planned
-
-### v1.6.0 - YouTube Experience Revamp
-
-- [ ] Embedded YouTube player in-app
-- [ ] Timeline sync with transcript sections
-- [ ] Clickable timestamps (jump to video position)
-- [ ] AI-generated timestamps with descriptions
-- [ ] Split view: video + notes side by side
-- [ ] Current position indicator in sections
-- [ ] Seamless, robust UI with optimized UX
 
 ### v1.7.0 - Enhanced AI
 
