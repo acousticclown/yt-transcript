@@ -24,9 +24,9 @@ type SaveState = "idle" | "saving" | "saved" | "error";
 
 const loadingMessages = [
   "Listening to the video…",
-  "Writing clean notes…",
-  "Organizing thoughts…",
-  "Making it readable…",
+  "Playing through the content…",
+  "Transcribing the audio…",
+  "Organizing your notes…",
 ];
 
 type GeneratedNote = {
