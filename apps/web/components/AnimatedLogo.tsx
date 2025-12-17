@@ -160,13 +160,13 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
           </div>
 
           {/* AI thinking dots transform into "ly" - repeats 3 times */}
-          <div className="flex items-end relative">
-            {/* Three bouncing dots */}
-            <div className="flex items-center gap-1 absolute bottom-4 left-1/2 -translate-x-1/2">
+          <div className="flex items-end relative ml-3 sm:ml-4">
+            {/* Three bouncing dots - small, bottom aligned */}
+            <div className="flex items-end gap-0.5 absolute bottom-0 left-1/2 -translate-x-1/2">
               {[0, 1, 2].map((i) => (
                 <motion.div
                   key={i}
-                  className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-[var(--color-primary)]"
+                  className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[var(--color-primary)]"
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{
                     opacity: [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
