@@ -128,8 +128,12 @@ export async function streamAIGeneration(
     try {
       console.log("🔄 [AI Stream] Attempting streaming with model:", MODELS[0]);
       
+      const model = MODELS[0];
+      if (!model) {
+        throw new Error("No model available");
+      }
       const response = await ai.models.generateContentStream({
-        model: MODELS[0],
+        model: model,
         contents: fullPrompt,
       });
       

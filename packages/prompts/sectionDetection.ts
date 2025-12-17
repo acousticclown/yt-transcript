@@ -40,6 +40,9 @@ export function sectionDetectionWithTimestampsPrompt(
 ): string {
   // Calculate video duration from last subtitle
   const lastSub = subtitles[subtitles.length - 1];
+  if (!lastSub) {
+    return "Unable to determine video duration";
+  }
   const videoDuration = Math.ceil(lastSub.start + lastSub.dur);
   
   // Format subtitles with raw seconds for AI - include actual second values

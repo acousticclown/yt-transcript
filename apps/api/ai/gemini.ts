@@ -54,6 +54,9 @@ const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "notely-encryption-key-32ch
 function decrypt(text: string): string {
   try {
     const [ivHex, encrypted] = text.split(":");
+    if (!ivHex || !encrypted || !ENCRYPTION_KEY) {
+      throw new Error("Invalid encrypted data");
+    }
     const iv = Buffer.from(ivHex, "hex");
     const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
     let decrypted = decipher.update(encrypted, "hex", "utf8");
