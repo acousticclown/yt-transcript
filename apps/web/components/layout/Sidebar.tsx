@@ -20,10 +20,6 @@ const navItems = [
   { icon: "🏷️", label: "Tags", href: "/tags" },
 ];
 
-const bottomItems = [
-  { icon: "⚙️", label: "Settings", href: "/settings" },
-];
-
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -113,33 +109,9 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
           </ul>
         </nav>
 
-        {/* Bottom items */}
+        {/* User section */}
         <div className="p-3 border-t border-[var(--color-border)]">
-          <ul className="space-y-1">
-            {bottomItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    onClick={onClose}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors",
-                      isActive
-                        ? "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"
-                        : "text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)]"
-                    )}
-                  >
-                    <span className="text-lg">{item.icon}</span>
-                    {item.label}
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* User with dropdown */}
-          <div className="mt-4 relative">
+          <div className="relative">
             <button
               onClick={() => setShowUserMenu(!showUserMenu)}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--color-bg)] hover:bg-[var(--color-bg-alt)] transition-colors"
@@ -185,6 +157,18 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   exit={{ opacity: 0, y: 5 }}
                   className="absolute bottom-full left-0 right-0 mb-2 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg overflow-hidden"
                 >
+                  <Link
+                    href="/settings"
+                    onClick={() => { setShowUserMenu(false); onClose(); }}
+                    className="flex items-center gap-3 px-4 py-3 text-sm text-[var(--color-text-muted)] hover:bg-[var(--color-bg)] hover:text-[var(--color-text)] transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                  </Link>
+                  <div className="border-t border-[var(--color-border)]" />
                   <button
                     onClick={handleLogout}
                     className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
