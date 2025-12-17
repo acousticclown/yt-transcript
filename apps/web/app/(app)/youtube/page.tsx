@@ -614,7 +614,7 @@ export default function YouTubePage() {
             className="text-center py-16"
           >
             {/* Animated Record Player */}
-            <div className="relative w-20 h-20 mb-4">
+            <div className="relative w-20 h-20 mb-4 mx-auto">
               {/* Record disc */}
               <motion.div
                 className="absolute inset-0 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 shadow-lg"
