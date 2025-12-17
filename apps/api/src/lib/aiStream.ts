@@ -12,8 +12,9 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // Model chain for fallback
 const MODELS = [
+  "gemini-2.5-flash",
+  "gemini-2.5-flash-lite",
   "gemini-2.0-flash",
-  "gemini-1.5-flash",
 ];
 
 export type StreamEvent = 
@@ -44,15 +45,21 @@ export function setupSSE(res: Response) {
  * Get working model with fallback
  */
 async function tryGenerateWithFallback(prompt: string): Promise<string> {
+  console.log("🔄 [AI Fallback] Trying models:", MODELS.join(", "));
+  console.log("🔑 [AI Fallback] API Key present:", !!process.env.GEMINI_API_KEY);
+  
   for (const modelName of MODELS) {
     try {
+      console.log(`🔄 [AI Fallback] Trying model: ${modelName}`);
       const response = await ai.models.generateContent({
         model: modelName,
         contents: prompt,
       });
+      console.log(`✅ [AI Fallback] ${modelName} succeeded`);
       return response.text || "";
     } catch (error: any) {
-      console.log(`Model ${modelName} failed:`, error.message);
+      console.log(`❌ [AI Fallback] ${modelName} failed:`, error.message);
+      console.log(`❌ [AI Fallback] Full error:`, JSON.stringify(error, null, 2));
       continue;
     }
   }
@@ -68,61 +75,86 @@ export async function streamAIGeneration(
   userPrompt: string,
   steps: { id: string; message: string }[]
 ): Promise<void> {
+  console.log("🚀 [AI Stream] Starting generation...");
+  
   try {
     // Step 1: Analyzing
+    console.log("📍 [AI Stream] Step 1: Analyzing");
     sendSSE(res, { type: "thinking", step: "analyzing", message: steps[0]?.message || "Analyzing..." });
     await delay(300);
 
     // Step 2: Structuring
+    console.log("📍 [AI Stream] Step 2: Structuring");
     sendSSE(res, { type: "thinking", step: "structuring", message: steps[1]?.message || "Structuring..." });
     await delay(200);
 
     // Step 3: Generating
+    console.log("📍 [AI Stream] Step 3: Generating content");
     sendSSE(res, { type: "thinking", step: "generating", message: steps[2]?.message || "Generating..." });
     
     const fullPrompt = `${systemPrompt}\n\n${userPrompt}`;
+    console.log("📝 [AI Stream] Prompt length:", fullPrompt.length);
     
     // Try streaming first, fallback to non-streaming
     let fullText = "";
     
     try {
-      // Try streaming with new SDK
+      console.log("🔄 [AI Stream] Attempting streaming with model:", MODELS[0]);
+      
       const response = await ai.models.generateContentStream({
         model: MODELS[0],
         contents: fullPrompt,
       });
       
+      console.log("✅ [AI Stream] Got stream response, reading chunks...");
+      let chunkCount = 0;
+      
       for await (const chunk of response) {
+        chunkCount++;
         const text = chunk.text || "";
         fullText += text;
+        console.log(`📦 [AI Stream] Chunk ${chunkCount}: ${text.length} chars`);
         if (text) {
           sendSSE(res, { type: "chunk", content: text });
         }
       }
-    } catch (streamError) {
-      // Fallback to non-streaming
-      console.log("Streaming failed, using non-streaming fallback");
+      
+      console.log(`✅ [AI Stream] Streaming complete. Total chunks: ${chunkCount}, Total length: ${fullText.length}`);
+      
+    } catch (streamError: any) {
+      console.log("⚠️ [AI Stream] Streaming failed:", streamError.message);
+      console.log("🔄 [AI Stream] Using non-streaming fallback...");
       fullText = await tryGenerateWithFallback(fullPrompt);
+      console.log("✅ [AI Stream] Fallback complete. Length:", fullText.length);
       sendSSE(res, { type: "chunk", content: fullText });
     }
 
     // Step 4: Finalizing
+    console.log("📍 [AI Stream] Step 4: Finalizing");
     sendSSE(res, { type: "thinking", step: "finalizing", message: steps[3]?.message || "Finalizing..." });
     await delay(200);
 
     // Parse and validate JSON
+    console.log("🔍 [AI Stream] Parsing JSON from response...");
     const jsonMatch = fullText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error("Invalid response format");
+      console.error("❌ [AI Stream] No JSON found in response:", fullText.substring(0, 200));
+      throw new Error("Invalid response format - no JSON found");
     }
 
+    console.log("✅ [AI Stream] JSON found, parsing...");
     const data = JSON.parse(sanitizeJson(jsonMatch[0]));
+    console.log("✅ [AI Stream] Parsed successfully. Title:", data.title);
+    
     sendSSE(res, { type: "complete", data });
+    console.log("🎉 [AI Stream] Generation complete!");
 
   } catch (error: any) {
-    console.error("Stream error:", error);
+    console.error("❌ [AI Stream] Error:", error.message);
+    console.error("❌ [AI Stream] Stack:", error.stack);
     sendSSE(res, { type: "error", message: error.message || "Generation failed" });
   } finally {
+    console.log("🔚 [AI Stream] Ending response");
     res.end();
   }
 }
