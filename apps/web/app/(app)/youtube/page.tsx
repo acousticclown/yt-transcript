@@ -474,18 +474,28 @@ export default function YouTubePage() {
     setSaveState("saving");
 
     try {
+      // Format transcript with timestamps
+      const formattedContent = rawTranscript.subtitles
+        .map((s) => `[${formatTime(s.start)}] ${s.text}`)
+        .join("\n");
+
       const savedNote = await createNote.mutateAsync({
         title: "YouTube Transcript",
-        content: rawTranscript.transcript,
+        content: formattedContent,
         tags: ["youtube", "transcript"],
         language: "english",
         source: "youtube",
         youtubeUrl: url,
+        videoId: rawTranscript.videoId,
         sections: [],
       });
 
+      // Clear state before navigating
+      setRawTranscript(null);
+      setSaveState("idle");
       router.push(`/notes/${savedNote.id}?edit=true`);
-    } catch {
+    } catch (err) {
+      console.error("Save error:", err);
       alert("⚠️ Failed to save note");
       setSaveState("error");
     }
