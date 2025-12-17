@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { NoteList } from "../../../components/notes";
+import { NoteCard } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
 import { ApiKeyBanner } from "../../../components/ApiKeyBanner";
@@ -50,8 +50,8 @@ export default function DashboardPage() {
   const toggleFavorite = useToggleFavorite();
   const createNote = useCreateNote();
 
-  // Show only 6 recent notes
-  const notes = allNotes.slice(0, 6);
+  // Show 10 recent notes for horizontal scroll
+  const notes = allNotes.slice(0, 10);
   const cardNotes = notes.map(toCardNote);
 
   const handleDelete = (id: string) => {
@@ -70,7 +70,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+    <div className="h-[calc(100vh-5rem)] lg:h-screen overflow-hidden flex flex-col p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       {/* API Key Banner - subtle reminder */}
       <ApiKeyBanner />
 
@@ -192,13 +192,14 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Recent Notes */}
+      {/* Recent Notes - Horizontal Scroll */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.2 }}
+        className="flex-1 min-h-0 flex flex-col"
       >
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-4 flex-shrink-0">
           <h2 className="text-lg font-semibold text-[var(--color-text)]">Recent Notes</h2>
           <Link href="/notes" className="text-sm text-[var(--color-primary)] hover:underline flex items-center gap-1">
             View all
@@ -213,11 +214,19 @@ export default function DashboardPage() {
             <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
           </div>
         ) : cardNotes.length > 0 ? (
-          <NoteList
-            notes={cardNotes}
-            onDelete={handleDelete}
-            onToggleFavorite={handleToggleFavorite}
-          />
+          <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
+            <div className="flex gap-4" style={{ minWidth: "max-content" }}>
+              {cardNotes.map((note) => (
+                <div key={note.id} className="w-72 flex-shrink-0">
+                  <NoteCard
+                    note={note}
+                    onDelete={handleDelete}
+                    onToggleFavorite={handleToggleFavorite}
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
         ) : (
           <EmptyState />
         )}
