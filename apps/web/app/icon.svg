@@ -3,11 +3,10 @@
   <path d="M8 6C8 3.79086 9.79086 2 12 2H40L56 18V58C56 60.2091 54.2091 62 52 62H12C9.79086 62 8 60.2091 8 58V6Z" fill="#1a1a1a"/>
   <!-- Folded corner -->
   <path d="M40 2V14C40 16.2091 41.7909 18 44 18H56L40 2Z" fill="#ffffff" fill-opacity="0.3"/>
-  <!-- Lines on paper -->
-  <rect x="16" y="28" width="28" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.5"/>
-  <rect x="16" y="38" width="36" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.5"/>
-  <rect x="16" y="48" width="24" height="3" rx="1.5" fill="#ffffff" fill-opacity="0.5"/>
+  <!-- Lines on paper - yellow with white outline -->
+  <rect x="16" y="28" width="28" height="3" rx="1.5" fill="#FBBF24" stroke="white" stroke-width="0.5"/>
+  <rect x="16" y="38" width="36" height="3" rx="1.5" fill="#FBBF24" stroke="white" stroke-width="0.5"/>
+  <rect x="16" y="48" width="24" height="3" rx="1.5" fill="#FBBF24" stroke="white" stroke-width="0.5"/>
   <!-- Accent dot -->
   <circle cx="50" cy="8" r="3" fill="#f5a623"/>
 </svg>
-

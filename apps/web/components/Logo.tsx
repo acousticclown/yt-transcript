@@ -37,10 +37,10 @@ export function Logo({ size = "md", showIcon = true, href = "/dashboard", classN
               opacity="0.3"
             />
             
-            {/* Lines on paper */}
-            <rect x="16" y="28" width="28" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
-            <rect x="16" y="38" width="36" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
-            <rect x="16" y="48" width="24" height="3" rx="1.5" className="fill-[var(--color-bg)]" opacity="0.5" />
+            {/* Lines on paper - yellow with white outline */}
+            <rect x="16" y="28" width="28" height="3" rx="1.5" fill="#FBBF24" stroke="white" strokeWidth="0.5" />
+            <rect x="16" y="38" width="36" height="3" rx="1.5" fill="#FBBF24" stroke="white" strokeWidth="0.5" />
+            <rect x="16" y="48" width="24" height="3" rx="1.5" fill="#FBBF24" stroke="white" strokeWidth="0.5" />
             
             {/* Accent dot */}
             <circle cx="50" cy="8" r="3" className="fill-[var(--color-primary)]" />
