@@ -158,7 +158,10 @@ export function useAIStream() {
         return null;
       }
       
-      console.error("AI Stream error:", err);
+      // Only log non-expected errors
+      if (err.message !== "API_KEY_REQUIRED") {
+        console.error("AI Stream error:", err);
+      }
       setState("error");
       setError(err.message || "Generation failed");
       return null;

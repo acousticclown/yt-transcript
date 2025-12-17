@@ -71,9 +71,7 @@ export function AISpotlight({ isOpen, onClose, onGenerate }: AISpotlightProps) {
 
   // Show API key prompt if error is API_KEY_REQUIRED
   useEffect(() => {
-    console.log("Error state:", error);
     if (error === "API_KEY_REQUIRED") {
-      console.log("Showing API key prompt");
       setShowApiKeyPrompt(true);
     }
   }, [error]);
