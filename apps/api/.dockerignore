@@ -1,0 +1,13 @@
+node_modules
+.next
+.env
+.env.local
+.env.production
+data
+*.db
+*.sqlite
+*.log
+.DS_Store
+dist
+build
+
