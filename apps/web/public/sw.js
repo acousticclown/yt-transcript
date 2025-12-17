@@ -1,34 +1,35 @@
 // Notely Service Worker
 // Version 1.0.0
 
+'use strict';
+
 const CACHE_NAME = "notely-v1.0.0";
 const RUNTIME_CACHE = "notely-runtime";
 
-// Assets to cache on install
-const STATIC_ASSETS = [
-  "/",
-  "/dashboard",
-  "/notes",
-  "/youtube",
-  "/manifest.json",
-  "/icon.svg",
-  "/icon-192.png",
-  "/icon-512.png",
-];
-
-// Install event - cache static assets
+// Install event - cache essential assets only
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Cache assets, but don't fail if some are missing (like icons)
+      // Only cache essential static assets that definitely exist
+      const essentialAssets = [
+        "/",
+        "/manifest.json",
+        "/icon.svg",
+      ];
+      
+      // Try to cache icons if they exist, but don't fail if they don't
       return Promise.allSettled(
-        STATIC_ASSETS.map((url) =>
-          cache.add(url).catch((err) => {
-            console.warn(`Failed to cache ${url}:`, err);
-            return null;
-          })
-        )
-      );
+        essentialAssets.map((url) => cache.add(url))
+      ).then(() => {
+        // Try to cache icons separately (optional)
+        return Promise.allSettled([
+          cache.add("/icon-192.png").catch(() => null),
+          cache.add("/icon-512.png").catch(() => null),
+        ]);
+      });
+    }).catch((error) => {
+      console.error("Service Worker install failed:", error);
+      // Don't fail the installation if caching fails
     })
   );
   self.skipWaiting();
@@ -51,10 +52,17 @@ self.addEventListener("activate", (event) => {
 // Fetch event - serve from cache, fallback to network
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-  const url = new URL(request.url);
-
-  // Skip non-GET requests
+  
+  // Only handle GET requests
   if (request.method !== "GET") {
+    return;
+  }
+
+  let url;
+  try {
+    url = new URL(request.url);
+  } catch (error) {
+    console.error("Invalid URL in service worker:", error);
     return;
   }
 
@@ -63,40 +71,74 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Skip external URLs
-  if (url.origin !== self.location.origin) {
+  // Skip external URLs - check if origin matches
+  try {
+    const swOrigin = self.location ? self.location.origin : url.origin;
+    if (url.origin !== swOrigin) {
+      return;
+    }
+  } catch (e) {
+    // If we can't determine origin, skip this request
+    console.warn("Could not determine origin, skipping:", url.href);
+    return;
+  }
+
+  // Skip service worker and manifest requests (they're handled separately)
+  if (url.pathname === "/sw.js" || url.pathname === "/manifest.json") {
     return;
   }
 
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
+      // Return cached response if available
       if (cachedResponse) {
         return cachedResponse;
       }
 
+      // Try to fetch from network
       return fetch(request)
         .then((response) => {
           // Don't cache if not a valid response
-          if (!response || response.status !== 200 || response.type !== "basic") {
+          if (!response || response.status !== 200) {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          // Only cache same-origin responses
+          if (response.type === "basic" || response.type === "cors") {
+            // Clone the response for caching
+            const responseToCache = response.clone();
 
-          caches.open(RUNTIME_CACHE).then((cache) => {
-            cache.put(request, responseToCache);
-          });
+            // Cache in background (don't block response)
+            caches.open(RUNTIME_CACHE).then((cache) => {
+              cache.put(request, responseToCache).catch((err) => {
+                console.warn("Failed to cache response:", err);
+              });
+            });
+          }
 
           return response;
         })
-        .catch(() => {
-          // If fetch fails and we're offline, return a fallback
+        .catch((error) => {
+          // If fetch fails and we're offline, try to return a fallback
           if (request.destination === "document") {
-            return caches.match("/");
+            return caches.match("/").catch(() => {
+              // If even the fallback fails, return a basic error response
+              return new Response("Offline - content not available", {
+                status: 503,
+                statusText: "Service Unavailable",
+              });
+            });
           }
-        })
-      );
+          // For non-document requests, rethrow to let browser handle
+          throw error;
+        });
+    }).catch((error) => {
+      console.error("Service Worker fetch error:", error);
+      // Return a basic error response
+      return new Response("Network error", {
+        status: 408,
+        statusText: "Request Timeout",
+      });
     })
   );
 });
