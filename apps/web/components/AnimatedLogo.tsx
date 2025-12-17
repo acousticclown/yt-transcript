@@ -174,8 +174,8 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                     y: [0, 0, -6, 0, -6, 0, 0],
                   }}
                   transition={{
-                    duration: 1.8,
-                    delay: 1.2 + i * 0.12,
+                    duration: 2.2,
+                    delay: 1.2 + i * 0.15,
                     times: [0, 0.1, 0.25, 0.4, 0.55, 0.7, 1],
                     ease: "easeInOut",
                   }}
@@ -196,7 +196,7 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 type: "spring",
                 stiffness: 200,
                 damping: 15,
-                delay: 2.8,
+                delay: 3.2,
               }}
             >
               ly
