@@ -3,6 +3,14 @@
 import { motion } from "framer-motion";
 import type { Note } from "../../lib/api";
 
+// Simple inline markdown parser (bold, italic, code)
+function parseInlineMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')  // **bold**
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')              // *italic*
+    .replace(/`(.+?)`/g, '<code class="px-1 py-0.5 bg-[var(--color-surface)] rounded text-sm">$1</code>'); // `code`
+}
+
 type NoteViewerProps = {
   note: Note;
 };
@@ -95,13 +103,14 @@ export function NoteViewer({ note }: NoteViewerProps) {
 
               {/* Summary */}
               {section.summary && (
-                <p className="text-[var(--color-text)] leading-relaxed mb-5 pl-4 sm:pl-0">
-                  {section.summary}
-                </p>
+                <p 
+                  className="text-[var(--color-text)] leading-relaxed mb-5 pl-4 sm:pl-0"
+                  dangerouslySetInnerHTML={{ __html: parseInlineMarkdown(section.summary) }}
+                />
               )}
 
               {/* Bullets */}
-              {section.bullets.length > 0 && (
+                {section.bullets.length > 0 && (
                 <ul className="space-y-3 pl-4 sm:pl-0">
                   {section.bullets.map((bullet, bulletIndex) => (
                     <li
@@ -109,7 +118,10 @@ export function NoteViewer({ note }: NoteViewerProps) {
                       className="flex items-start gap-3 text-[var(--color-text)]"
                     >
                       <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-[var(--color-primary)] mt-2.5" />
-                      <span className="leading-relaxed">{bullet}</span>
+                      <span 
+                        className="leading-relaxed"
+                        dangerouslySetInnerHTML={{ __html: parseInlineMarkdown(bullet) }}
+                      />
                     </li>
                   ))}
                 </ul>
