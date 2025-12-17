@@ -14,6 +14,7 @@ import { basicSummaryPrompt } from "../../../packages/prompts/basicSummary";
 import { sectionDetectionPrompt } from "../../../packages/prompts/sectionDetection";
 import { inlineActionPrompt } from "../../../packages/prompts/inlineActions";
 import { languageTransformPrompt } from "../../../packages/prompts/languageTransform";
+import { noteGenerationPrompt } from "../../../packages/prompts/noteGeneration";
 import { cleanTranscript } from "../utils/cleanTranscript";
 
 const app = express();
@@ -145,6 +146,59 @@ app.post("/ai/transform-language", async (req, res) => {
   } catch (error) {
     console.error("Language transform error:", error);
     res.status(500).json({ error: "Failed to transform language" });
+  }
+});
+
+// POST /ai/generate-note - Generate a complete note from prompt
+app.post("/ai/generate-note", async (req, res) => {
+  try {
+    const { prompt: userPrompt } = req.body;
+    if (!userPrompt) {
+      return res.status(400).json({ error: "Prompt is required" });
+    }
+
+    console.log("🤖 Generating note from prompt:", userPrompt.substring(0, 50) + "...");
+
+    const prompt = noteGenerationPrompt(userPrompt);
+    const result = await geminiModel.generateContent(prompt);
+    const text = result.response.text();
+
+    // Parse JSON from response
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      throw new Error("No JSON found in response");
+    }
+
+    const note = JSON.parse(sanitizeJson(jsonMatch[0]));
+    
+    // Validate structure
+    if (!note.title || typeof note.title !== "string") {
+      note.title = "Generated Note";
+    }
+    if (!note.content || typeof note.content !== "string") {
+      note.content = "";
+    }
+    if (!Array.isArray(note.tags)) {
+      note.tags = [];
+    }
+    if (!Array.isArray(note.sections)) {
+      note.sections = [];
+    }
+
+    // Ensure sections have proper structure
+    note.sections = note.sections.map((s: any, i: number) => ({
+      id: `section-${i}`,
+      title: s.title || `Section ${i + 1}`,
+      summary: s.summary || "",
+      bullets: Array.isArray(s.bullets) ? s.bullets : [],
+      language: "english",
+    }));
+
+    console.log("✅ Note generated:", note.title);
+    res.json({ note });
+  } catch (error) {
+    console.error("Note generation error:", error);
+    res.status(500).json({ error: "Failed to generate note" });
   }
 });
 

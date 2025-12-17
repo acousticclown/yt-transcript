@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { NoteList } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
-import { useNotes, useDeleteNote, useToggleFavorite } from "../../../lib/hooks";
+import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
 import { Note as ApiNote } from "../../../lib/api";
 
 // Transform API note to card format
@@ -39,11 +39,13 @@ function formatDate(dateStr: string): string {
 export default function DashboardPage() {
   const router = useRouter();
   const [aiSpotlightOpen, setAiSpotlightOpen] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // TanStack Query hooks
   const { data: allNotes = [], isLoading } = useNotes();
   const deleteNote = useDeleteNote();
   const toggleFavorite = useToggleFavorite();
+  const createNote = useCreateNote();
 
   // Show only 6 recent notes
   const notes = allNotes.slice(0, 6);
@@ -165,8 +167,25 @@ export default function DashboardPage() {
       <AISpotlight
         isOpen={aiSpotlightOpen}
         onClose={() => setAiSpotlightOpen(false)}
-        onSubmit={(prompt) => {
-          router.push(`/notes/new?prompt=${encodeURIComponent(prompt)}`);
+        isLoading={aiLoading}
+        onGenerate={async (note) => {
+          setAiLoading(true);
+          try {
+            const result = await createNote.mutateAsync({
+              title: note.title,
+              content: note.content,
+              tags: note.tags,
+              language: "english",
+              source: "manual",
+              sections: note.sections,
+            });
+            setAiSpotlightOpen(false);
+            router.push(`/notes/${result.id}`);
+          } catch (error) {
+            console.error("Failed to create note:", error);
+          } finally {
+            setAiLoading(false);
+          }
         }}
       />
 

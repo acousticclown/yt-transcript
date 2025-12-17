@@ -270,4 +270,26 @@ export const aiApi = {
     const data = await res.json();
     return data.result;
   },
+
+  async generateNote(prompt: string): Promise<{
+    title: string;
+    content: string;
+    tags: string[];
+    sections: Array<{
+      id: string;
+      title: string;
+      summary: string;
+      bullets: string[];
+      language: "english" | "hindi" | "hinglish";
+    }>;
+  }> {
+    const res = await fetch(`${API_BASE}/ai/generate-note`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt }),
+    });
+    if (!res.ok) throw new Error("Failed to generate note");
+    const data = await res.json();
+    return data.note;
+  },
 };
