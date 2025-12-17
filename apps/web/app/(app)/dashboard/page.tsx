@@ -2,31 +2,79 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { NoteList, Note } from "../../../components/notes";
+import { NoteList } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
+import { notesApi, Note as ApiNote } from "../../../lib/api";
 
-// Mock data for demo
-const initialNotes: Note[] = [
-  { id: "1", title: "React Best Practices", preview: "Key patterns for building scalable React apps...", color: "#F5A623", tags: ["react", "development"], date: "2 hours ago", isFavorite: true },
-  { id: "2", title: "Machine Learning Basics", preview: "Introduction to neural networks and deep learning...", color: "#4A7C59", tags: ["ml", "ai"], date: "Yesterday" },
-  { id: "3", title: "Product Design Notes", preview: "User-centered design principles and methodologies...", color: "#6366f1", tags: ["design", "ux"], date: "3 days ago" },
-];
+// Transform API note to card format
+function toCardNote(note: ApiNote) {
+  return {
+    id: note.id,
+    title: note.title,
+    preview: note.content || note.sections[0]?.summary || "No content",
+    color: note.color || "#F5A623",
+    tags: note.tags,
+    date: formatDate(note.updatedAt),
+    isFavorite: note.isFavorite,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString();
+}
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [notes, setNotes] = useState<ApiNote[]>([]);
+  const [loading, setLoading] = useState(true);
   const [aiSpotlightOpen, setAiSpotlightOpen] = useState(false);
 
-  const handleDelete = (id: string) => {
-    setNotes(notes.filter((n) => n.id !== id));
+  // Fetch recent notes
+  useEffect(() => {
+    async function fetchNotes() {
+      try {
+        const data = await notesApi.list();
+        setNotes(data.slice(0, 6)); // Show only 6 recent notes
+      } catch (err) {
+        console.error("Failed to fetch notes:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNotes();
+  }, []);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await notesApi.delete(id);
+      setNotes(notes.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    }
   };
 
-  const handleToggleFavorite = (id: string) => {
-    setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite: !n.isFavorite } : n)));
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      const { isFavorite } = await notesApi.toggleFavorite(id);
+      setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite } : n)));
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+    }
   };
+
+  const cardNotes = notes.map(toCardNote);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -127,7 +175,7 @@ export default function DashboardPage() {
           href="/notes"
           icon={<FolderIcon />}
           title="Browse All"
-          description={`${notes.length} notes`}
+          description={loading ? "Loading..." : `${notes.length} notes`}
           color="green"
         />
       </motion.div>
@@ -158,9 +206,13 @@ export default function DashboardPage() {
           </Link>
         </div>
 
-        {notes.length > 0 ? (
+        {loading ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+          </div>
+        ) : cardNotes.length > 0 ? (
           <NoteList
-            notes={notes}
+            notes={cardNotes}
             onDelete={handleDelete}
             onToggleFavorite={handleToggleFavorite}
           />

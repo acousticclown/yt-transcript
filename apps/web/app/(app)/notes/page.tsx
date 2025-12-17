@@ -4,29 +4,68 @@ import Link from "next/link";
 import { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { NoteList, Note } from "../../../components/notes";
-
-// Mock data
-const initialNotes: Note[] = [
-  { id: "1", title: "React Best Practices", preview: "Key patterns for building scalable React apps...", color: "#F5A623", tags: ["react", "development"], date: "2 hours ago", isFavorite: true },
-  { id: "2", title: "Machine Learning Basics", preview: "Introduction to neural networks and deep learning...", color: "#4A7C59", tags: ["ml", "ai"], date: "Yesterday" },
-  { id: "3", title: "Product Design Notes", preview: "User-centered design principles and methodologies...", color: "#6366f1", tags: ["design", "ux"], date: "3 days ago" },
-  { id: "4", title: "TypeScript Tips", preview: "Advanced TypeScript patterns and best practices...", color: "#F5A623", tags: ["typescript"], date: "1 week ago" },
-];
+import { NoteList } from "../../../components/notes";
+import { notesApi, Note as ApiNote } from "../../../lib/api";
 
 type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites";
+
+// Transform API note to card format
+function toCardNote(note: ApiNote) {
+  return {
+    id: note.id,
+    title: note.title,
+    preview: note.content || note.sections[0]?.summary || "No content",
+    color: note.color || "#F5A623",
+    tags: note.tags,
+    date: formatDate(note.updatedAt),
+    isFavorite: note.isFavorite,
+  };
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(hours / 24);
+
+  if (hours < 1) return "Just now";
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  if (days < 7) return `${days} day${days > 1 ? "s" : ""} ago`;
+  return date.toLocaleDateString();
+}
 
 function NotesPageContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const tagFromUrl = searchParams.get("tag");
 
-  const [notes, setNotes] = useState<Note[]>(initialNotes);
+  const [notes, setNotes] = useState<ApiNote[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<SortOption>("recent");
   const [filter, setFilter] = useState<FilterOption>("all");
   const [selectedTag, setSelectedTag] = useState<string | null>(tagFromUrl);
+
+  // Fetch notes from API
+  useEffect(() => {
+    async function fetchNotes() {
+      try {
+        setLoading(true);
+        const data = await notesApi.list();
+        setNotes(data);
+        setError(null);
+      } catch (err) {
+        setError("Failed to load notes");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNotes();
+  }, []);
 
   // Sync tag from URL
   useEffect(() => {
@@ -43,12 +82,22 @@ function NotesPageContent() {
     }
   };
 
-  const handleDelete = (id: string) => {
-    setNotes(notes.filter((n) => n.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await notesApi.delete(id);
+      setNotes(notes.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("Failed to delete note:", err);
+    }
   };
 
-  const handleToggleFavorite = (id: string) => {
-    setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite: !n.isFavorite } : n)));
+  const handleToggleFavorite = async (id: string) => {
+    try {
+      const { isFavorite } = await notesApi.toggleFavorite(id);
+      setNotes(notes.map((n) => (n.id === id ? { ...n, isFavorite } : n)));
+    } catch (err) {
+      console.error("Failed to toggle favorite:", err);
+    }
   };
 
   // Get all unique tags
@@ -68,7 +117,7 @@ function NotesPageContent() {
       result = result.filter(
         (n) =>
           n.title.toLowerCase().includes(q) ||
-          n.preview.toLowerCase().includes(q) ||
+          n.content.toLowerCase().includes(q) ||
           n.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
@@ -88,10 +137,38 @@ function NotesPageContent() {
       result.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sort === "favorites") {
       result.sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
+    } else {
+      // recent
+      result.sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
     }
 
     return result;
   }, [notes, search, sort, filter, selectedTag]);
+
+  // Transform to card format
+  const cardNotes = filteredNotes.map(toCardNote);
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 text-center">
+        <p className="text-[var(--color-danger)]">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -197,7 +274,7 @@ function NotesPageContent() {
 
       {/* Notes Grid */}
       <NoteList
-        notes={filteredNotes}
+        notes={cardNotes}
         onDelete={handleDelete}
         onToggleFavorite={handleToggleFavorite}
         emptyMessage={search || selectedTag ? "No notes match your filters" : "No notes yet. Create your first note!"}
@@ -213,4 +290,3 @@ export default function NotesPage() {
     </Suspense>
   );
 }
-

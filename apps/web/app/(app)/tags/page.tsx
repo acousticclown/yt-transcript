@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { tagsApi, Tag as ApiTag } from "../../../lib/api";
 
 type Tag = {
   id: string;
@@ -65,7 +66,7 @@ function TagCard({
         <div className="flex items-center gap-3">
           <div
             className="w-4 h-4 rounded-full"
-            style={{ backgroundColor: tag.color }}
+            style={{ backgroundColor: tag.color || "#F5A623" }}
           />
           <span className="font-medium text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors">#{tag.name}</span>
         </div>
@@ -87,16 +88,19 @@ function TagCard({
             />
             <motion.div
               ref={menuRef}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-xl overflow-hidden min-w-[140px]"
+              initial={{ opacity: 0, scale: 0.9, y: -10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -10 }}
+              className="absolute right-0 top-full mt-2 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg z-50 overflow-hidden min-w-[160px]"
             >
               <button
                 onClick={() => { onDelete(tag.id); setShowMenu(false); }}
-                className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600"
+                className="w-full px-4 py-3 text-left text-sm text-[var(--color-danger)] hover:bg-[var(--color-danger-bg)] flex items-center gap-2"
               >
-                🗑️ Delete
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete Tag
               </button>
               <button
                 onClick={() => setShowMenu(false)}
@@ -117,42 +121,72 @@ const COLORS = [
   "#EF4444", "#06B6D4", "#F59E0B", "#EC4899"
 ];
 
-const initialTags: Tag[] = [
-  { id: "1", name: "react", color: "#F5A623", count: 5 },
-  { id: "2", name: "typescript", color: "#3178C6", count: 3 },
-  { id: "3", name: "ai", color: "#10B981", count: 4 },
-  { id: "4", name: "design", color: "#8B5CF6", count: 2 },
-  { id: "5", name: "development", color: "#EF4444", count: 6 },
-  { id: "6", name: "ml", color: "#06B6D4", count: 2 },
-];
-
 export default function TagsPage() {
-  const [tags, setTags] = useState<Tag[]>(initialTags);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showNewTag, setShowNewTag] = useState(false);
   const [newTagName, setNewTagName] = useState("");
   const [newTagColor, setNewTagColor] = useState(COLORS[0]);
   const [filter, setFilter] = useState("");
 
-  const handleCreateTag = () => {
+  // Fetch tags from API
+  useEffect(() => {
+    async function fetchTags() {
+      try {
+        setLoading(true);
+        const data = await tagsApi.list();
+        setTags(data.map((t: ApiTag) => ({
+          id: t.id,
+          name: t.name,
+          color: t.color || COLORS[Math.floor(Math.random() * COLORS.length)],
+          count: t.noteCount,
+        })));
+      } catch (err) {
+        console.error("Failed to fetch tags:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTags();
+  }, []);
+
+  const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
-    const newTag: Tag = {
-      id: crypto.randomUUID(),
-      name: newTagName.trim().toLowerCase(),
-      color: newTagColor,
-      count: 0,
-    };
-    setTags([...tags, newTag]);
-    setNewTagName("");
-    setShowNewTag(false);
+    try {
+      const newTag = await tagsApi.create(newTagName.trim().toLowerCase(), newTagColor);
+      setTags([...tags, {
+        id: newTag.id,
+        name: newTag.name,
+        color: newTag.color || newTagColor,
+        count: 0,
+      }]);
+      setNewTagName("");
+      setShowNewTag(false);
+    } catch (err) {
+      console.error("Failed to create tag:", err);
+    }
   };
 
-  const handleDeleteTag = (id: string) => {
-    setTags(tags.filter((t) => t.id !== id));
+  const handleDeleteTag = async (id: string) => {
+    try {
+      await tagsApi.delete(id);
+      setTags(tags.filter((t) => t.id !== id));
+    } catch (err) {
+      console.error("Failed to delete tag:", err);
+    }
   };
 
   const filteredTags = tags.filter((t) =>
     t.name.toLowerCase().includes(filter.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
@@ -252,4 +286,3 @@ export default function TagsPage() {
     </div>
   );
 }
-
