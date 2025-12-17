@@ -187,6 +187,51 @@ function SectionCard({
   );
 }
 
+// Sections View with auto-scroll
+function SectionsView({
+  sections,
+  activeSection,
+  onSeek,
+}: {
+  sections: NoteSection[];
+  activeSection: number;
+  onSeek: (time: number) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to active section
+  useEffect(() => {
+    if (activeSection >= 0 && containerRef.current) {
+      const activeElement = containerRef.current.querySelector(`[data-section="${activeSection}"]`);
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [activeSection]);
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide flex items-center gap-2">
+        <SparklesIcon className="w-4 h-4 text-purple-500" />
+        AI Sections ({sections.length})
+      </h2>
+
+      <div ref={containerRef} className="space-y-2">
+        {sections.map((section, index) => (
+          <div key={section.id} data-section={index}>
+            <SectionCard
+              section={section}
+              index={index}
+              isActive={activeSection === index}
+              onSeek={onSeek}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // Timeline component
 function Timeline({
   sections,
@@ -220,6 +265,99 @@ function Timeline({
           />
         );
       })}
+    </div>
+  );
+}
+
+// Transcript View with highlighting
+function TranscriptView({
+  content,
+  currentTime,
+  onSeek,
+}: {
+  content: string;
+  currentTime: number;
+  onSeek: (time: number) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  // Parse all lines with timestamps
+  const lines = content.split("\n").map((line, i) => {
+    const match = line.match(/^\[(\d+):(\d+)\]\s*(.*)/);
+    if (match) {
+      const mins = parseInt(match[1]);
+      const secs = parseInt(match[2]);
+      return {
+        index: i,
+        seconds: mins * 60 + secs,
+        timestamp: `${match[1]}:${match[2]}`,
+        text: match[3],
+        hasTimestamp: true,
+      };
+    }
+    return { index: i, seconds: -1, timestamp: "", text: line, hasTimestamp: false };
+  });
+
+  // Find active line index
+  const activeLineIndex = lines.reduce((active, line, i) => {
+    if (line.hasTimestamp && line.seconds <= currentTime) {
+      return i;
+    }
+    return active;
+  }, -1);
+
+  // Auto-scroll to active line
+  useEffect(() => {
+    if (activeLineIndex >= 0 && containerRef.current) {
+      const activeElement = containerRef.current.querySelector(`[data-line="${activeLineIndex}"]`);
+      if (activeElement) {
+        activeElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [activeLineIndex]);
+
+  return (
+    <div className="space-y-3">
+      <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
+        Transcript
+      </h2>
+
+      <div ref={containerRef} className="space-y-1">
+        {lines.map((line) => {
+          if (line.hasTimestamp) {
+            const isActive = line.index === activeLineIndex;
+            return (
+              <button
+                key={line.index}
+                data-line={line.index}
+                onClick={() => onSeek(line.seconds)}
+                className={`w-full flex gap-3 p-2 rounded-lg text-left transition-all ${
+                  isActive
+                    ? "bg-[var(--color-primary)]/10 border-l-2 border-[var(--color-primary)]"
+                    : "hover:bg-[var(--color-surface)]"
+                }`}
+              >
+                <span className={`text-xs font-mono w-12 flex-shrink-0 ${
+                  isActive ? "text-[var(--color-primary)] font-semibold" : "text-[var(--color-primary)]"
+                }`}>
+                  {line.timestamp}
+                </span>
+                <span className={`text-sm ${
+                  isActive ? "text-[var(--color-text)] font-medium" : "text-[var(--color-text)]"
+                }`}>
+                  {line.text}
+                </span>
+              </button>
+            );
+          }
+          // Non-timestamped line
+          return line.text.trim() ? (
+            <p key={line.index} className="text-sm text-[var(--color-text)] p-2">
+              {line.text}
+            </p>
+          ) : null;
+        })}
+      </div>
     </div>
   );
 }
@@ -416,67 +554,18 @@ export default function YouTubeViewerPage() {
           <div className="lg:w-1/2 xl:w-2/5 min-h-0 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6">
             {note.sections.length > 0 && !showTranscript ? (
               // AI-generated sections view
-              <div className="space-y-3">
-                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide flex items-center gap-2">
-                  <SparklesIcon className="w-4 h-4 text-purple-500" />
-                  AI Sections ({note.sections.length})
-                </h2>
-
-                <div className="space-y-2">
-                  {note.sections.map((section, index) => (
-                    <SectionCard
-                      key={section.id}
-                      section={section}
-                      index={index}
-                      isActive={activeSection === index}
-                      onSeek={seekTo}
-                    />
-                  ))}
-                </div>
-              </div>
+              <SectionsView
+                sections={note.sections}
+                activeSection={activeSection ?? -1}
+                onSeek={seekTo}
+              />
             ) : (
               // Raw transcript view
-              <div className="space-y-3">
-                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
-                  Transcript
-                </h2>
-
-                <div className="space-y-1">
-                  {note.content.split("\n").map((line, i) => {
-                    // Parse [MM:SS] timestamp from line
-                    const match = line.match(/^\[(\d+):(\d+)\]\s*(.*)/);
-                    if (match) {
-                      const mins = parseInt(match[1]);
-                      const secs = parseInt(match[2]);
-                      const seconds = mins * 60 + secs;
-                      const text = match[3];
-                      return (
-                        <button
-                          key={i}
-                          onClick={() => seekTo(seconds)}
-                          className="w-full flex gap-3 p-2 rounded-lg hover:bg-[var(--color-surface)] text-left transition-colors"
-                        >
-                          <span className="text-xs text-[var(--color-primary)] font-mono w-12 flex-shrink-0">
-                            {match[1]}:{match[2]}
-                          </span>
-                          <span className="text-sm text-[var(--color-text)]">
-                            {text}
-                          </span>
-                        </button>
-                      );
-                    }
-                    // Non-timestamped line
-                    return line.trim() ? (
-                      <p
-                        key={i}
-                        className="text-sm text-[var(--color-text)] p-2"
-                      >
-                        {line}
-                      </p>
-                    ) : null;
-                  })}
-                </div>
-              </div>
+              <TranscriptView
+                content={note.content}
+                currentTime={currentTime}
+                onSeek={seekTo}
+              />
             )}
           </div>
         </div>
