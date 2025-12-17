@@ -430,15 +430,16 @@ export default function YouTubePage() {
     try {
       const result = await createNote.mutateAsync({
         title: generatedNote.title || "YouTube Notes",
-        content: "",
+        content: generatedNote.content || "",
         tags: generatedNote.tags || ["youtube"],
         language: generatedNote.language || "english",
         source: "youtube",
         youtubeUrl: generatedNote.youtubeUrl,
         sections: generatedNote.sections,
       });
+      // Update state with saved id
+      setGeneratedNote({ ...generatedNote, id: result.id });
       setSaveState("saved");
-      setTimeout(() => router.push(`/notes/${result.id}?edit=true`), 500);
     } catch (err) {
       console.error("Failed to save note:", err);
       setSaveState("error");
