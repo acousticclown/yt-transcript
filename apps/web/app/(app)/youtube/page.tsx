@@ -340,11 +340,12 @@ export default function YouTubePage() {
     }
 
     // Check if user has API key before making AI request
-    const hasKey = await checkAndPrompt("youtube");
-    if (!hasKey) {
-      return; // Prompt will be shown
-    }
+    checkAndPrompt("youtube", async () => {
+      await doGenerate(videoId);
+    });
+  }
 
+  async function doGenerate(videoId: string) {
     setLoading(true);
     setGeneratedNote(null);
     setLoadingMessage(

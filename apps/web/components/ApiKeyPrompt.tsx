@@ -154,52 +154,50 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
   );
 }
 
-// Hook to check API key status and show prompt when needed
+// Simple hook to check if user has API key
 export function useApiKeyCheck() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [promptContext, setPromptContext] = useState<"youtube" | "ai-generate" | "inline-action">("ai-generate");
-  const resolveRef = useRef<((hasKey: boolean) => void) | null>(null);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  const checkAndPrompt = (context: "youtube" | "ai-generate" | "inline-action" = "ai-generate"): Promise<boolean> => {
-    return new Promise(async (resolve) => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) {
-          resolve(false);
-          return;
-        }
+  const checkAndPrompt = async (
+    context: "youtube" | "ai-generate" | "inline-action",
+    onHasKey: () => void
+  ) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) return;
 
-        const res = await fetch("http://localhost:3001/api/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
-        if (!res.ok) {
-          resolve(false);
-          return;
-        }
-        
-        const data = await res.json();
-        
-        if (!data.user?.hasGeminiKey) {
-          setPromptContext(context);
-          setShowPrompt(true);
-          // Store resolve to call when user connects or dismisses
-          resolveRef.current = resolve;
-          return;
-        }
-        
-        resolve(true);
-      } catch {
-        resolve(false);
+      const res = await fetch("http://localhost:3001/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (!res.ok) return;
+      
+      const data = await res.json();
+      console.log("API key check:", data.user?.hasGeminiKey);
+      
+      if (data.user?.hasGeminiKey) {
+        // Has key, proceed immediately
+        onHasKey();
+      } else {
+        // No key, show prompt and store action for later
+        setPromptContext(context);
+        setPendingAction(() => onHasKey);
+        setShowPrompt(true);
       }
-    });
+    } catch (err) {
+      console.error("API key check failed:", err);
+    }
   };
 
   const handleClose = (connected: boolean) => {
     setShowPrompt(false);
-    // Resolve the promise with whether key was connected
-    resolveRef.current?.(connected);
-    resolveRef.current = null;
+    if (connected && pendingAction) {
+      // User connected, run the pending action
+      pendingAction();
+    }
+    setPendingAction(null);
   };
 
   return {
