@@ -18,7 +18,7 @@ import {
   NOTE_GENERATION_SYSTEM_PROMPT,
   noteGenerationPrompt,
   STEP_MESSAGES 
-} from "../../../../packages/prompts/noteGeneration";
+} from "../../../../packages/prompts/noteGeneration.js";
 
 const router = Router();
 
