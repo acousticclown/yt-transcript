@@ -73,7 +73,8 @@ export type Note = {
   title: string;
   content: string;
   language: "english" | "hindi" | "hinglish";
-  source: "manual" | "youtube";
+  source: "manual" | "youtube" | "ai";
+  isAIGenerated?: boolean;
   youtubeUrl?: string;
   videoId?: string;
   isFavorite: boolean;

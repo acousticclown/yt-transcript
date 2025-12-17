@@ -18,10 +18,12 @@ function toCardNote(note: ApiNote) {
     id: note.id,
     title: note.title,
     preview: note.content || note.sections[0]?.summary || "No content",
-    color: note.color || "#F5A623",
+    color: note.color || "var(--color-primary)",
     tags: note.tags,
     date: formatDate(note.updatedAt),
     isFavorite: note.isFavorite,
+    source: note.source as "manual" | "youtube" | "ai" | undefined,
+    isAIGenerated: note.isAIGenerated,
   };
 }
 
@@ -178,7 +180,8 @@ export default function DashboardPage() {
               content: note.content,
               tags: note.tags,
               language: "english",
-              source: "manual",
+              source: "ai",
+              isAIGenerated: true,
               sections: note.sections,
             });
             setAiSpotlightOpen(false);

@@ -476,6 +476,7 @@ export default function YouTubePage() {
           tags: noteData.tags,
           language: noteData.language,
           source: "youtube",
+          isAIGenerated: true,
           youtubeUrl: noteData.youtubeUrl,
           sections: noteData.sections,
         });
@@ -511,6 +512,7 @@ export default function YouTubePage() {
         tags: ["youtube", "transcript"],
         language: "english",
         source: "youtube",
+        isAIGenerated: false, // Raw transcript, not AI enhanced
         youtubeUrl: url,
         videoId: rawTranscript.videoId,
         sections: [],
@@ -550,6 +552,7 @@ export default function YouTubePage() {
         tags: generatedNote.tags || ["youtube"],
         language: generatedNote.language || "english",
         source: "youtube",
+        isAIGenerated: generatedNote.sections.length > 0,
         youtubeUrl: generatedNote.youtubeUrl,
         sections: generatedNote.sections,
       });

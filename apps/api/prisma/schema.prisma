@@ -23,16 +23,18 @@ model User {
 }
 
 model Note {
-  id         String    @id @default(uuid())
-  title      String
-  content    String    @default("")
-  language   String    @default("english")
-  source     String    @default("manual")
-  youtubeUrl String?
-  isFavorite Boolean   @default(false)
-  color      String?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
+  id            String    @id @default(uuid())
+  title         String
+  content       String    @default("")
+  language      String    @default("english")
+  source        String    @default("manual") // "manual" | "youtube" | "ai"
+  isAIGenerated Boolean   @default(false)
+  youtubeUrl    String?
+  videoId       String?
+  isFavorite    Boolean   @default(false)
+  color         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   userId   String
   user     User      @relation(fields: [userId], references: [id])

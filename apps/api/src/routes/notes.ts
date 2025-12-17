@@ -100,9 +100,9 @@ router.get("/:id", async (req: Request, res: Response) => {
 router.post("/", async (req: Request, res: Response) => {
   try {
     const userId = req.userId!;
-    const { title, content, language, source, youtubeUrl, color, tags, sections } = req.body;
+    const { title, content, language, source, youtubeUrl, videoId, color, tags, sections, isAIGenerated } = req.body;
     
-    console.log("📝 Creating note:", { title, source, userId });
+    console.log("📝 Creating note:", { title, source, isAIGenerated, userId });
 
     // Create note
     const note = await prisma.note.create({
@@ -111,7 +111,9 @@ router.post("/", async (req: Request, res: Response) => {
         content: content || "",
         language: language || "english",
         source: source || "manual",
+        isAIGenerated: isAIGenerated || (source === "ai") || (source === "youtube" && sections?.length > 0),
         youtubeUrl,
+        videoId,
         color,
         userId,
         sections: sections
