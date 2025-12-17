@@ -350,42 +350,93 @@ export default function YouTubeViewerPage() {
               />
             </div>
 
-            {/* Video info & summary */}
+            {/* Video info */}
             <div className="hidden lg:block space-y-2">
-              <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
-                <ClockIcon className="w-4 h-4" />
-                {note.sections.length} sections •{" "}
-                {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)}{" "}
-                key points
-              </p>
-              {/* Overall video summary */}
-              {note.content && (
-                <p className="text-xs text-[var(--color-text-subtle)] line-clamp-2">
-                  {note.content}
+              {note.sections.length > 0 ? (
+                <>
+                  <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+                    <ClockIcon className="w-4 h-4" />
+                    {note.sections.length} sections •{" "}
+                    {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)}{" "}
+                    key points
+                  </p>
+                  {note.content && (
+                    <p className="text-xs text-[var(--color-text-subtle)] line-clamp-2">
+                      {note.content}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
+                  <ClockIcon className="w-4 h-4" />
+                  Raw transcript • Click timestamps to seek
                 </p>
               )}
             </div>
           </div>
 
-          {/* Sections Panel */}
+          {/* Content Panel */}
           <div className="lg:w-1/2 xl:w-2/5 min-h-0 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6">
-            <div className="space-y-3">
-              <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
-                Sections ({note.sections.length})
-              </h2>
+            {note.sections.length > 0 ? (
+              // AI-generated sections view
+              <div className="space-y-3">
+                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
+                  Sections ({note.sections.length})
+                </h2>
 
-              <div className="space-y-2">
-                {note.sections.map((section, index) => (
-                  <SectionCard
-                    key={section.id}
-                    section={section}
-                    index={index}
-                    isActive={activeSection === index}
-                    onSeek={seekTo}
-                  />
-                ))}
+                <div className="space-y-2">
+                  {note.sections.map((section, index) => (
+                    <SectionCard
+                      key={section.id}
+                      section={section}
+                      index={index}
+                      isActive={activeSection === index}
+                      onSeek={seekTo}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              // Raw transcript view
+              <div className="space-y-3">
+                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
+                  Transcript
+                </h2>
+
+                <div className="space-y-1">
+                  {note.content.split("\n").map((line, i) => {
+                    // Parse [MM:SS] timestamp from line
+                    const match = line.match(/^\[(\d+):(\d+)\]\s*(.*)/);
+                    if (match) {
+                      const mins = parseInt(match[1]);
+                      const secs = parseInt(match[2]);
+                      const seconds = mins * 60 + secs;
+                      const text = match[3];
+                      return (
+                        <button
+                          key={i}
+                          onClick={() => seekTo(seconds)}
+                          className="w-full flex gap-3 p-2 rounded-lg hover:bg-[var(--color-surface)] text-left transition-colors"
+                        >
+                          <span className="text-xs text-[var(--color-primary)] font-mono w-12 flex-shrink-0">
+                            {match[1]}:{match[2]}
+                          </span>
+                          <span className="text-sm text-[var(--color-text)]">
+                            {text}
+                          </span>
+                        </button>
+                      );
+                    }
+                    // Non-timestamped line
+                    return line.trim() ? (
+                      <p key={i} className="text-sm text-[var(--color-text)] p-2">
+                        {line}
+                      </p>
+                    ) : null;
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
