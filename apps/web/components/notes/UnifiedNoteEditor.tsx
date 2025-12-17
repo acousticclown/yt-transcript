@@ -73,6 +73,7 @@ type UnifiedNote = {
 type UnifiedNoteEditorProps = {
   initialNote?: Partial<UnifiedNote>;
   onSave?: (note: UnifiedNote) => void;
+  onChange?: (note: UnifiedNote) => void;
   onAIAction?: (action: string, text: string) => Promise<string>;
 };
 
@@ -312,6 +313,7 @@ function FormatButton({
 export function UnifiedNoteEditor({
   initialNote,
   onSave,
+  onChange,
   onAIAction,
 }: UnifiedNoteEditorProps) {
   const initialNoteState: UnifiedNote = {
@@ -325,6 +327,11 @@ export function UnifiedNoteEditor({
   };
 
   const { current: note, set: setNote, undo, redo, canUndo, canRedo } = useHistory(initialNoteState);
+
+  // Notify parent of changes
+  useEffect(() => {
+    onChange?.(note);
+  }, [note, onChange]);
 
   const contentRef = useRef<HTMLTextAreaElement>(null);
 

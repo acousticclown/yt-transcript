@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { motion } from "framer-motion";
 import { UnifiedNoteEditor } from "../../../../components/notes";
 import { SaveIndicator } from "../../../../components/ui";
@@ -20,6 +20,8 @@ export default function NoteEditorPage() {
   const { data: note, isLoading, error } = useNote(noteId);
   const updateNote = useUpdateNote();
   const [saveState, setSaveState] = useState<SaveState>("idle");
+  const pendingDataRef = useRef<any>(null);
+  const hasChangesRef = useRef(false);
 
   // Auto-hide saved state
   useEffect(() => {
@@ -29,7 +31,15 @@ export default function NoteEditorPage() {
     }
   }, [saveState]);
 
-  const handleSave = async (data: any) => {
+  // Track changes
+  const handleChange = useCallback((data: any) => {
+    pendingDataRef.current = data;
+    hasChangesRef.current = true;
+  }, []);
+
+  // Save function
+  const saveNote = useCallback(async (data: any) => {
+    if (!data) return;
     setSaveState("saving");
     try {
       await updateNote.mutateAsync({
@@ -43,11 +53,39 @@ export default function NoteEditorPage() {
         },
       });
       setSaveState("saved");
+      hasChangesRef.current = false;
     } catch (err) {
       console.error("Failed to update note:", err);
       setSaveState("error");
     }
+  }, [noteId, updateNote]);
+
+  const handleSave = async (data: any) => {
+    pendingDataRef.current = data;
+    await saveNote(data);
   };
+
+  // Auto-save on back button click
+  const handleBack = async (e: React.MouseEvent) => {
+    if (hasChangesRef.current && pendingDataRef.current) {
+      e.preventDefault();
+      await saveNote(pendingDataRef.current);
+      router.push("/notes");
+    }
+  };
+
+  // Auto-save on browser back/navigation
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (hasChangesRef.current) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   const handleAIAction = async (action: string, text: string): Promise<string> => {
     try {
@@ -91,6 +129,7 @@ export default function NoteEditorPage() {
         <div className="max-w-4xl mx-auto flex items-center gap-4">
           <Link
             href="/notes"
+            onClick={handleBack}
             className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
           >
             ← Back
@@ -142,6 +181,7 @@ export default function NoteEditorPage() {
               youtubeUrl: note.youtubeUrl,
             }}
             onSave={handleSave}
+            onChange={handleChange}
             onAIAction={handleAIAction}
           />
         </motion.div>
