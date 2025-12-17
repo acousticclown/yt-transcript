@@ -11,6 +11,7 @@ import {
   ClockIcon,
   ArrowLeftIcon,
   NotesIcon,
+  SparklesIcon,
 } from "../../../../components/Icons";
 
 // Format seconds to MM:SS
@@ -315,13 +316,24 @@ export default function YouTubeViewerPage() {
             </div>
           </div>
 
-          <Link
-            href={`/notes/${noteId}`}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-dark)] transition-colors"
-          >
-            <NotesIcon className="w-4 h-4" />
-            View Note
-          </Link>
+          <div className="flex items-center gap-2">
+            {note.sections.length === 0 && (
+              <Link
+                href={`/youtube?url=${encodeURIComponent(note.youtubeUrl || "")}&refine=true`}
+                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)]/10 transition-colors"
+              >
+                <SparklesIcon className="w-4 h-4" />
+                Enhance with AI
+              </Link>
+            )}
+            <Link
+              href={`/notes/${noteId}`}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-dark)] transition-colors"
+            >
+              <NotesIcon className="w-4 h-4" />
+              View Note
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -357,7 +369,10 @@ export default function YouTubeViewerPage() {
                   <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
                     <ClockIcon className="w-4 h-4" />
                     {note.sections.length} sections •{" "}
-                    {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)}{" "}
+                    {note.sections.reduce(
+                      (acc, s) => acc + s.bullets.length,
+                      0
+                    )}{" "}
                     key points
                   </p>
                   {note.content && (
@@ -429,7 +444,10 @@ export default function YouTubeViewerPage() {
                     }
                     // Non-timestamped line
                     return line.trim() ? (
-                      <p key={i} className="text-sm text-[var(--color-text)] p-2">
+                      <p
+                        key={i}
+                        className="text-sm text-[var(--color-text)] p-2"
+                      >
                         {line}
                       </p>
                     ) : null;
