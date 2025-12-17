@@ -107,6 +107,8 @@ router.post("/", async (req: Request, res: Response) => {
   try {
     await ensureDefaultUser();
     const { title, content, language, source, youtubeUrl, color, tags, sections } = req.body;
+    
+    console.log("📝 Creating note:", { title, source, tagsCount: tags?.length, sectionsCount: sections?.length });
 
     // Create note
     const note = await prisma.note.create({
@@ -155,9 +157,10 @@ router.post("/", async (req: Request, res: Response) => {
       }
     }
 
+    console.log("✅ Note created:", note.id);
     res.status(201).json({ id: note.id, message: "Note created" });
   } catch (error) {
-    console.error("Error creating note:", error);
+    console.error("❌ Error creating note:", error);
     res.status(500).json({ error: "Failed to create note" });
   }
 });
@@ -166,6 +169,8 @@ router.post("/", async (req: Request, res: Response) => {
 router.put("/:id", async (req: Request, res: Response) => {
   try {
     const { title, content, language, isFavorite, color, tags, sections } = req.body;
+    
+    console.log("📝 Updating note:", req.params.id, { title });
 
     // Update note
     const note = await prisma.note.update({
@@ -217,9 +222,10 @@ router.put("/:id", async (req: Request, res: Response) => {
       }
     }
 
+    console.log("✅ Note updated:", note.id);
     res.json({ id: note.id, message: "Note updated" });
   } catch (error) {
-    console.error("Error updating note:", error);
+    console.error("❌ Error updating note:", error);
     res.status(500).json({ error: "Failed to update note" });
   }
 });
@@ -227,7 +233,9 @@ router.put("/:id", async (req: Request, res: Response) => {
 // DELETE /notes/:id - Delete note
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
+    console.log("🗑️ Deleting note:", req.params.id);
     await prisma.note.delete({ where: { id: req.params.id } });
+    console.log("✅ Note deleted:", req.params.id);
     res.json({ message: "Note deleted" });
   } catch (error) {
     console.error("Error deleting note:", error);
@@ -248,6 +256,7 @@ router.post("/:id/favorite", async (req: Request, res: Response) => {
       data: { isFavorite: !note.isFavorite },
     });
 
+    console.log("⭐ Toggled favorite:", req.params.id, "→", !note.isFavorite);
     res.json({ isFavorite: !note.isFavorite });
   } catch (error) {
     console.error("Error toggling favorite:", error);
