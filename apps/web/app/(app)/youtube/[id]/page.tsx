@@ -232,6 +232,7 @@ export default function YouTubeViewerPage() {
   const { data: note, isLoading, error } = useNote(noteId);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showTranscript, setShowTranscript] = useState(false);
   const playerRef = useRef<any>(null);
 
   const videoId = note?.youtubeUrl ? extractVideoId(note.youtubeUrl) : null;
@@ -317,6 +318,25 @@ export default function YouTubeViewerPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {/* Toggle between AI view and Transcript view */}
+            {note.sections.length > 0 && note.content && (
+              <button
+                onClick={() => setShowTranscript(!showTranscript)}
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-[var(--color-text-muted)] border border-[var(--color-border)] rounded-lg hover:bg-[var(--color-bg)] transition-colors"
+              >
+                {showTranscript ? (
+                  <>
+                    <SparklesIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">AI View</span>
+                  </>
+                ) : (
+                  <>
+                    <ClockIcon className="w-4 h-4" />
+                    <span className="hidden sm:inline">Transcript</span>
+                  </>
+                )}
+              </button>
+            )}
             {note.sections.length === 0 && (
               <Link
                 href={`/youtube?url=${encodeURIComponent(
@@ -394,11 +414,12 @@ export default function YouTubeViewerPage() {
 
           {/* Content Panel */}
           <div className="lg:w-1/2 xl:w-2/5 min-h-0 flex-1 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)] p-4 sm:p-6">
-            {note.sections.length > 0 ? (
+            {note.sections.length > 0 && !showTranscript ? (
               // AI-generated sections view
               <div className="space-y-3">
-                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide">
-                  Sections ({note.sections.length})
+                <h2 className="text-sm font-medium text-[var(--color-text-muted)] uppercase tracking-wide flex items-center gap-2">
+                  <SparklesIcon className="w-4 h-4 text-purple-500" />
+                  AI Sections ({note.sections.length})
                 </h2>
 
                 <div className="space-y-2">
