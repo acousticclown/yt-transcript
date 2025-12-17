@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import { NoteViewer } from "../../../../components/notes/NoteViewer";
 import { UnifiedNoteEditor } from "../../../../components/notes";
@@ -13,14 +13,16 @@ import { downloadMarkdown, copyMarkdownToClipboard } from "../../../../lib/expor
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-export default function NoteEditorPage() {
+function NotePageContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const noteId = params.id as string;
+  const editMode = searchParams.get("edit") === "true";
 
   const { data: note, isLoading, error } = useNote(noteId);
   const updateNote = useUpdateNote();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(editMode);
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   const handleSave = async (data: any) => {
@@ -39,12 +41,17 @@ export default function NoteEditorPage() {
       setSaveState("saved");
       setTimeout(() => {
         setSaveState("idle");
-        setIsEditing(false);
       }, 1000);
     } catch (err) {
       console.error("Failed to update note:", err);
       setSaveState("error");
     }
+  };
+
+  const handleExitEdit = () => {
+    setIsEditing(false);
+    // Remove ?edit=true from URL
+    router.replace(`/notes/${noteId}`);
   };
 
   const handleAIAction = async (action: string, text: string): Promise<string> => {
@@ -89,10 +96,10 @@ export default function NoteEditorPage() {
         >
           <div className="max-w-4xl mx-auto flex items-center gap-4">
             <button
-              onClick={() => setIsEditing(false)}
+              onClick={handleExitEdit}
               className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-surface)] rounded-lg transition-colors"
             >
-              ← Done
+              ← Back
             </button>
             <h1 className="text-xl font-semibold text-[var(--color-text)]">Editing</h1>
             <SaveIndicator state={saveState} />
@@ -178,6 +185,18 @@ export default function NoteEditorPage() {
         <NoteViewer note={note} />
       </div>
     </div>
+  );
+}
+
+export default function NotePage() {
+  return (
+    <Suspense fallback={
+      <div className="h-full flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      </div>
+    }>
+      <NotePageContent />
+    </Suspense>
   );
 }
 

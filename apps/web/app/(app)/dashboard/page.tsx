@@ -178,7 +178,7 @@ export default function DashboardPage() {
               sections: note.sections,
             });
             setAiSpotlightOpen(false);
-            router.push(`/notes/${result.id}`);
+            router.push(`/notes/${result.id}?edit=true`);
           } catch (error) {
             console.error("Failed to create note:", error);
           }

@@ -122,7 +122,7 @@ export default function YouTubePage() {
         sections: note.sections || [],
       });
       setSaveState("saved");
-      setTimeout(() => router.push(`/notes/${result.id}`), 500);
+      setTimeout(() => router.push(`/notes/${result.id}?edit=true`), 500);
     } catch (err) {
       console.error("Failed to save note:", err);
       setSaveState("error");
