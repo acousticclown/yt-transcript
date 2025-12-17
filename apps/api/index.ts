@@ -10,7 +10,7 @@ import { transcribeAudio } from "./utils/whisperTranscription";
 import { cleanTranscript } from "./utils/cleanTranscript";
 
 // AI
-import { geminiModel } from "./ai/gemini";
+import { geminiModel, getUserApiKey } from "./ai/gemini";
 import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.ts";
 import { sectionDetectionPrompt } from "../../packages/prompts/sectionDetection.ts";
 import { inlineActionPrompt } from "../../packages/prompts/inlineActions.ts";
@@ -214,6 +214,34 @@ const server = http.createServer(async (req, res) => {
   // ============================================
   if (req.method === "POST" && pathname === "/summary") {
     try {
+      // Get user's API key from auth token
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Authentication required" }));
+        return;
+      }
+
+      const token = authHeader.substring(7);
+      let userId: string;
+      try {
+        const jwt = await import("jsonwebtoken");
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || "notely-secret-key-change-in-production") as { userId: string };
+        userId = decoded.userId;
+      } catch {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid token" }));
+        return;
+      }
+
+      // Get user's Gemini API key
+      const userApiKey = await getUserApiKey(userId);
+      if (!userApiKey) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "API_KEY_REQUIRED" }));
+        return;
+      }
+
       let body = "";
       for await (const chunk of req) {
         body += chunk.toString();
@@ -230,9 +258,9 @@ const server = http.createServer(async (req, res) => {
       // Clean transcript (deterministic, no AI)
       const cleanedText = cleanTranscript(transcript);
 
-      // Generate summary using AI
+      // Generate summary using AI with user's key
       const prompt = basicSummaryPrompt(cleanedText);
-      const summary = await geminiModel.generateContent(prompt);
+      const summary = await geminiModel.generateContent(prompt, userApiKey);
 
       res.writeHead(200, { "Content-Type": "application/json" });
       res.end(
@@ -259,6 +287,34 @@ const server = http.createServer(async (req, res) => {
   // ============================================
   if (req.method === "POST" && pathname === "/sections") {
     try {
+      // Get user's API key from auth token
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith("Bearer ")) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Authentication required" }));
+        return;
+      }
+
+      const token = authHeader.substring(7);
+      let userId: string;
+      try {
+        const jwt = await import("jsonwebtoken");
+        const decoded = jwt.default.verify(token, process.env.JWT_SECRET || "notely-secret-key-change-in-production") as { userId: string };
+        userId = decoded.userId;
+      } catch {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Invalid token" }));
+        return;
+      }
+
+      // Get user's Gemini API key
+      const userApiKey = await getUserApiKey(userId);
+      if (!userApiKey) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "API_KEY_REQUIRED" }));
+        return;
+      }
+
       let body = "";
       for await (const chunk of req) {
         body += chunk.toString();
@@ -275,9 +331,9 @@ const server = http.createServer(async (req, res) => {
       // Clean transcript (deterministic, no AI)
       const cleanedText = cleanTranscript(transcript);
 
-      // Generate structured sections using AI
+      // Generate structured sections using AI with user's key
       const prompt = sectionDetectionPrompt(cleanedText);
-      const result = await geminiModel.generateContent(prompt);
+      const result = await geminiModel.generateContent(prompt, userApiKey);
 
       // Gemini sometimes wraps JSON in markdown code blocks - strip safely
       let jsonText = result

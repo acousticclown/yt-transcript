@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
 import { ActionButton } from "../../../components/ActionButton";
 import { SaveIndicator } from "../../../components/ui";
+import { ApiKeyPrompt } from "../../../components/ApiKeyPrompt";
 import { useCreateNote, useNotes } from "../../../lib/hooks";
 import { youtubeApi, aiApi, NoteSection, Note } from "../../../lib/api";
 import {
@@ -259,10 +260,10 @@ export default function YouTubePage() {
   const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [showApiKeyPrompt, setShowApiKeyPrompt] = useState(false);
 
   const playerRef = useRef<any>(null);
   const createNote = useCreateNote();
-  
   
   // Fetch all notes for cache checking
   const { data: allNotes } = useNotes();
@@ -351,6 +352,13 @@ export default function YouTubePage() {
       const result = await youtubeApi.generate(url);
 
       if (result.error) {
+        // Show API key prompt if user hasn't set up their key
+        if (result.error === "API_KEY_REQUIRED") {
+          setShowApiKeyPrompt(true);
+          setLoading(false);
+          return;
+        }
+        
         const errorMsg =
           result.error.includes("captions") ||
           result.error.includes("Transcript not available")
@@ -690,6 +698,17 @@ export default function YouTubePage() {
         <YouTubeNotesSection />
       </Stack>
 
+      {/* API Key Prompt */}
+      <ApiKeyPrompt
+        isOpen={showApiKeyPrompt}
+        onClose={() => setShowApiKeyPrompt(false)}
+        onSuccess={() => {
+          setShowApiKeyPrompt(false);
+          // Retry generation after key is added
+          generateNotes();
+        }}
+        context="youtube"
+      />
     </Container>
   );
 }

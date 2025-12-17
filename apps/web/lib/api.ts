@@ -223,7 +223,7 @@ export const youtubeApi = {
     videoId?: string;
     error?: string;
   }> {
-    // 1. Get transcript with subtitles
+    // 1. Get transcript with subtitles (no AI, no auth needed)
     const transcriptRes = await fetch(`${API_BASE}/transcript`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -235,10 +235,10 @@ export const youtubeApi = {
       return { sections: [], error: transcriptData.error };
     }
 
-    // 2. Generate sections with timestamps and summary
+    // 2. Generate sections with timestamps and summary (AI - needs auth)
     const sectionsRes = await fetch(`${API_BASE}/sections`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({
         transcript: transcriptData.transcript,
         subtitles: transcriptData.subtitles,
@@ -247,6 +247,10 @@ export const youtubeApi = {
     const sectionsData = await sectionsRes.json();
 
     if (sectionsData.error) {
+      // Special handling for API key required
+      if (sectionsData.error === "API_KEY_REQUIRED") {
+        return { sections: [], error: "API_KEY_REQUIRED" };
+      }
       return { sections: [], error: sectionsData.error };
     }
 

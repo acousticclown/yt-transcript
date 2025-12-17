@@ -2,17 +2,6 @@ import { GoogleGenAI } from "@google/genai";
 
 const MODELS = ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-1.5-flash"];
 
-// Default AI instance using server's API key
-const serverApiKey = process.env.GEMINI_API_KEY;
-const defaultAi = serverApiKey ? new GoogleGenAI({ apiKey: serverApiKey }) : null;
-
-// Create AI instance with specific API key
-function createAiInstance(apiKey?: string): GoogleGenAI | null {
-  const key = apiKey || serverApiKey;
-  if (!key) return null;
-  return new GoogleGenAI({ apiKey: key });
-}
-
 // Generate content with fallback models
 async function generateWithFallback(ai: GoogleGenAI, prompt: string): Promise<string> {
   let lastError: Error | null = null;
@@ -48,20 +37,12 @@ async function generateWithFallback(ai: GoogleGenAI, prompt: string): Promise<st
 }
 
 export const geminiModel = {
-  // Generate content using server's API key (default)
-  async generateContent(prompt: string): Promise<string> {
-    if (!defaultAi) {
-      throw new Error("No Gemini API key configured");
+  // Generate content - requires user's API key
+  async generateContent(prompt: string, userApiKey: string): Promise<string> {
+    if (!userApiKey) {
+      throw new Error("API_KEY_REQUIRED");
     }
-    return generateWithFallback(defaultAi, prompt);
-  },
-
-  // Generate content using user's API key (with fallback to server's)
-  async generateContentWithUserKey(prompt: string, userApiKey?: string): Promise<string> {
-    const ai = createAiInstance(userApiKey);
-    if (!ai) {
-      throw new Error("No Gemini API key available. Please add your API key in Settings.");
-    }
+    const ai = new GoogleGenAI({ apiKey: userApiKey });
     return generateWithFallback(ai, prompt);
   },
 };
