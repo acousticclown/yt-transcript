@@ -8,6 +8,7 @@ import tagsRouter from "./routes/tags";
 import authRouter from "./routes/auth";
 import aiRouter from "./routes/ai";
 import publicRouter from "./routes/public";
+import syncRouter from "./routes/sync";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -45,6 +46,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/ai", aiRouter);
+app.use("/api/sync", syncRouter);
 
 // Health check
 app.get("/health", (req, res) => {

@@ -43,6 +43,11 @@ model Note {
   isPasswordProtected Boolean @default(false)
   shareExpiresAt DateTime? // Optional expiration date
 
+  // Sync fields
+  version       Int      @default(1) // Version number for conflict resolution
+  lastSyncedAt  DateTime? // Last sync timestamp
+  deviceId      String?  // Device that last modified (for conflict resolution)
+
   userId   String
   user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   sections Section[]
@@ -50,6 +55,7 @@ model Note {
 
   @@index([userId])
   @@index([shareToken])
+  @@index([userId, updatedAt]) // For efficient sync queries
 }
 
 model Section {
