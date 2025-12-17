@@ -580,45 +580,47 @@ export default function YouTubePage() {
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full flex flex-col lg:flex-row">
-            {/* Video Panel */}
-            <div className="lg:w-1/2 flex-shrink-0 bg-black">
-              <div className="aspect-video lg:aspect-auto lg:h-full">
-                <iframe
-                  src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1`}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                />
+        {/* Split View */}
+        <div className="flex-1 min-h-0 overflow-hidden">
+          <div className="h-full max-w-7xl mx-auto flex flex-col lg:flex-row">
+            {/* Video Panel - fixed, no scroll */}
+            <div className="lg:w-1/2 xl:w-3/5 flex-shrink-0 p-4 sm:p-6 flex flex-col gap-4 overflow-hidden">
+              <YouTubePlayer
+                videoId={videoId}
+                onTimeUpdate={setCurrentTime}
+                playerRef={playerRef}
+              />
+
+              {/* Info Banner */}
+              <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <p className="text-sm text-[var(--color-text)]">
+                  <strong>Transcript ready!</strong> Save as text or refine with AI for structured notes.
+                </p>
               </div>
             </div>
 
-            {/* Transcript Panel */}
-            <div className="flex-1 min-h-0 overflow-y-auto p-4 sm:p-6">
-              <div className="max-w-2xl mx-auto">
-                <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <p className="text-sm text-[var(--color-text)]">
-                    <strong>Raw transcript extracted!</strong> You can save it as-is or let AI organize it into structured notes with summaries and key points.
-                  </p>
-                </div>
-
-                <div className="space-y-2">
-                  {rawTranscript.subtitles.map((sub, i) => (
-                    <div
-                      key={i}
-                      className="flex gap-3 p-2 rounded-lg hover:bg-[var(--color-surface)]"
-                    >
-                      <span className="text-xs text-[var(--color-text-subtle)] font-mono w-12 flex-shrink-0">
-                        {formatTime(sub.start)}
-                      </span>
-                      <span className="text-sm text-[var(--color-text)]">
-                        {sub.text}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+            {/* Transcript Panel - scrollable */}
+            <div className="lg:w-1/2 xl:w-2/5 flex-1 min-h-0 overflow-y-auto border-t lg:border-t-0 lg:border-l border-[var(--color-border)]">
+              <div className="p-4 sm:p-6 space-y-1">
+                {rawTranscript.subtitles.map((sub, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      if (playerRef.current?.seekTo) {
+                        playerRef.current.seekTo(sub.start, true);
+                        playerRef.current.playVideo?.();
+                      }
+                    }}
+                    className="w-full flex gap-3 p-2 rounded-lg hover:bg-[var(--color-surface)] text-left transition-colors"
+                  >
+                    <span className="text-xs text-[var(--color-primary)] font-mono w-12 flex-shrink-0">
+                      {formatTime(sub.start)}
+                    </span>
+                    <span className="text-sm text-[var(--color-text)]">
+                      {sub.text}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
