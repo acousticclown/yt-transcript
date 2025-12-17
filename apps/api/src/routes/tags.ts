@@ -1,16 +1,19 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { authMiddleware } from "../middleware/auth";
 
 const router = Router();
 
-const DEFAULT_USER_ID = "default-user";
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
 // GET /tags - List all tags with note counts
 router.get("/", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
     const tags = await prisma.tag.findMany({
-      where: { userId: DEFAULT_USER_ID },
+      where: { userId },
       include: {
         _count: { select: { noteTags: true } },
       },
@@ -34,6 +37,7 @@ router.get("/", async (req: Request, res: Response) => {
 // POST /tags - Create tag
 router.post("/", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
     const { name, color } = req.body;
 
     if (!name) {
@@ -42,14 +46,14 @@ router.post("/", async (req: Request, res: Response) => {
 
     // Check if tag already exists
     const existing = await prisma.tag.findUnique({
-      where: { userId_name: { userId: DEFAULT_USER_ID, name } },
+      where: { userId_name: { userId, name } },
     });
     if (existing) {
       return res.status(409).json({ error: "Tag already exists" });
     }
 
     const tag = await prisma.tag.create({
-      data: { name, color, userId: DEFAULT_USER_ID },
+      data: { name, color, userId },
     });
 
     res.status(201).json({ id: tag.id, name: tag.name, color: tag.color });
@@ -62,7 +66,16 @@ router.post("/", async (req: Request, res: Response) => {
 // PUT /tags/:id - Update tag
 router.put("/:id", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
     const { name, color } = req.body;
+
+    // Verify ownership
+    const existing = await prisma.tag.findFirst({
+      where: { id: req.params.id, userId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: "Tag not found" });
+    }
 
     const tag = await prisma.tag.update({
       where: { id: req.params.id },
@@ -79,6 +92,16 @@ router.put("/:id", async (req: Request, res: Response) => {
 // DELETE /tags/:id - Delete tag
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
+    
+    // Verify ownership
+    const existing = await prisma.tag.findFirst({
+      where: { id: req.params.id, userId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: "Tag not found" });
+    }
+
     await prisma.tag.delete({ where: { id: req.params.id } });
     res.json({ message: "Tag deleted" });
   } catch (error) {
@@ -88,4 +111,3 @@ router.delete("/:id", async (req: Request, res: Response) => {
 });
 
 export default router;
-

@@ -90,13 +90,17 @@ export type Tag = {
 // Notes API
 export const notesApi = {
   async list(): Promise<Note[]> {
-    const res = await fetch(`${API_BASE}/api/notes`);
+    const res = await fetch(`${API_BASE}/api/notes`, {
+      headers: { ...authHeaders() },
+    });
     if (!res.ok) throw new Error("Failed to fetch notes");
     return res.json();
   },
 
   async get(id: string): Promise<Note> {
-    const res = await fetch(`${API_BASE}/api/notes/${id}`);
+    const res = await fetch(`${API_BASE}/api/notes/${id}`, {
+      headers: { ...authHeaders() },
+    });
     if (!res.ok) throw new Error("Failed to fetch note");
     return res.json();
   },
@@ -104,7 +108,7 @@ export const notesApi = {
   async create(data: Partial<Note>): Promise<{ id: string }> {
     const res = await fetch(`${API_BASE}/api/notes`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to create note");
@@ -114,7 +118,7 @@ export const notesApi = {
   async update(id: string, data: Partial<Note>): Promise<void> {
     const res = await fetch(`${API_BASE}/api/notes/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to update note");
@@ -123,6 +127,7 @@ export const notesApi = {
   async delete(id: string): Promise<void> {
     const res = await fetch(`${API_BASE}/api/notes/${id}`, {
       method: "DELETE",
+      headers: { ...authHeaders() },
     });
     if (!res.ok) throw new Error("Failed to delete note");
   },
@@ -130,6 +135,7 @@ export const notesApi = {
   async toggleFavorite(id: string): Promise<{ isFavorite: boolean }> {
     const res = await fetch(`${API_BASE}/api/notes/${id}/favorite`, {
       method: "POST",
+      headers: { ...authHeaders() },
     });
     if (!res.ok) throw new Error("Failed to toggle favorite");
     return res.json();
@@ -139,7 +145,9 @@ export const notesApi = {
 // Tags API
 export const tagsApi = {
   async list(): Promise<Tag[]> {
-    const res = await fetch(`${API_BASE}/api/tags`);
+    const res = await fetch(`${API_BASE}/api/tags`, {
+      headers: { ...authHeaders() },
+    });
     if (!res.ok) throw new Error("Failed to fetch tags");
     return res.json();
   },
@@ -147,7 +155,7 @@ export const tagsApi = {
   async create(name: string, color?: string): Promise<Tag> {
     const res = await fetch(`${API_BASE}/api/tags`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({ name, color }),
     });
     if (!res.ok) throw new Error("Failed to create tag");
@@ -160,7 +168,7 @@ export const tagsApi = {
   ): Promise<Tag> {
     const res = await fetch(`${API_BASE}/api/tags/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(data),
     });
     if (!res.ok) throw new Error("Failed to update tag");
@@ -170,6 +178,7 @@ export const tagsApi = {
   async delete(id: string): Promise<void> {
     const res = await fetch(`${API_BASE}/api/tags/${id}`, {
       method: "DELETE",
+      headers: { ...authHeaders() },
     });
     if (!res.ok) throw new Error("Failed to delete tag");
   },

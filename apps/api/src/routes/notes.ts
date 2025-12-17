@@ -1,30 +1,19 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma";
+import { authMiddleware } from "../middleware/auth";
 
 const router = Router();
 
-// Default user for now (will be replaced with auth later)
-const DEFAULT_USER_ID = "default-user";
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-// Ensure default user exists
-async function ensureDefaultUser() {
-  const user = await prisma.user.findUnique({
-    where: { id: DEFAULT_USER_ID },
-  });
-  if (!user) {
-    await prisma.user.create({
-      data: { id: DEFAULT_USER_ID, name: "Default User" },
-    });
-  }
-}
-
-// GET /notes - List all notes
+// GET /notes - List all notes for authenticated user
 router.get("/", async (req: Request, res: Response) => {
   try {
-    await ensureDefaultUser();
+    const userId = req.userId!;
     const notes = await prisma.note.findMany({
-      where: { userId: DEFAULT_USER_ID },
+      where: { userId },
       include: {
         sections: { orderBy: { order: "asc" } },
         noteTags: { include: { tag: true } },
@@ -64,8 +53,9 @@ router.get("/", async (req: Request, res: Response) => {
 // GET /notes/:id - Get single note
 router.get("/:id", async (req: Request, res: Response) => {
   try {
-    const note = await prisma.note.findUnique({
-      where: { id: req.params.id },
+    const userId = req.userId!;
+    const note = await prisma.note.findFirst({
+      where: { id: req.params.id, userId },
       include: {
         sections: { orderBy: { order: "asc" } },
         noteTags: { include: { tag: true } },
@@ -105,10 +95,10 @@ router.get("/:id", async (req: Request, res: Response) => {
 // POST /notes - Create note
 router.post("/", async (req: Request, res: Response) => {
   try {
-    await ensureDefaultUser();
+    const userId = req.userId!;
     const { title, content, language, source, youtubeUrl, color, tags, sections } = req.body;
     
-    console.log("📝 Creating note:", { title, source, tagsCount: tags?.length, sectionsCount: sections?.length });
+    console.log("📝 Creating note:", { title, source, userId });
 
     // Create note
     const note = await prisma.note.create({
@@ -119,7 +109,7 @@ router.post("/", async (req: Request, res: Response) => {
         source: source || "manual",
         youtubeUrl,
         color,
-        userId: DEFAULT_USER_ID,
+        userId,
         sections: sections
           ? {
               create: sections.map((s: any, i: number) => ({
@@ -143,11 +133,11 @@ router.post("/", async (req: Request, res: Response) => {
       for (const tagName of tags) {
         // Find or create tag
         let tag = await prisma.tag.findUnique({
-          where: { userId_name: { userId: DEFAULT_USER_ID, name: tagName } },
+          where: { userId_name: { userId, name: tagName } },
         });
         if (!tag) {
           tag = await prisma.tag.create({
-            data: { name: tagName, userId: DEFAULT_USER_ID },
+            data: { name: tagName, userId },
           });
         }
         // Link to note
@@ -168,7 +158,16 @@ router.post("/", async (req: Request, res: Response) => {
 // PUT /notes/:id - Update note
 router.put("/:id", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
     const { title, content, language, isFavorite, color, tags, sections } = req.body;
+    
+    // Verify ownership
+    const existing = await prisma.note.findFirst({
+      where: { id: req.params.id, userId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: "Note not found" });
+    }
     
     console.log("📝 Updating note:", req.params.id, { title });
 
@@ -209,11 +208,11 @@ router.put("/:id", async (req: Request, res: Response) => {
       // Add new tags
       for (const tagName of tags) {
         let tag = await prisma.tag.findUnique({
-          where: { userId_name: { userId: DEFAULT_USER_ID, name: tagName } },
+          where: { userId_name: { userId, name: tagName } },
         });
         if (!tag) {
           tag = await prisma.tag.create({
-            data: { name: tagName, userId: DEFAULT_USER_ID },
+            data: { name: tagName, userId },
           });
         }
         await prisma.noteTag.create({
@@ -233,6 +232,16 @@ router.put("/:id", async (req: Request, res: Response) => {
 // DELETE /notes/:id - Delete note
 router.delete("/:id", async (req: Request, res: Response) => {
   try {
+    const userId = req.userId!;
+    
+    // Verify ownership
+    const existing = await prisma.note.findFirst({
+      where: { id: req.params.id, userId },
+    });
+    if (!existing) {
+      return res.status(404).json({ error: "Note not found" });
+    }
+    
     console.log("🗑️ Deleting note:", req.params.id);
     await prisma.note.delete({ where: { id: req.params.id } });
     console.log("✅ Note deleted:", req.params.id);
@@ -246,7 +255,11 @@ router.delete("/:id", async (req: Request, res: Response) => {
 // POST /notes/:id/favorite - Toggle favorite
 router.post("/:id/favorite", async (req: Request, res: Response) => {
   try {
-    const note = await prisma.note.findUnique({ where: { id: req.params.id } });
+    const userId = req.userId!;
+    
+    const note = await prisma.note.findFirst({
+      where: { id: req.params.id, userId },
+    });
     if (!note) {
       return res.status(404).json({ error: "Note not found" });
     }
@@ -265,4 +278,3 @@ router.post("/:id/favorite", async (req: Request, res: Response) => {
 });
 
 export default router;
-
