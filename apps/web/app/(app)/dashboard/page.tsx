@@ -8,6 +8,7 @@ import { NoteList } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
 import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
+import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
 
 // Transform API note to card format
@@ -39,7 +40,6 @@ function formatDate(dateStr: string): string {
 export default function DashboardPage() {
   const router = useRouter();
   const [aiSpotlightOpen, setAiSpotlightOpen] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
 
   // TanStack Query hooks
   const { data: allNotes = [], isLoading } = useNotes();
@@ -167,9 +167,7 @@ export default function DashboardPage() {
       <AISpotlight
         isOpen={aiSpotlightOpen}
         onClose={() => setAiSpotlightOpen(false)}
-        isLoading={aiLoading}
-        onGenerate={async (note) => {
-          setAiLoading(true);
+        onGenerate={async (note: GeneratedNote) => {
           try {
             const result = await createNote.mutateAsync({
               title: note.title,
@@ -183,8 +181,6 @@ export default function DashboardPage() {
             router.push(`/notes/${result.id}`);
           } catch (error) {
             console.error("Failed to create note:", error);
-          } finally {
-            setAiLoading(false);
           }
         }}
       />

@@ -1,51 +1,119 @@
 /**
- * Prompt for generating a complete note from a text prompt
- * Creates structured, well-organized notes with title, content, sections, and tags
+ * AI Note Generation Prompts
+ * Optimized for structured, accurate output with streaming support
  */
 
+export type NoteGenerationStep = 
+  | "analyzing"
+  | "structuring" 
+  | "generating_title"
+  | "generating_content"
+  | "generating_sections"
+  | "generating_tags"
+  | "finalizing";
+
+export const STEP_MESSAGES: Record<NoteGenerationStep, string> = {
+  analyzing: "Understanding your request...",
+  structuring: "Planning note structure...",
+  generating_title: "Creating title...",
+  generating_content: "Writing main content...",
+  generating_sections: "Organizing into sections...",
+  generating_tags: "Adding relevant tags...",
+  finalizing: "Polishing your note...",
+};
+
+/**
+ * System prompt for note generation - sets the AI's role and capabilities
+ */
+export const NOTE_GENERATION_SYSTEM_PROMPT = `You are Notely AI, an expert note-taking assistant. You create well-structured, comprehensive notes that are:
+- Clear and scannable
+- Actionable with specific details
+- Organized logically
+- Professional yet approachable
+
+You always respond with valid JSON only, no markdown code blocks or extra text.`;
+
+/**
+ * Main prompt for generating a complete note from user input
+ */
 export function noteGenerationPrompt(userPrompt: string): string {
-  return `You are an expert note-taking assistant. Generate a comprehensive, well-structured note based on the user's request.
+  return `Create a comprehensive note based on this request:
 
-USER REQUEST: "${userPrompt}"
+"${userPrompt}"
 
-Generate a note with the following JSON structure:
+Respond with this exact JSON structure:
 {
-  "title": "Clear, concise title (max 60 chars)",
-  "content": "Main summary or introduction paragraph (2-4 sentences)",
-  "tags": ["tag1", "tag2", "tag3"], // 2-5 relevant lowercase tags
+  "title": "Clear, specific title (max 60 chars)",
+  "content": "Overview paragraph summarizing the topic (2-4 sentences)",
+  "tags": ["tag1", "tag2", "tag3"],
   "sections": [
     {
       "title": "Section Title",
-      "summary": "Detailed explanation for this section (2-4 sentences)",
-      "bullets": ["Key point 1", "Key point 2", "Key point 3"] // 3-5 actionable bullet points
+      "summary": "Detailed explanation (2-4 sentences)",
+      "bullets": ["Specific point 1", "Specific point 2", "Specific point 3"]
     }
   ]
 }
 
-RULES:
-1. Title should be clear and descriptive, not generic
-2. Content should provide context and overview
-3. Create 2-4 sections that logically organize the information
-4. Each section should have a clear focus
-5. Bullets should be actionable, specific, and valuable
-6. Tags should be relevant keywords for categorization
-7. Be comprehensive but concise - quality over quantity
-8. Use professional, clear language
-9. If the request is vague, interpret it reasonably and create useful content
+Requirements:
+1. Title: Descriptive, not generic (e.g., "React Hooks Best Practices" not "Notes")
+2. Content: Provide context and overview
+3. Sections: 2-4 sections, each with clear focus
+4. Bullets: 3-5 actionable, specific points per section
+5. Tags: 2-4 lowercase keywords
+6. Be comprehensive but concise
 
-IMPORTANT: Return ONLY valid JSON, no markdown code blocks or extra text.`;
+Return ONLY valid JSON.`;
 }
 
+/**
+ * Prompt for refining/improving an existing note
+ */
+export function refineNotePrompt(
+  currentNote: { title: string; content: string; sections: any[] },
+  userFeedback: string
+): string {
+  return `Improve this note based on user feedback.
+
+Current note:
+${JSON.stringify(currentNote, null, 2)}
+
+User feedback: "${userFeedback}"
+
+Return the improved note in the same JSON structure. Only modify what's necessary based on feedback.`;
+}
+
+/**
+ * Prompt for expanding a specific section
+ */
+export function expandSectionPrompt(
+  sectionTitle: string,
+  sectionContent: string,
+  context: string
+): string {
+  return `Expand this section with more detail:
+
+Section: "${sectionTitle}"
+Current content: "${sectionContent}"
+Context: "${context}"
+
+Return JSON:
+{
+  "summary": "Expanded summary (3-5 sentences)",
+  "bullets": ["Detailed point 1", "Detailed point 2", "Detailed point 3", "Detailed point 4", "Detailed point 5"]
+}`;
+}
+
+/**
+ * Quick note prompt for simpler requests
+ */
 export function quickNotePrompt(userPrompt: string): string {
-  return `Generate a quick note for: "${userPrompt}"
+  return `Create a quick note for: "${userPrompt}"
 
 Return JSON:
 {
   "title": "Brief title",
   "content": "Main content (1-2 paragraphs)",
   "tags": ["tag1", "tag2"]
+}`;
 }
-
-Return ONLY valid JSON.`;
-}
-

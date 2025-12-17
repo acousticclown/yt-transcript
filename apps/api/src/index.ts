@@ -6,15 +6,12 @@ import cors from "cors";
 import notesRouter from "./routes/notes";
 import tagsRouter from "./routes/tags";
 import authRouter from "./routes/auth";
+import aiRouter from "./routes/ai";
 
-// Legacy imports for YouTube/AI features
+// Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
 import { geminiModel } from "../ai/gemini";
-import { basicSummaryPrompt } from "../../../packages/prompts/basicSummary";
 import { sectionDetectionPrompt } from "../../../packages/prompts/sectionDetection";
-import { inlineActionPrompt } from "../../../packages/prompts/inlineActions";
-import { languageTransformPrompt } from "../../../packages/prompts/languageTransform";
-import { noteGenerationPrompt } from "../../../packages/prompts/noteGeneration";
 import { cleanTranscript } from "../utils/cleanTranscript";
 
 const app = express();
@@ -28,6 +25,7 @@ app.use(express.json({ limit: "10mb" }));
 app.use("/api/auth", authRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/tags", tagsRouter);
+app.use("/api/ai", aiRouter);
 
 // Health check
 app.get("/health", (req, res) => {
@@ -108,97 +106,6 @@ app.post("/sections", async (req, res) => {
   } catch (error) {
     console.error("Sections error:", error);
     res.status(500).json({ error: "Failed to generate sections" });
-  }
-});
-
-// POST /ai/inline - Inline AI actions
-app.post("/ai/inline", async (req, res) => {
-  try {
-    const { text, action } = req.body;
-    if (!text || !action) {
-      return res.status(400).json({ error: "Text and action are required" });
-    }
-
-    const prompt = inlineActionPrompt(text, action);
-    const result = await geminiModel.generateContent(prompt);
-    const output = result.response.text();
-
-    res.json({ result: output.trim() });
-  } catch (error) {
-    console.error("Inline AI error:", error);
-    res.status(500).json({ error: "Failed to process AI action" });
-  }
-});
-
-// POST /ai/transform-language - Transform to different language
-app.post("/ai/transform-language", async (req, res) => {
-  try {
-    const { text, targetLanguage, tone } = req.body;
-    if (!text || !targetLanguage) {
-      return res.status(400).json({ error: "Text and targetLanguage are required" });
-    }
-
-    const prompt = languageTransformPrompt(text, targetLanguage, tone);
-    const result = await geminiModel.generateContent(prompt);
-    const output = result.response.text();
-
-    res.json({ result: output.trim() });
-  } catch (error) {
-    console.error("Language transform error:", error);
-    res.status(500).json({ error: "Failed to transform language" });
-  }
-});
-
-// POST /ai/generate-note - Generate a complete note from prompt
-app.post("/ai/generate-note", async (req, res) => {
-  try {
-    const { prompt: userPrompt } = req.body;
-    if (!userPrompt) {
-      return res.status(400).json({ error: "Prompt is required" });
-    }
-
-    console.log("🤖 Generating note from prompt:", userPrompt.substring(0, 50) + "...");
-
-    const prompt = noteGenerationPrompt(userPrompt);
-    const result = await geminiModel.generateContent(prompt);
-    const text = result.response.text();
-
-    // Parse JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error("No JSON found in response");
-    }
-
-    const note = JSON.parse(sanitizeJson(jsonMatch[0]));
-    
-    // Validate structure
-    if (!note.title || typeof note.title !== "string") {
-      note.title = "Generated Note";
-    }
-    if (!note.content || typeof note.content !== "string") {
-      note.content = "";
-    }
-    if (!Array.isArray(note.tags)) {
-      note.tags = [];
-    }
-    if (!Array.isArray(note.sections)) {
-      note.sections = [];
-    }
-
-    // Ensure sections have proper structure
-    note.sections = note.sections.map((s: any, i: number) => ({
-      id: `section-${i}`,
-      title: s.title || `Section ${i + 1}`,
-      summary: s.summary || "",
-      bullets: Array.isArray(s.bullets) ? s.bullets : [],
-      language: "english",
-    }));
-
-    console.log("✅ Note generated:", note.title);
-    res.json({ note });
-  } catch (error) {
-    console.error("Note generation error:", error);
-    res.status(500).json({ error: "Failed to generate note" });
   }
 });
 

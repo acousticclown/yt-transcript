@@ -246,7 +246,7 @@ export const aiApi = {
     text: string,
     action: "simplify" | "expand" | "example"
   ): Promise<string> {
-    const res = await fetch(`${API_BASE}/ai/inline`, {
+    const res = await fetch(`${API_BASE}/api/ai/inline`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, action }),
@@ -261,7 +261,7 @@ export const aiApi = {
     targetLanguage: "english" | "hindi" | "hinglish",
     tone?: string
   ): Promise<string> {
-    const res = await fetch(`${API_BASE}/ai/transform-language`, {
+    const res = await fetch(`${API_BASE}/api/ai/transform-language`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ text, targetLanguage, tone }),
@@ -283,7 +283,7 @@ export const aiApi = {
       language: "english" | "hindi" | "hinglish";
     }>;
   }> {
-    const res = await fetch(`${API_BASE}/ai/generate-note`, {
+    const res = await fetch(`${API_BASE}/api/ai/generate-note`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt }),
