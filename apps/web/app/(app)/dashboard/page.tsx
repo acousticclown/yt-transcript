@@ -57,7 +57,7 @@ export default function DashboardPage() {
   const toggleFavorite = useToggleFavorite();
   const createNote = useCreateNote();
 
-  // Show 10 recent notes for horizontal scroll
+  // Show recent notes for vertical scroll
   const notes = allNotes.slice(0, 10);
   const cardNotes = notes.map(toCardNote);
 
@@ -199,7 +199,7 @@ export default function DashboardPage() {
         }}
       />
 
-      {/* Recent Notes - Horizontal Scroll */}
+      {/* Recent Notes - Vertical Scroll */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -217,26 +217,23 @@ export default function DashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-            <div className="flex gap-4" style={{ minWidth: "max-content" }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="w-72 flex-shrink-0">
-                  <NoteCardSkeleton />
-                </div>
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <NoteCardSkeleton key={i} />
               ))}
             </div>
           </div>
         ) : cardNotes.length > 0 ? (
-          <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-            <div className="flex gap-4" style={{ minWidth: "max-content" }}>
+          <div className="flex-1 overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {cardNotes.map((note) => (
-                <div key={note.id} className="w-72 flex-shrink-0">
-                  <NoteCard
-                    note={note}
-                    onDelete={handleDelete}
-                    onToggleFavorite={handleToggleFavorite}
-                  />
-                </div>
+                <NoteCard
+                  key={note.id}
+                  note={note}
+                  onDelete={handleDelete}
+                  onToggleFavorite={handleToggleFavorite}
+                />
               ))}
             </div>
           </div>
