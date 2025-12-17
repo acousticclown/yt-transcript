@@ -316,11 +316,14 @@ export default function YouTubePage() {
   }, []);
 
   async function generateNotes() {
-    if (!url.trim()) return;
+    if (!url.trim()) {
+      alert("⚠️ Please enter a YouTube URL");
+      return;
+    }
 
     const videoId = extractVideoId(url);
     if (!videoId) {
-      alert("⚠️ Invalid YouTube URL");
+      alert("⚠️ Invalid YouTube URL\n\nPlease use a valid YouTube link like:\n• https://www.youtube.com/watch?v=VIDEO_ID\n• https://youtu.be/VIDEO_ID");
       return;
     }
 
@@ -395,10 +398,14 @@ export default function YouTubePage() {
       const data = await res.json();
 
       if (data.error) {
-        const errorMsg =
-          data.error.includes("captions") || data.error.includes("No captions")
-            ? "This video doesn't have captions yet. Try another video with captions enabled."
-            : data.error;
+        let errorMsg = data.error;
+        if (data.error.includes("captions") || data.error.includes("No captions")) {
+          errorMsg = "This video doesn't have captions available.\n\nTry:\n• A different video with captions enabled\n• Check if the video has subtitles in YouTube";
+        } else if (data.error.includes("private") || data.error.includes("Private")) {
+          errorMsg = "This video is private or unavailable.\n\nMake sure the video is public and accessible.";
+        } else if (data.error.includes("not found") || data.error.includes("404")) {
+          errorMsg = "Video not found.\n\nPlease check the URL and try again.";
+        }
         alert(`⚠️ ${errorMsg}`);
         setLoading(false);
         return;
@@ -436,7 +443,8 @@ export default function YouTubePage() {
         // Continue even if auto-save fails
       }
     } catch (error) {
-      alert("⚠️ Couldn't fetch transcript. Make sure the API server is running.");
+      console.error("Transcript fetch error:", error);
+      alert("⚠️ Failed to fetch transcript.\n\nPlease check:\n• API server is running (localhost:3001)\n• Your internet connection\n• The video URL is correct\n\nTry again in a moment.");
     } finally {
       setLoading(false);
     }
@@ -471,7 +479,13 @@ export default function YouTubePage() {
       }
 
       if (data.error) {
-        alert(`⚠️ ${data.error}`);
+        let errorMsg = data.error;
+        if (data.error.includes("rate limit") || data.error.includes("quota")) {
+          errorMsg = "AI service is temporarily unavailable due to rate limits.\n\nPlease try again in a few minutes.";
+        } else if (data.error.includes("invalid") || data.error.includes("Invalid")) {
+          errorMsg = "Invalid API key or configuration.\n\nPlease check your Gemini API key in Settings.";
+        }
+        alert(`⚠️ ${errorMsg}`);
         setRefining(false);
         return;
       }
@@ -519,7 +533,8 @@ export default function YouTubePage() {
       setRawTranscript(null); // Clear raw transcript view
       setSavedRawNoteId(null);
     } catch (error) {
-      alert("⚠️ AI refinement failed. Please try again.");
+      console.error("AI refinement error:", error);
+      alert("⚠️ AI refinement failed.\n\nPossible causes:\n• Network connection issue\n• API server not responding\n• Invalid API key\n\nPlease check your connection and try again.");
     } finally {
       setRefining(false);
     }
@@ -984,29 +999,41 @@ function YouTubeNotesSection() {
     );
   }
   
-  if (youtubeNotes.length === 0) {
-    return null;
-  }
-  
   return (
     <div className="pt-8 border-t border-[var(--color-border)]">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-lg font-semibold text-[var(--color-text)]">
           Previous Transcripts
         </h2>
-        <Link
-          href="/youtube/transcripts"
-          className="text-sm text-[var(--color-primary)] hover:underline"
-        >
-          View all →
-        </Link>
+        {youtubeNotes.length > 0 && (
+          <Link
+            href="/youtube/transcripts"
+            className="text-sm text-[var(--color-primary)] hover:underline"
+          >
+            View all →
+          </Link>
+        )}
       </div>
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {youtubeNotes.slice(0, 6).map((note) => (
-          <YouTubeNoteCard key={note.id} note={note} />
-        ))}
-      </div>
+      {youtubeNotes.length === 0 ? (
+        <div className="text-center py-12 px-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-primary)]/10 mb-4">
+            <YouTubeIcon className="w-8 h-8 text-[var(--color-primary)]" />
+          </div>
+          <h3 className="text-lg font-medium text-[var(--color-text)] mb-2">
+            No transcripts yet
+          </h3>
+          <p className="text-sm text-[var(--color-text-muted)] max-w-md mx-auto">
+            Your YouTube transcripts will appear here once you generate notes from videos.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {youtubeNotes.slice(0, 6).map((note) => (
+            <YouTubeNoteCard key={note.id} note={note} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
