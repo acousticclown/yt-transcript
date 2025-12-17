@@ -217,6 +217,7 @@ export const youtubeApi = {
   async generate(url: string): Promise<{
     sections: NoteSection[];
     summary?: string;
+    tags?: string[];
     videoId?: string;
     error?: string;
   }> {
@@ -250,6 +251,7 @@ export const youtubeApi = {
     return {
       sections: sectionsData.sections || [],
       summary: sectionsData.summary || "",
+      tags: sectionsData.tags || ["youtube"],
       videoId: transcriptData.videoId,
     };
   },

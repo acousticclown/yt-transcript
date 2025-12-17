@@ -371,10 +371,11 @@ export default function YouTubePage() {
       const videoTitle = sections[0]?.title || "YouTube Notes";
       const videoId = result.videoId || extractVideoId(url) || "";
       const videoSummary = result.summary || "";
+      const videoTags = result.tags || ["youtube"];
 
       const noteData = {
         title: videoTitle,
-        tags: ["youtube"],
+        tags: videoTags,
         language: "english" as const,
         sections,
         content: videoSummary,
@@ -388,7 +389,7 @@ export default function YouTubePage() {
         const savedNote = await createNote.mutateAsync({
           title: noteData.title,
           content: videoSummary,
-          tags: noteData.tags,
+          tags: videoTags,
           language: noteData.language,
           source: "youtube",
           youtubeUrl: noteData.youtubeUrl,
@@ -798,7 +799,7 @@ function YouTubeNoteCard({ note }: { note: Note }) {
           </div>
         </div>
       )}
-      
+
       {/* Content */}
       <div className="p-4">
         <h3 className="font-medium text-[var(--color-text)] line-clamp-2 mb-2">
@@ -832,6 +833,6 @@ function YouTubeNoteCard({ note }: { note: Note }) {
           </Link>
         </div>
       </div>
-    </motion.div>
+                  </motion.div>
   );
 }
