@@ -159,8 +159,8 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
             ))}
           </div>
 
-          {/* AI thinking dots transform into "ly" - repeats 3 times */}
-          <div className="flex items-end relative ml-3 sm:ml-4">
+          {/* AI thinking dots transform into "ly" - once with delay */}
+          <div className="flex items-end relative">
             {/* Three bouncing dots - small, bottom aligned */}
             <div className="flex items-end gap-0.5 absolute bottom-0 left-1/2 -translate-x-1/2">
               {[0, 1, 2].map((i) => (
@@ -169,21 +169,21 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                   className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-[var(--color-primary)]"
                   initial={{ opacity: 0, scale: 0 }}
                   animate={{
-                    opacity: [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
-                    scale: [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0],
-                    y: [0, 0, -8, 0, -8, 0, 0, 0, 0, -8, 0, -8, 0, 0, 0, 0, -8, 0, -8, 0, 0],
+                    opacity: [0, 1, 1, 1, 1, 1, 0],
+                    scale: [0, 1, 1, 1, 1, 1, 0],
+                    y: [0, 0, -6, 0, -6, 0, 0],
                   }}
                   transition={{
-                    duration: 4.5,
-                    delay: 1.0 + i * 0.1,
-                    times: [0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.33, 0.38, 0.43, 0.48, 0.53, 0.58, 0.63, 0.66, 0.71, 0.76, 0.81, 0.86, 0.91, 1],
+                    duration: 1.8,
+                    delay: 1.2 + i * 0.12,
+                    times: [0, 0.1, 0.25, 0.4, 0.55, 0.7, 1],
                     ease: "easeInOut",
                   }}
                 />
               ))}
             </div>
 
-            {/* "ly" letters - appear after each dot cycle */}
+            {/* "ly" letters - appear after dots */}
             <motion.span
               className="inline-block text-5xl sm:text-6xl md:text-7xl font-bold text-[var(--color-primary)]"
               style={{
@@ -191,15 +191,12 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 letterSpacing: "-0.03em",
               }}
               initial={{ opacity: 0, scale: 0.5 }}
-              animate={{
-                opacity: [0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1],
-                scale: [0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 1, 1, 0.5, 0.5, 0.5, 1],
-              }}
+              animate={{ opacity: 1, scale: 1 }}
               transition={{
-                duration: 4.5,
-                delay: 1.0,
-                times: [0, 0.25, 0.28, 0.32, 0.33, 0.58, 0.61, 0.64, 0.68, 0.69, 0.91, 0.94, 0.97, 1],
-                ease: "easeOut",
+                type: "spring",
+                stiffness: 200,
+                damping: 15,
+                delay: 2.8,
               }}
             >
               ly
