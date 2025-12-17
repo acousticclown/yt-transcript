@@ -3,16 +3,16 @@ import express from "express";
 import cors from "cors";
 
 // Routes
-import notesRouter from "./routes/notes";
-import tagsRouter from "./routes/tags";
-import authRouter from "./routes/auth";
-import aiRouter from "./routes/ai";
-import publicRouter from "./routes/public";
-import syncRouter from "./routes/sync";
+import notesRouter from "./routes/notes.js";
+import tagsRouter from "./routes/tags.js";
+import authRouter from "./routes/auth.js";
+import aiRouter from "./routes/ai.js";
+import publicRouter from "./routes/public.js";
+import syncRouter from "./routes/sync.js";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
-import { geminiModel, getUserApiKey } from "../ai/gemini";
+import { geminiModel, getUserApiKey } from "../ai/gemini.js";
 import {
   sectionDetectionPrompt,
   sectionDetectionWithTimestampsPrompt,
