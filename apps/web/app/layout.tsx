@@ -6,6 +6,7 @@ import { UserProvider } from "../lib/UserContext";
 import { ToastProvider } from "../components/ui";
 import { QueryProvider } from "../lib/QueryProvider";
 import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
+import { PWAInstallPrompt } from "../components/PWAInstallPrompt";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -63,6 +64,7 @@ export default function RootLayout({
               <ToastProvider>
                 {children}
                 <ServiceWorkerRegistration />
+                <PWAInstallPrompt />
               </ToastProvider>
             </UserProvider>
           </ThemeProvider>

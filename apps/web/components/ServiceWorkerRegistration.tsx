@@ -4,11 +4,9 @@ import { useEffect } from "react";
 
 export function ServiceWorkerRegistration() {
   useEffect(() => {
-    if (
-      typeof window !== "undefined" &&
-      "serviceWorker" in navigator &&
-      process.env.NODE_ENV === "production"
-    ) {
+    if (typeof window !== "undefined" && "serviceWorker" in navigator) {
+      // Register service worker in both dev and production for testing
+      // In production, it will cache assets. In dev, it helps test PWA features.
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
@@ -22,6 +20,10 @@ export function ServiceWorkerRegistration() {
                 if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
                   // New service worker available
                   console.log("🔄 New service worker available");
+                  // Optionally show a notification to reload
+                  if (window.confirm("New version available! Reload to update?")) {
+                    window.location.reload();
+                  }
                 }
               });
             }

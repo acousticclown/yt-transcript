@@ -252,3 +252,12 @@ export function LockIcon({ className = "w-5 h-5", size }: IconProps) {
   );
 }
 
+export function XIcon({ className = "w-5 h-5", size }: IconProps) {
+  const style = size ? { width: size, height: size } : undefined;
+  return (
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
