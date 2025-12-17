@@ -89,8 +89,7 @@ app.post("/summary", async (req, res) => {
     }
 
     const prompt = basicSummaryPrompt(transcript);
-    const result = await geminiModel.generateContent(prompt);
-    const summary = result.response.text();
+    const summary = await geminiModel.generateContent(prompt);
 
     res.json({ summary });
   } catch (error) {
@@ -103,6 +102,8 @@ app.post("/summary", async (req, res) => {
 app.post("/sections", async (req, res) => {
   try {
     const { transcript, subtitles } = req.body;
+    console.log("[Sections] Received - transcript:", !!transcript, "subtitles:", subtitles?.length || 0);
+    
     if (!transcript && !subtitles) {
       return res.status(400).json({ error: "Transcript or subtitles required" });
     }
@@ -112,8 +113,10 @@ app.post("/sections", async (req, res) => {
       ? sectionDetectionWithTimestampsPrompt(subtitles)
       : sectionDetectionPrompt(transcript);
 
-    const result = await geminiModel.generateContent(prompt);
-    const text = result.response.text();
+    console.log("[Sections] Calling Gemini...");
+    // geminiModel.generateContent returns string directly
+    const text = await geminiModel.generateContent(prompt);
+    console.log("[Sections] Got response, length:", text.length);
 
     // Parse JSON from response - handle both array and object formats
     let sections;
@@ -126,12 +129,14 @@ app.post("/sections", async (req, res) => {
     } else if (arrayMatch) {
       sections = JSON.parse(sanitizeJson(arrayMatch[0]));
     } else {
+      console.error("[Sections] No JSON found in:", text.substring(0, 500));
       throw new Error("No valid JSON found in response");
     }
 
+    console.log("[Sections] Parsed sections:", sections.length);
     res.json({ sections });
-  } catch (error) {
-    console.error("Sections error:", error);
+  } catch (error: any) {
+    console.error("[Sections] Error:", error?.message || error);
     res.status(500).json({ error: "Failed to generate sections" });
   }
 });

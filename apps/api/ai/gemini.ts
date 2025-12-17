@@ -23,9 +23,10 @@ export const geminiModel = {
         return response.text || "";
       } catch (err: any) {
         lastError = err;
-        // If rate limited (429), try next model
-        if (err?.message?.includes("429") || err?.message?.includes("quota") || err?.message?.includes("RESOURCE_EXHAUSTED")) {
-          console.log(`Model ${model} rate limited, trying next...`);
+        const errMsg = err?.message || JSON.stringify(err);
+        // If rate limited (429) or overloaded (503), try next model
+        if (errMsg.includes("429") || errMsg.includes("503") || errMsg.includes("quota") || errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("UNAVAILABLE") || errMsg.includes("overloaded")) {
+          console.log(`Model ${model} unavailable, trying next...`);
           continue;
         }
         // For other errors, throw immediately
