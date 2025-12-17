@@ -92,9 +92,8 @@ export function AnimatedLogo({ className }: AnimatedLogoProps) {
                 width={[28, 36, 24][i]}
                 height="3"
                 rx="1.5"
-                className="fill-[var(--color-primary)]"
+                fill="var(--color-primary)"
                 stroke="white"
-                className=""
                 strokeWidth="1"
                 initial={{ scaleX: 0, opacity: 0 }}
                 animate={{ scaleX: 1, opacity: 0.85 }}
