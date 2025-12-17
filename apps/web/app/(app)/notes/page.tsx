@@ -18,7 +18,7 @@ function toCardNote(note: ApiNote) {
     id: note.id,
     title: note.title,
     preview: note.content || note.sections[0]?.summary || "No content",
-    color: note.color || "#F5A623",
+    color: note.color || "var(--color-primary)",
     tags: note.tags,
     date: formatDate(note.updatedAt),
     isFavorite: note.isFavorite,
