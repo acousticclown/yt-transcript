@@ -7,7 +7,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
 import { ActionButton } from "../../../components/ActionButton";
 import { SaveIndicator } from "../../../components/ui";
-import { ApiKeyPrompt, useApiKeyCheck } from "../../../components/ApiKeyPrompt";
 import { useCreateNote, useNotes } from "../../../lib/hooks";
 import { youtubeApi, aiApi, NoteSection, Note } from "../../../lib/api";
 import {
@@ -264,8 +263,6 @@ export default function YouTubePage() {
   const playerRef = useRef<any>(null);
   const createNote = useCreateNote();
   
-  // API key check
-  const { showPrompt, promptContext, handleClose: handleApiKeyClose, checkAndPrompt } = useApiKeyCheck();
   
   // Fetch all notes for cache checking
   const { data: allNotes } = useNotes();
@@ -339,10 +336,8 @@ export default function YouTubePage() {
       return;
     }
 
-    // Check if user has API key before making AI request
-    checkAndPrompt("youtube", async () => {
-      await doGenerate(videoId);
-    });
+    // Just start generating - API will fail if no key
+    await doGenerate(videoId);
   }
 
   async function doGenerate(videoId: string) {
@@ -695,13 +690,6 @@ export default function YouTubePage() {
         <YouTubeNotesSection />
       </Stack>
 
-      {/* API Key Prompt Modal */}
-      <ApiKeyPrompt
-        isOpen={showPrompt}
-        onClose={() => handleApiKeyClose(false)}
-        onSuccess={() => handleApiKeyClose(true)}
-        context={promptContext}
-      />
     </Container>
   );
 }

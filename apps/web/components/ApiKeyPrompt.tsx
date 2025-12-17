@@ -18,7 +18,12 @@ const contextMessages = {
   "inline-action": "Connect your Gemini API key to use AI text actions.",
 };
 
-export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generate" }: ApiKeyPromptProps) {
+export function ApiKeyPrompt({
+  isOpen,
+  onClose,
+  onSuccess,
+  context = "ai-generate",
+}: ApiKeyPromptProps) {
   const [apiKey, setApiKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -106,9 +111,7 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
                 autoFocus
               />
 
-              {error && (
-                <p className="text-sm text-red-500">{error}</p>
-              )}
+              {error && <p className="text-sm text-red-500">{error}</p>}
 
               <p className="text-xs text-[var(--color-text-subtle)]">
                 Get a free API key from{" "}
@@ -143,7 +146,11 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
             {/* Skip info */}
             <p className="mt-4 text-center text-xs text-[var(--color-text-subtle)]">
               You can also do this later in{" "}
-              <Link href="/settings" className="text-[var(--color-primary)] hover:underline" onClick={onClose}>
+              <Link
+                href="/settings"
+                className="text-[var(--color-primary)] hover:underline"
+                onClick={onClose}
+              >
                 Settings
               </Link>
             </p>
@@ -157,7 +164,9 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
 // Simple hook to check if user has API key
 export function useApiKeyCheck() {
   const [showPrompt, setShowPrompt] = useState(false);
-  const [promptContext, setPromptContext] = useState<"youtube" | "ai-generate" | "inline-action">("ai-generate");
+  const [promptContext, setPromptContext] = useState<
+    "youtube" | "ai-generate" | "inline-action"
+  >("ai-generate");
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
   const checkAndPrompt = async (
@@ -171,12 +180,12 @@ export function useApiKeyCheck() {
       const res = await fetch("http://localhost:3001/api/auth/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
-      
+
       if (!res.ok) return;
-      
+
       const data = await res.json();
       console.log("API key check:", data.user?.hasGeminiKey);
-      
+
       if (data.user?.hasGeminiKey) {
         // Has key, proceed immediately
         onHasKey();
@@ -207,4 +216,3 @@ export function useApiKeyCheck() {
     checkAndPrompt,
   };
 }
-
