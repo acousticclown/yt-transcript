@@ -1,375 +1,378 @@
-# API Flow Documentation
+# Notely API Documentation
 
-This document describes the API endpoints and data flow in YT-Transcript.
+Base URL: `http://localhost:3001`
 
-## Overview
+## Authentication
 
-The API follows a simple pipeline:
-1. Extract transcript from YouTube
-2. Clean transcript (deterministic, no AI)
-3. Generate structured sections using AI
-4. Save or export notes
+All protected routes require a JWT token in the Authorization header:
+```
+Authorization: Bearer <token>
+```
 
----
+### Auth Endpoints
 
-## Endpoints
+#### POST /api/auth/signup
+Create a new user account.
 
-### POST /transcript
-
-**Purpose:** Extract transcript from a YouTube video URL.
-
-**Input:**
+**Request:**
 ```json
 {
-  "url": "https://www.youtube.com/watch?v=..."
+  "name": "John Doe",
+  "email": "john@example.com",
+  "password": "password123"
 }
 ```
 
-**Output:**
+**Response:** `201 Created`
 ```json
 {
-  "transcript": [
-    {
-      "text": "Hello world",
-      "start": 0.0,
-      "duration": 2.5
-    }
-  ],
-  "language": "unknown",
-  "source": "youtube_captions" | "whisper"
+  "message": "User created successfully"
 }
 ```
 
-**Flow:**
-1. Try YouTube captions first (fast, free, reliable)
-2. If captions unavailable, fallback to audio extraction + Whisper transcription
-3. Return transcript in consistent format regardless of source
+#### POST /api/auth/login
+Authenticate and receive a JWT token.
 
-**Error Response:**
+**Request:**
 ```json
 {
-  "error": "This video doesn't have captions, and YouTube is blocking audio extraction. Try a video with captions enabled."
+  "email": "john@example.com",
+  "password": "password123"
 }
 ```
 
----
-
-### POST /summary
-
-**Purpose:** Generate a plain text summary from transcript chunks.
-
-**Input:**
+**Response:** `200 OK`
 ```json
 {
-  "transcript": [
-    {
-      "text": "Hello world",
-      "start": 0.0,
-      "duration": 2.5
-    }
-  ]
-}
-```
-
-**Output:**
-```json
-{
-  "summary": "This video explains..."
-}
-```
-
-**Flow:**
-1. Clean transcript (join chunks, remove extra whitespace)
-2. Send to Gemini AI for summarization
-3. Return plain text summary
-
----
-
-### POST /sections
-
-**Purpose:** Generate structured sections (title, summary, bullets) from transcript.
-
-**Input:**
-```json
-{
-  "transcript": [
-    {
-      "text": "Hello world",
-      "start": 0.0,
-      "duration": 2.5
-    }
-  ]
-}
-```
-
-**Output:**
-```json
-{
-  "sections": [
-    {
-      "title": "Introduction",
-      "summary": "The speaker introduces...",
-      "bullets": [
-        "Point 1",
-        "Point 2"
-      ]
-    }
-  ]
-}
-```
-
-**Flow:**
-1. Clean transcript (deterministic, no AI)
-2. Send to Gemini AI for section detection
-3. Parse JSON response (strip markdown code blocks if present)
-4. Return structured sections
-
----
-
-### POST /save
-
-**Purpose:** Save notes to local JSON file.
-
-**Input:**
-```json
-{
-  "url": "https://www.youtube.com/watch?v=...",
-  "sections": [
-    {
-      "title": "Introduction",
-      "summary": "...",
-      "bullets": ["..."]
-    }
-  ]
-}
-```
-
-**Output:**
-```json
-{
-  "id": "uuid-here"
-}
-```
-
-**Flow:**
-1. Validate URL and sections
-2. Generate UUID for note
-3. Save to `apps/api/data/{id}.json`
-4. Return note ID
-
-**Storage Format:**
-```json
-{
-  "id": "uuid",
-  "url": "https://...",
-  "createdAt": "2025-12-16T...",
-  "sections": [...]
-}
-```
-
----
-
-### POST /export/markdown
-
-**Purpose:** Export sections as Markdown file.
-
-**Input:**
-```json
-{
-  "sections": [
-    {
-      "title": "Introduction",
-      "summary": "...",
-      "bullets": ["..."]
-    }
-  ]
-}
-```
-
-**Output:**
-Markdown file download (`notes.md`)
-
-**Format:**
-```markdown
-# Notes
-
-## Introduction
-
-The speaker introduces...
-
-- Point 1
-- Point 2
-```
-
----
-
-### POST /ai/inline
-
-**Purpose:** Inline AI actions for contextual text improvement (simplify, expand, add example).
-
-**Input:**
-```json
-{
-  "action": "simplify" | "expand" | "example",
-  "text": "Text to process..."
-}
-```
-
-**Output:**
-```json
-{
-  "text": "Rewritten text..."
-}
-```
-
-**Flow:**
-1. Takes existing text and action type
-2. Sends to Gemini AI with specific instruction
-3. Returns replacement text only (no markdown, no emojis)
-
-**Actions:**
-- `simplify` - Rewrite in simpler, clearer language
-- `expand` - Expand with more detail, without adding new topics
-- `example` - Add a short real-world example
-
-**Use Cases:**
-- Applied to section summaries
-- Applied to individual bullet points
-- Appears on hover (contextual, not intrusive)
-
----
-
-### POST /ai/regenerate-section
-
-**Purpose:** Regenerate one section surgically (title, summary, bullets) without affecting other sections.
-
-**Input:**
-```json
-{
-  "section": {
-    "title": "Introduction",
-    "summary": "...",
-    "bullets": ["..."]
-  },
-  "transcript": "Full cleaned transcript text..."
-}
-```
-
-**Output:**
-```json
-{
-  "title": "Regenerated title",
-  "summary": "Regenerated summary",
-  "bullets": ["Bullet 1", "Bullet 2"]
-}
-```
-
-**Flow:**
-1. Takes current section and full transcript
-2. Sends to Gemini AI with regeneration prompt
-3. Returns regenerated section (title, summary, bullets)
-4. Only affects the requested section
-
-**Use Cases:**
-- Fix AI mistakes in one section
-- Polish notes iteratively
-- Regenerate without affecting other sections
-
----
-
-### POST /ai/transform-language
-
-**Purpose:** Transform a section to a different language (English, Hindi, Hinglish) while preserving meaning and structure.
-
-**Input:**
-```json
-{
-  "target": "english" | "hindi" | "hinglish",
-  "section": {
-    "title": "Introduction",
-    "summary": "...",
-    "bullets": ["..."]
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "user-123",
+    "email": "john@example.com",
+    "name": "John Doe"
   }
 }
 ```
 
-**Output:**
+#### POST /api/auth/verify
+Verify a JWT token.
+
+**Headers:** `Authorization: Bearer <token>`
+
+**Response:** `200 OK`
 ```json
 {
-  "title": "Transformed title",
-  "summary": "Transformed summary",
-  "bullets": ["Bullet 1", "Bullet 2"]
+  "id": "user-123",
+  "email": "john@example.com",
+  "name": "John Doe"
 }
 ```
-
-**Flow:**
-1. Takes existing section and target language
-2. Sends to Gemini AI with language transformation prompt
-3. Returns transformed section (title, summary, bullets)
-4. Preserves exact meaning and structure
-5. Does NOT regenerate from transcript (much cheaper, safer)
-
-**Languages:**
-- `english` - Clear, simple English
-- `hindi` - Natural Hindi in Devanagari script (conversational, not overly formal)
-- `hinglish` - Natural Indian Hinglish (mixes Hindi and English naturally, like spoken in India)
-
-**Hinglish Philosophy:**
-- NOT word-by-word translation
-- Sounds like an Indian speaker explaining to a friend
-- Technical terms stay in English when appropriate
-- Example: "Is section me hum dekhte hain ki load balancer kyu zaroori hota hai"
-
-**Use Cases:**
-- Switch language without regenerating everything
-- Preserve user edits while changing language
-- Make content accessible in multiple languages
-- Natural Hinglish for Indian users
-
----
-
-## Data Flow
-
-```
-YouTube URL
-    ↓
-POST /transcript
-    ↓
-Transcript chunks (with timestamps)
-    ↓
-POST /sections
-    ↓
-Structured sections (title, summary, bullets)
-    ↓
-[Optional] POST /save → Local JSON file
-[Optional] POST /export/markdown → Markdown download
-[Optional] POST /ai/inline → Contextual text improvement
-[Optional] POST /ai/regenerate-section → Regenerate one section
-[Optional] POST /ai/transform-language → Transform section to different language
-
-**Language Switching Strategy:**
-- Each section maintains `source` (English) and `current` (displayed content)
-- Language switching transforms `source` → `current` (doesn't regenerate from transcript)
-- Switching back to English restores from `source` instantly
-- User edits affect `current` only, preserving `source` as stable base
-- This prevents data loss and allows safe experimentation
-```
-
----
-
-## Error Handling
-
-All endpoints return user-friendly error messages:
-- No stack traces
-- Clear, actionable messages
-- Consistent error format: `{ "error": "message" }`
 
 ---
 
 ## Notes
 
-- Transcript extraction prefers YouTube captions (fast, free)
-- Audio extraction fallback is available but may be blocked by YouTube (403)
-- AI processing uses Google Gemini (free tier)
-- All prompts are stored in `packages/prompts/` (versioned as code)
+### GET /api/notes
+List all notes for the authenticated user.
 
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "note-123",
+    "title": "My Note",
+    "content": "Note content...",
+    "language": "english",
+    "source": "manual",
+    "youtubeUrl": null,
+    "isFavorite": false,
+    "color": null,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "tags": ["work", "ideas"],
+    "sections": []
+  }
+]
+```
+
+### GET /api/notes/:id
+Get a single note by ID.
+
+**Response:** `200 OK`
+```json
+{
+  "id": "note-123",
+  "title": "My Note",
+  "content": "Note content...",
+  "language": "english",
+  "source": "youtube",
+  "youtubeUrl": "https://youtube.com/watch?v=...",
+  "isFavorite": true,
+  "tags": ["youtube"],
+  "sections": [
+    {
+      "id": "section-1",
+      "title": "Introduction",
+      "summary": "Overview of the topic...",
+      "bullets": ["Point 1", "Point 2"],
+      "language": "english"
+    }
+  ]
+}
+```
+
+### POST /api/notes
+Create a new note.
+
+**Request:**
+```json
+{
+  "title": "New Note",
+  "content": "Main content...",
+  "tags": ["tag1", "tag2"],
+  "language": "english",
+  "source": "manual",
+  "sections": [
+    {
+      "title": "Section 1",
+      "summary": "Summary text",
+      "bullets": ["Point 1", "Point 2"],
+      "language": "english"
+    }
+  ]
+}
+```
+
+**Response:** `201 Created`
+```json
+{
+  "id": "note-456",
+  "message": "Note created"
+}
+```
+
+### PUT /api/notes/:id
+Update an existing note.
+
+**Request:**
+```json
+{
+  "title": "Updated Title",
+  "content": "Updated content",
+  "tags": ["new-tag"],
+  "sections": []
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "id": "note-123",
+  "message": "Note updated"
+}
+```
+
+### DELETE /api/notes/:id
+Delete a note.
+
+**Response:** `200 OK`
+```json
+{
+  "message": "Note deleted"
+}
+```
+
+### POST /api/notes/:id/favorite
+Toggle favorite status.
+
+**Response:** `200 OK`
+```json
+{
+  "isFavorite": true
+}
+```
+
+---
+
+## Tags
+
+### GET /api/tags
+List all tags for the authenticated user.
+
+**Response:** `200 OK`
+```json
+[
+  {
+    "id": "tag-1",
+    "name": "work",
+    "color": "#FF5733",
+    "noteCount": 5
+  }
+]
+```
+
+### POST /api/tags
+Create a new tag.
+
+**Request:**
+```json
+{
+  "name": "new-tag",
+  "color": "#3498DB"
+}
+```
+
+### PUT /api/tags/:id
+Update a tag.
+
+### DELETE /api/tags/:id
+Delete a tag.
+
+---
+
+## AI Endpoints
+
+### POST /api/ai/generate-note
+Generate a complete note from a text prompt.
+
+**Request:**
+```json
+{
+  "prompt": "Create notes about React hooks best practices"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "note": {
+    "title": "React Hooks Best Practices",
+    "content": "Overview of React hooks...",
+    "tags": ["react", "hooks", "javascript"],
+    "sections": [
+      {
+        "id": "section-0",
+        "title": "useState Best Practices",
+        "summary": "Guidelines for using useState...",
+        "bullets": ["Keep state minimal", "Use multiple states"],
+        "language": "english"
+      }
+    ]
+  }
+}
+```
+
+### POST /api/ai/generate-note/stream
+Generate a note with SSE streaming.
+
+**Response:** Server-Sent Events stream
+```
+data: {"type":"thinking","step":"analyzing","message":"Understanding your request..."}
+
+data: {"type":"thinking","step":"structuring","message":"Planning note structure..."}
+
+data: {"type":"chunk","content":"{ \"title\": \"..."}
+
+data: {"type":"complete","data":{...}}
+```
+
+### POST /api/ai/inline
+Perform inline text actions.
+
+**Request:**
+```json
+{
+  "text": "Complex technical explanation...",
+  "action": "simplify"
+}
+```
+
+**Actions:** `simplify`, `expand`, `example`
+
+**Response:** `200 OK`
+```json
+{
+  "result": "Simplified text..."
+}
+```
+
+### POST /api/ai/transform-language
+Transform text to a different language.
+
+**Request:**
+```json
+{
+  "text": "Hello world",
+  "targetLanguage": "hindi",
+  "tone": "casual"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "result": "नमस्ते दुनिया"
+}
+```
+
+---
+
+## YouTube Endpoints
+
+### POST /transcript
+Extract transcript from a YouTube video.
+
+**Request:**
+```json
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "transcript": "Full transcript text...",
+  "videoId": "dQw4w9WgXcQ"
+}
+```
+
+### POST /sections
+Generate sections from a transcript.
+
+**Request:**
+```json
+{
+  "transcript": "Full transcript text..."
+}
+```
+
+**Response:** `200 OK`
+```json
+{
+  "sections": [
+    {
+      "title": "Introduction",
+      "summary": "Overview...",
+      "bullets": ["Point 1", "Point 2"]
+    }
+  ]
+}
+```
+
+---
+
+## Error Responses
+
+All errors follow this format:
+
+```json
+{
+  "error": "Error message description"
+}
+```
+
+Common status codes:
+- `400` - Bad Request (missing/invalid parameters)
+- `401` - Unauthorized (missing/invalid token)
+- `404` - Not Found
+- `500` - Internal Server Error

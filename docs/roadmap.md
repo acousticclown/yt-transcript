@@ -1,162 +1,72 @@
-# Roadmap
+# Notely Roadmap
 
-This document outlines completed features and future plans for YT-Transcript.
+## Released
 
-**Current Version:** v1.0.0
+### v1.0.0 - YouTube Transcript MVP
+- YouTube transcript extraction
+- AI-powered section generation
+- Basic UI with section cards
 
-## Week 1 ✅ (Complete)
+### v1.1.0 - UI Enhancement
+- Design system with CSS variables
+- Light/dark mode with system preference
+- Mobile-first responsive design
+- Glassmorphism effects
+- Accessibility improvements
 
-- [x] YouTube transcript extraction
-- [x] AI-powered summaries
-- [x] Structured section detection
-- [x] Editable UI
-- [x] Local saving
-- [x] Markdown export
+### v1.2.0 - Notes App
+- Full note editor with formatting
+- Manual note creation
+- Tags and organization
+- Multiple themes (8 total)
+- YouTube integration into notes
+- Vector illustrations
 
----
+### v1.3.0 - Database & Auth
+- SQLite database with Prisma
+- User authentication (JWT)
+- TanStack Query for data fetching
+- Proper CRUD operations
 
-## Week 2 (In Progress)
-
-### Day 8 ✅ (Complete)
-- [x] UX Polish & Micro-Playfulness
-- [x] Visual hierarchy improvements
-- [x] Intentional editing feel
-- [x] Empty states & loading messages
-
-### Day 9 ✅ (Complete)
-- [x] Animations with Framer Motion
-- [x] Smooth transitions (fade + slide)
-- [x] Micro-interactions (button taps, hover)
-- [x] Section cards animate in smoothly
-
-### Day 10 ✅ (Complete)
-- [x] Inline AI Actions
-- [x] Simplify text
-- [x] Expand sections
-- [x] Add example
-- [x] Contextual hover toolbars
-
-### Day 11 ✅ (Complete)
-- [x] Partial regeneration (per section)
-- [x] Regenerate one section at a time
-- [x] Preserves other sections
-- [x] Surgical AI - no chaos
-
-### Day 12 ✅ (Complete)
-- [x] Drag & drop reordering
-- [x] Stable IDs for sections
-- [x] Focus mode (distraction-free editing)
-- [x] Dim other sections when focused
-
-### Day 13 ✅ (Complete)
-- [x] Visual hierarchy locked (top to bottom importance)
-- [x] Typography discipline (3 sizes max)
-- [x] Color restraint (one accent color)
-- [x] System-based dark mode
-- [x] Visual grouping improvements
-- [x] Final micro-copy pass
-
-### Day 14 ✅ (Complete)
-- [x] Language transformation prompt (English, Hindi, Hinglish)
-- [x] POST /ai/transform-language endpoint
-- [x] Hinglish designed to sound natural (not robotic)
-- [x] Foundation for multilingual support
-
-### Day 15 ✅ (Complete)
-- [x] Section type with source, current, language
-- [x] Per-section language selector
-- [x] Language switching without data loss
-- [x] English always recoverable
-- [x] Editing works correctly (edits current, not source)
-
-### Day 16 ✅ (Complete)
-- [x] LanguageToggle segmented control (pills)
-- [x] Visual indicator for current language
-- [x] Smooth opacity transitions
-- [x] Better error handling
-- [x] Zero friction language switching
-
-### Day 17 ✅ (Complete)
-- [x] 3 Hinglish tone presets (Neutral, Casual, Interview)
-- [x] Tone-aware language transformation
-- [x] Tone selector UI (only when Hinglish active)
-- [x] Tone changes regenerate from source
-- [x] Backward compatible backend
-
-### Day 18 ✅ (Complete)
-- [x] Variants cache structure (future-proof)
-- [x] Language switching checks cache first
-- [x] Tone switching uses cache
-- [x] Save/load preserves all variants
-- [x] Instant switching when cached
-
-### Day 19 ✅ (Complete)
-- [x] Human-friendly error messages
-- [x] AI failures keep existing content
-- [x] Proper loading states everywhere
-- [x] Clear micro-copy
-- [x] Graceful error handling
-- [x] Edge case handling
-
-### Day 20 ✅ (Complete)
-- [x] Real usage test completed
-- [x] v1.0.0 release prepared
-- [x] Open-source polish applied
-
-## Future Features
-
-### Visual Enhancements
-- Mind maps
-- Flow diagrams
-- Visual section relationships
-
-### Knowledge System
-- Search across saved notes
-- Tags and categories
-- Note linking
-
-### Export Enhancements
-- PDF export
-- Custom templates
-- Multiple format support
+### v1.5.0 - AI Generation & Polish
+- AI note generation from prompts
+- SSE streaming with thinking states
+- Model fallback chain
+- Note viewer (read mode)
+- Pure vector icons (no emojis)
+- Global search (Cmd+K)
+- Quick filters (favorites, YouTube, AI)
+- Keyboard shortcuts
+- Markdown export
+- Auto-save on navigation
 
 ---
 
-## Future Enhancements
+## Planned
 
-### Visual Thinking
-- Mind maps
-- Flow diagrams
-- Visual section relationships
+### v1.6.0 - Enhanced AI
+- [ ] AI chat within notes
+- [ ] Context-aware suggestions
+- [ ] Smart tagging
+- [ ] Related notes
 
-### Knowledge System
-- Search across saved notes
-- Tags and categories
-- Note linking
-- Personal knowledge base features
+### v1.7.0 - Collaboration
+- [ ] Share notes (public links)
+- [ ] Export to PDF
+- [ ] Import from Markdown
 
-### Export Enhancements
-- PDF export
-- Custom templates
-- Multiple format support
-- Batch export
+### v2.0.0 - Cloud
+- [ ] PostgreSQL migration
+- [ ] Cloud deployment
+- [ ] Sync across devices
 
-### Platform Expansion
+---
+
+## Ideas Backlog
+- Voice input (Whisper integration)
 - Browser extension
-- Mobile app
-- Public API for developers
-
----
-
-## Philosophy
-
-- Incremental development
-- Free tools first
-- Replaceable components
-- Playful but focused UX
-- Personal-first, OSS-friendly
-
----
-
-**Note:** This roadmap is flexible and may change based on user feedback and priorities.
-
+- Mobile app (React Native)
+- Notion/Obsidian import
+- Templates
+- Folders/notebooks
+- Full-text search with embeddings
