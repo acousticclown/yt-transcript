@@ -22,6 +22,8 @@ function toCardNote(note: ApiNote) {
     tags: note.tags,
     date: formatDate(note.updatedAt),
     isFavorite: note.isFavorite,
+    source: note.source as "manual" | "youtube" | "ai" | undefined,
+    isAIGenerated: note.isAIGenerated,
   };
 }
 

@@ -67,9 +67,16 @@ function YouTubeNoteCard({ note }: { note: Note }) {
               <PlayIcon className="w-6 h-6 text-red-600 ml-1" />
             </div>
           </Link>
+          {/* AI badge */}
+          <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-medium flex items-center gap-1">
+            <svg className="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+            </svg>
+            {note.sections.length > 0 ? "AI Enhanced" : "Transcript"}
+          </div>
           {/* Section count badge */}
           <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
-            {note.sections.length} sections
+            {note.sections.length > 0 ? `${note.sections.length} sections` : "Raw"}
           </div>
         </div>
       )}
