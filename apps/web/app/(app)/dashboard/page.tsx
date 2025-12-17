@@ -3,15 +3,21 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { NoteCard } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
-import { AISpotlight } from "../../../components/AISpotlight";
 import { ApiKeyBanner } from "../../../components/ApiKeyBanner";
 import { NoteCardSkeleton } from "../../../components/ui";
 import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
 import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
+
+// Lazy load AISpotlight (heavy component with AI streaming)
+const AISpotlight = dynamic(() => import("../../../components/AISpotlight").then(mod => ({ default: mod.AISpotlight })), {
+  loading: () => null,
+  ssr: false,
+});
 
 // Transform API note to card format
 function toCardNote(note: ApiNote) {

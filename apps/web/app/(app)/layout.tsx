@@ -16,6 +16,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   // Keyboard shortcuts
   useKeyboardShortcuts({
     onSearch: () => setSearchOpen(true),
+    onClose: () => setSearchOpen(false),
+    onYouTube: () => router.push("/youtube"),
     enabled: authState === "authenticated",
   });
 
