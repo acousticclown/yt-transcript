@@ -346,13 +346,19 @@ export default function YouTubeViewerPage() {
               />
             </div>
 
-            {/* Video info */}
-            <div className="hidden lg:block text-sm text-[var(--color-text-muted)]">
-              <p className="flex items-center gap-2">
+            {/* Video info & summary */}
+            <div className="hidden lg:block space-y-2">
+              <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
                 <ClockIcon className="w-4 h-4" />
                 {note.sections.length} sections •{" "}
                 {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)} key points
               </p>
+              {/* Overall video summary */}
+              {note.content && (
+                <p className="text-xs text-[var(--color-text-subtle)] line-clamp-2">
+                  {note.content}
+                </p>
+              )}
             </div>
           </div>
 
