@@ -244,6 +244,10 @@ export default function YouTubePage() {
 
   const playerRef = useRef<any>(null);
   const createNote = useCreateNote();
+  
+  // Fetch all notes for cache checking
+  const { data: allNotes } = useNotes();
+  const youtubeNotes = allNotes?.filter((note) => note.source === "youtube") || [];
   const [saveState, setSaveState] = useState<SaveState>("idle");
 
   // Find active section based on current time
@@ -284,6 +288,33 @@ export default function YouTubePage() {
 
   async function generateNotes() {
     if (!url.trim()) return;
+
+    const videoId = extractVideoId(url);
+    if (!videoId) {
+      alert("⚠️ Invalid YouTube URL");
+      return;
+    }
+
+    // Check if we already have a note for this video (cache check)
+    const existingNote = youtubeNotes.find(
+      (note) => note.videoId === videoId || note.youtubeUrl?.includes(videoId)
+    );
+
+    if (existingNote) {
+      // Use cached note - no network calls needed
+      setGeneratedNote({
+        id: existingNote.id,
+        title: existingNote.title,
+        tags: existingNote.tags || ["youtube"],
+        language: (existingNote.language as "english" | "hindi" | "hinglish") || "english",
+        sections: existingNote.sections || [],
+        source: "youtube",
+        youtubeUrl: existingNote.youtubeUrl || url,
+        videoId: existingNote.videoId || videoId,
+      });
+      setSaveState("saved");
+      return;
+    }
 
     setLoading(true);
     setGeneratedNote(null);
