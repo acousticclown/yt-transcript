@@ -2,18 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
 import { ActionButton } from "../../../components/ActionButton";
 import { SaveIndicator } from "../../../components/ui";
-import { useCreateNote } from "../../../lib/hooks";
-import { youtubeApi, aiApi, NoteSection } from "../../../lib/api";
+import { useCreateNote, useNotes } from "../../../lib/hooks";
+import { youtubeApi, aiApi, NoteSection, Note } from "../../../lib/api";
 import {
   SparklesIcon,
   YouTubeIcon,
   CheckIcon,
   PlayIcon,
   ClockIcon,
+  NotesIcon,
+  ExternalLinkIcon,
 } from "../../../components/Icons";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -578,7 +581,160 @@ export default function YouTubePage() {
             </div>
           </div>
         )}
+
+        {/* Previous YouTube Notes */}
+        <YouTubeNotesSection />
       </Stack>
     </Container>
+  );
+}
+
+// Extract video ID from URL
+function extractVideoIdFromUrl(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /^([a-zA-Z0-9_-]{11})$/,
+  ];
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
+  }
+  return null;
+}
+
+// YouTube thumbnail URL
+function getYouTubeThumbnail(videoId: string): string {
+  return `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`;
+}
+
+// Format date
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+// YouTube Notes Section Component
+function YouTubeNotesSection() {
+  const { data: notes, isLoading } = useNotes();
+  
+  // Filter YouTube notes
+  const youtubeNotes = notes?.filter((note) => note.source === "youtube") || [];
+  
+  if (isLoading) {
+    return (
+      <div className="py-8">
+        <div className="animate-pulse flex gap-4">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="w-72 h-48 bg-[var(--color-surface)] rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+  
+  if (youtubeNotes.length === 0) {
+    return null;
+  }
+  
+  return (
+    <div className="pt-8 border-t border-[var(--color-border)]">
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-lg font-semibold text-[var(--color-text)]">
+          Previous Transcripts
+        </h2>
+        <Link
+          href="/notes?filter=youtube"
+          className="text-sm text-[var(--color-primary)] hover:underline"
+        >
+          View all →
+        </Link>
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {youtubeNotes.slice(0, 6).map((note) => (
+          <YouTubeNoteCard key={note.id} note={note} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// YouTube Note Card Component
+function YouTubeNoteCard({ note }: { note: Note }) {
+  const videoId = note.youtubeUrl ? extractVideoIdFromUrl(note.youtubeUrl) : null;
+  const thumbnail = videoId ? getYouTubeThumbnail(videoId) : null;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="group relative bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] overflow-hidden hover:border-[var(--color-primary)]/50 hover:shadow-lg transition-all"
+    >
+      {/* Thumbnail */}
+      {thumbnail && (
+        <div className="relative aspect-video bg-black">
+          <img
+            src={thumbnail}
+            alt={note.title}
+            className="w-full h-full object-cover"
+          />
+          {/* Play overlay */}
+          <Link
+            href={`/youtube/${note.id}`}
+            className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center">
+              <PlayIcon className="w-6 h-6 text-red-600 ml-1" />
+            </div>
+          </Link>
+          {/* Section count badge */}
+          <div className="absolute bottom-2 right-2 px-2 py-1 rounded bg-black/70 text-white text-xs">
+            {note.sections.length} sections
+          </div>
+        </div>
+      )}
+      
+      {/* Content */}
+      <div className="p-4">
+        <h3 className="font-medium text-[var(--color-text)] line-clamp-2 mb-2">
+          {note.title}
+        </h3>
+        
+        <div className="flex items-center gap-3 text-xs text-[var(--color-text-muted)]">
+          <span className="flex items-center gap-1">
+            <ClockIcon className="w-3 h-3" />
+            {formatDate(note.createdAt)}
+          </span>
+          <span>•</span>
+          <span>{note.sections.reduce((acc, s) => acc + s.bullets.length, 0)} points</span>
+        </div>
+        
+        {/* Actions */}
+        <div className="mt-3 flex gap-2">
+          <Link
+            href={`/youtube/${note.id}`}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-red-500/10 text-red-600 text-sm font-medium hover:bg-red-500/20 transition-colors"
+          >
+            <PlayIcon className="w-4 h-4" />
+            Watch
+          </Link>
+          <Link
+            href={`/notes/${note.id}`}
+            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-[var(--color-bg)] text-[var(--color-text-muted)] text-sm font-medium hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] transition-colors"
+          >
+            <NotesIcon className="w-4 h-4" />
+            Notes
+          </Link>
+        </div>
+      </div>
+    </motion.div>
   );
 }
