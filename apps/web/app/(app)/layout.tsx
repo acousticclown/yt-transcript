@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sidebar } from "../../components/layout/Sidebar";
 import { MobileNav } from "../../components/layout/MobileNav";
 import { SearchModal } from "../../components/SearchModal";
+import { UpdateNotification } from "../../components/UpdateNotification";
 import { useUser } from "../../lib/UserContext";
 import { useKeyboardShortcuts } from "../../lib/useKeyboardShortcuts";
 import { SearchProvider, useSearch } from "../../lib/SearchContext";
@@ -64,6 +65,9 @@ function AppLayoutContent({ children }: { children: React.ReactNode }) {
 
       {/* Global search modal */}
       <SearchModal isOpen={isOpen} onClose={() => closeSearch()} />
+
+      {/* Update notification */}
+      <UpdateNotification />
     </div>
   );
 }

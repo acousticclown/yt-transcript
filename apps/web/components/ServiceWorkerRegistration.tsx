@@ -20,22 +20,32 @@ export function ServiceWorkerRegistration() {
       .then((registration) => {
         console.log("✅ Service Worker registered:", registration.scope);
 
-        // Check for updates
+        // Check for updates on page load
+        registration.update();
+
+        // Listen for updates
         registration.addEventListener("updatefound", () => {
           const newWorker = registration.installing;
           if (newWorker) {
             newWorker.addEventListener("statechange", () => {
-              if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
-                // New service worker available
-                console.log("🔄 New service worker available");
-                // Optionally show a notification to reload
-                if (window.confirm("New version available! Reload to update?")) {
-                  window.location.reload();
+              if (newWorker.state === "installed") {
+                if (navigator.serviceWorker.controller) {
+                  // New service worker available (waiting to activate)
+                  console.log("🔄 New service worker available");
+                  // The UpdateNotification component will handle showing the UI
+                } else {
+                  // First time installation
+                  console.log("✅ Service Worker installed for the first time");
                 }
               }
             });
           }
         });
+
+        // Check for updates periodically (every hour)
+        setInterval(() => {
+          registration.update();
+        }, 60 * 60 * 1000);
       })
       .catch((error) => {
         console.error("❌ Service Worker registration failed:", error);
