@@ -10,7 +10,7 @@ import {
   PlayIcon,
   ClockIcon,
   ArrowLeftIcon,
-  PenIcon,
+  NotesIcon,
 } from "../../../../components/Icons";
 
 // Format seconds to MM:SS
@@ -313,9 +313,9 @@ export default function YouTubeViewerPage() {
 
           <Link
             href={`/notes/${noteId}`}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-lg transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-[var(--color-primary)] text-white rounded-lg hover:bg-[var(--color-primary-dark)] transition-colors"
           >
-            <PenIcon className="w-4 h-4" />
+            <NotesIcon className="w-4 h-4" />
             View Note
           </Link>
         </div>
