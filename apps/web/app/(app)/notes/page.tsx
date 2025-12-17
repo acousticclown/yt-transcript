@@ -9,7 +9,7 @@ import { useNotes, useDeleteNote, useToggleFavorite } from "../../../lib/hooks";
 import { Note as ApiNote } from "../../../lib/api";
 
 type SortOption = "recent" | "title" | "favorites";
-type FilterOption = "all" | "favorites";
+type FilterOption = "all" | "favorites" | "youtube" | "ai";
 
 // Transform API note to card format
 function toCardNote(note: ApiNote) {
@@ -97,9 +97,13 @@ function NotesPageContent() {
       );
     }
 
-    // Favorites filter
+    // Quick filters
     if (filter === "favorites") {
       result = result.filter((n) => n.isFavorite);
+    } else if (filter === "youtube") {
+      result = result.filter((n) => n.source === "youtube");
+    } else if (filter === "ai") {
+      result = result.filter((n) => n.source === "manual" && n.sections.length > 0);
     }
 
     // Tag filter
@@ -200,7 +204,27 @@ function NotesPageContent() {
                   : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
               }`}
             >
-              ★ Favorites
+              ⭐
+            </button>
+            <button
+              onClick={() => setFilter("youtube")}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                filter === "youtube"
+                  ? "bg-red-500 text-white"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              📺
+            </button>
+            <button
+              onClick={() => setFilter("ai")}
+              className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                filter === "ai"
+                  ? "bg-purple-500 text-white"
+                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              ✨
             </button>
           </div>
 
