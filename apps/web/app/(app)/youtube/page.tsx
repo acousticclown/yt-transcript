@@ -329,19 +329,45 @@ export default function YouTubePage() {
     );
 
     if (existingNote) {
-      // Use cached note - no network calls needed
-      setGeneratedNote({
-        id: existingNote.id,
-        title: existingNote.title,
-        tags: existingNote.tags || ["youtube"],
-        language: (existingNote.language as "english" | "hindi" | "hinglish") || "english",
-        sections: existingNote.sections || [],
-        content: existingNote.content || "",
-        source: "youtube",
-        youtubeUrl: existingNote.youtubeUrl || url,
-        videoId: existingNote.videoId || videoId,
-      });
-      setSaveState("saved");
+      // Check if it's a raw transcript (no sections) or AI-enhanced (has sections)
+      if (existingNote.sections && existingNote.sections.length > 0) {
+        // AI-enhanced note - show in generated view
+        setGeneratedNote({
+          id: existingNote.id,
+          title: existingNote.title,
+          tags: existingNote.tags || ["youtube"],
+          language: (existingNote.language as "english" | "hindi" | "hinglish") || "english",
+          sections: existingNote.sections,
+          content: existingNote.content || "",
+          source: "youtube",
+          youtubeUrl: existingNote.youtubeUrl || url,
+          videoId: existingNote.videoId || videoId,
+        });
+        setSaveState("saved");
+      } else {
+        // Raw transcript - parse content back to subtitles format
+        const subtitles = (existingNote.content || "").split("\n")
+          .map((line) => {
+            const match = line.match(/^\[(\d+):(\d+)\]\s*(.*)/);
+            if (match) {
+              const mins = parseInt(match[1]);
+              const secs = parseInt(match[2]);
+              return {
+                text: match[3],
+                start: mins * 60 + secs,
+                dur: 0,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean) as { text: string; start: number; dur: number }[];
+
+        setRawTranscript({
+          transcript: existingNote.content || "",
+          videoId: existingNote.videoId || videoId,
+          subtitles,
+        });
+      }
       return;
     }
 

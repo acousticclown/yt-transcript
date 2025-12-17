@@ -319,7 +319,9 @@ export default function YouTubeViewerPage() {
           <div className="flex items-center gap-2">
             {note.sections.length === 0 && (
               <Link
-                href={`/youtube?url=${encodeURIComponent(note.youtubeUrl || "")}&refine=true`}
+                href={`/youtube?url=${encodeURIComponent(
+                  note.youtubeUrl || ""
+                )}&refine=true`}
                 className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--color-primary)] border border-[var(--color-primary)] rounded-lg hover:bg-[var(--color-primary)]/10 transition-colors"
               >
                 <SparklesIcon className="w-4 h-4" />

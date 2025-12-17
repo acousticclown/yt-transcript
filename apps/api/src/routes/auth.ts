@@ -2,10 +2,30 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "crypto";
 import { prisma } from "../lib/prisma";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "notely-encryption-key-32chars!!"; // Must be 32 chars
+
+// Simple encryption for API keys
+function encrypt(text: string): string {
+  const iv = crypto.randomBytes(16);
+  const cipher = crypto.createCipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  return iv.toString("hex") + ":" + encrypted;
+}
+
+function decrypt(text: string): string {
+  const [ivHex, encrypted] = text.split(":");
+  const iv = Buffer.from(ivHex, "hex");
+  const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
 
 // POST /auth/login
 router.post("/login", async (req: Request, res: Response) => {
@@ -153,7 +173,7 @@ router.put("/gemini-key", async (req: Request, res: Response) => {
 
     await prisma.user.update({
       where: { id: decoded.userId },
-      data: { geminiApiKey: apiKey || null },
+      data: { geminiApiKey: apiKey ? encrypt(apiKey) : null },
     });
 
     console.log("✅ Gemini API key updated for user:", decoded.userId);

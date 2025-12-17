@@ -47,6 +47,24 @@ export const geminiModel = {
   },
 };
 
+// Decryption for stored API keys
+import crypto from "crypto";
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || "notely-encryption-key-32chars!!";
+
+function decrypt(text: string): string {
+  try {
+    const [ivHex, encrypted] = text.split(":");
+    const iv = Buffer.from(ivHex, "hex");
+    const decipher = crypto.createDecipheriv("aes-256-cbc", Buffer.from(ENCRYPTION_KEY), iv);
+    let decrypted = decipher.update(encrypted, "hex", "utf8");
+    decrypted += decipher.final("utf8");
+    return decrypted;
+  } catch {
+    // If decryption fails, assume it's stored in plain text (legacy)
+    return text;
+  }
+}
+
 // Helper to get user's API key from database
 export async function getUserApiKey(userId: string): Promise<string | null> {
   const { prisma } = await import("../src/lib/prisma");
@@ -54,5 +72,6 @@ export async function getUserApiKey(userId: string): Promise<string | null> {
     where: { id: userId },
     select: { geminiApiKey: true },
   });
-  return user?.geminiApiKey || null;
+  if (!user?.geminiApiKey) return null;
+  return decrypt(user.geminiApiKey);
 }
