@@ -120,12 +120,14 @@ app.post("/sections", async (req, res) => {
 
     // Parse JSON from response - handle both array and object formats
     let sections;
+    let summary = "";
     const objectMatch = text.match(/\{[\s\S]*"sections"[\s\S]*\}/);
     const arrayMatch = text.match(/\[[\s\S]*\]/);
 
     if (objectMatch) {
       const parsed = JSON.parse(sanitizeJson(objectMatch[0]));
       sections = parsed.sections || parsed;
+      summary = parsed.summary || "";
     } else if (arrayMatch) {
       sections = JSON.parse(sanitizeJson(arrayMatch[0]));
     } else {
@@ -133,8 +135,8 @@ app.post("/sections", async (req, res) => {
       throw new Error("No valid JSON found in response");
     }
 
-    console.log("[Sections] Parsed sections:", sections.length);
-    res.json({ sections });
+    console.log("[Sections] Parsed sections:", sections.length, "summary:", !!summary);
+    res.json({ sections, summary });
   } catch (error: any) {
     console.error("[Sections] Error:", error?.message || error);
     res.status(500).json({ error: "Failed to generate sections" });

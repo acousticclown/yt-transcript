@@ -35,6 +35,7 @@ type GeneratedNote = {
   tags: string[];
   language: "english" | "hindi" | "hinglish";
   sections: NoteSection[];
+  content?: string; // Overall summary
   source: "youtube";
   youtubeUrl: string;
   videoId: string;
@@ -325,6 +326,7 @@ export default function YouTubePage() {
         tags: existingNote.tags || ["youtube"],
         language: (existingNote.language as "english" | "hindi" | "hinglish") || "english",
         sections: existingNote.sections || [],
+        content: existingNote.content || "",
         source: "youtube",
         youtubeUrl: existingNote.youtubeUrl || url,
         videoId: existingNote.videoId || videoId,
@@ -368,12 +370,14 @@ export default function YouTubePage() {
 
       const videoTitle = sections[0]?.title || "YouTube Notes";
       const videoId = result.videoId || extractVideoId(url) || "";
+      const videoSummary = result.summary || "";
 
       const noteData = {
         title: videoTitle,
         tags: ["youtube"],
         language: "english" as const,
         sections,
+        content: videoSummary,
         source: "youtube" as const,
         youtubeUrl: url,
         videoId,
@@ -383,7 +387,7 @@ export default function YouTubePage() {
       try {
         const savedNote = await createNote.mutateAsync({
           title: noteData.title,
-          content: "",
+          content: videoSummary,
           tags: noteData.tags,
           language: noteData.language,
           source: "youtube",
@@ -526,10 +530,10 @@ export default function YouTubePage() {
                   )}{" "}
                   key points
                 </p>
-                {/* Video summary - first section summary truncated */}
-                {generatedNote.sections[0]?.summary && (
+                {/* Overall video summary - truncated */}
+                {generatedNote.content && (
                   <p className="text-xs text-[var(--color-text-subtle)] line-clamp-2">
-                    {generatedNote.sections[0].summary}
+                    {generatedNote.content}
                   </p>
                 )}
               </div>

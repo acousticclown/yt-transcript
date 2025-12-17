@@ -216,6 +216,7 @@ export const youtubeApi = {
   // Combined: fetch transcript + generate sections with timestamps
   async generate(url: string): Promise<{
     sections: NoteSection[];
+    summary?: string;
     videoId?: string;
     error?: string;
   }> {
@@ -231,7 +232,7 @@ export const youtubeApi = {
       return { sections: [], error: transcriptData.error };
     }
 
-    // 2. Generate sections with timestamps
+    // 2. Generate sections with timestamps and summary
     const sectionsRes = await fetch(`${API_BASE}/sections`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -248,6 +249,7 @@ export const youtubeApi = {
 
     return {
       sections: sectionsData.sections || [],
+      summary: sectionsData.summary || "",
       videoId: transcriptData.videoId,
     };
   },
