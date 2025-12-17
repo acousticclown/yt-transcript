@@ -7,7 +7,10 @@
     "start": "tsx src/index.ts",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "db:push": "prisma db push"
+    "db:push": "prisma db push",
+    "db:generate": "prisma generate",
+    "db:migrate:prod": "prisma migrate deploy",
+    "migrate:postgres": "tsx scripts/migrate-to-postgres.ts"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

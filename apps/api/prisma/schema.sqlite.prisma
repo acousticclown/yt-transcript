@@ -1,12 +1,12 @@
-// Notely Database Schema
-// SQLite for local dev, PostgreSQL for production
+// Notely Database Schema - SQLite (Local Development)
+// This is a copy of the main schema for local development
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -90,3 +90,4 @@ model NoteTag {
 
   @@id([noteId, tagId])
 }
+
