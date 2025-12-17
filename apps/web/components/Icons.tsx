@@ -216,3 +216,21 @@ export function RefreshIcon({ className = "w-5 h-5", size }: IconProps) {
   );
 }
 
+export function PlayIcon({ className = "w-5 h-5", size }: IconProps) {
+  const style = size ? { width: size, height: size } : undefined;
+  return (
+    <svg className={className} style={style} fill="currentColor" viewBox="0 0 24 24">
+      <path d="M8 5v14l11-7z" />
+    </svg>
+  );
+}
+
+export function ClockIcon({ className = "w-5 h-5", size }: IconProps) {
+  const style = size ? { width: size, height: size } : undefined;
+  return (
+    <svg className={className} style={style} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+

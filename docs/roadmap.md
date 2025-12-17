@@ -3,11 +3,13 @@
 ## Released
 
 ### v1.0.0 - YouTube Transcript MVP
+
 - YouTube transcript extraction
 - AI-powered section generation
 - Basic UI with section cards
 
 ### v1.1.0 - UI Enhancement
+
 - Design system with CSS variables
 - Light/dark mode with system preference
 - Mobile-first responsive design
@@ -15,6 +17,7 @@
 - Accessibility improvements
 
 ### v1.2.0 - Notes App
+
 - Full note editor with formatting
 - Manual note creation
 - Tags and organization
@@ -23,12 +26,14 @@
 - Vector illustrations
 
 ### v1.3.0 - Database & Auth
+
 - SQLite database with Prisma
 - User authentication (JWT)
 - TanStack Query for data fetching
 - Proper CRUD operations
 
 ### v1.5.0 - AI Generation & Polish
+
 - AI note generation from prompts
 - SSE streaming with thinking states
 - Model fallback chain
@@ -44,18 +49,31 @@
 
 ## Planned
 
-### v1.6.0 - Enhanced AI
+### v1.6.0 - YouTube Experience Revamp
+
+- [ ] Embedded YouTube player in-app
+- [ ] Timeline sync with transcript sections
+- [ ] Clickable timestamps (jump to video position)
+- [ ] AI-generated timestamps with descriptions
+- [ ] Split view: video + notes side by side
+- [ ] Current position indicator in sections
+- [ ] Seamless, robust UI with optimized UX
+
+### v1.7.0 - Enhanced AI
+
 - [ ] AI chat within notes
 - [ ] Context-aware suggestions
 - [ ] Smart tagging
 - [ ] Related notes
 
-### v1.7.0 - Collaboration
+### v1.8.0 - Collaboration
+
 - [ ] Share notes (public links)
 - [ ] Export to PDF
 - [ ] Import from Markdown
 
 ### v2.0.0 - Cloud
+
 - [ ] PostgreSQL migration
 - [ ] Cloud deployment
 - [ ] Sync across devices
@@ -63,6 +81,7 @@
 ---
 
 ## Ideas Backlog
+
 - Voice input (Whisper integration)
 - Browser extension
 - Mobile app (React Native)

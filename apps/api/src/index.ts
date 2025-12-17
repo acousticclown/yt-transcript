@@ -11,7 +11,7 @@ import aiRouter from "./routes/ai";
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
 import { geminiModel } from "../ai/gemini";
-import { sectionDetectionPrompt } from "../../../packages/prompts/sectionDetection";
+import { sectionDetectionPrompt, sectionDetectionWithTimestampsPrompt } from "../../../packages/prompts/sectionDetection";
 import { cleanTranscript } from "../utils/cleanTranscript";
 
 const app = express();
@@ -57,7 +57,16 @@ app.post("/transcript", async (req, res) => {
     const transcript = subtitles.map((s: any) => s.text).join(" ");
     const cleanedTranscript = cleanTranscript(transcript);
 
-    res.json({ transcript: cleanedTranscript, videoId });
+    // Return both cleaned transcript and raw subtitles with timestamps
+    res.json({
+      transcript: cleanedTranscript,
+      videoId,
+      subtitles: subtitles.map((s: any) => ({
+        text: s.text,
+        start: parseFloat(s.start) || 0,
+        dur: parseFloat(s.dur) || 0,
+      })),
+    });
   } catch (error) {
     console.error("Transcript error:", error);
     res.status(500).json({ error: "Failed to extract transcript" });
@@ -83,25 +92,36 @@ app.post("/summary", async (req, res) => {
   }
 });
 
-// POST /sections - Generate structured sections
+// POST /sections - Generate structured sections with timestamps
 app.post("/sections", async (req, res) => {
   try {
-    const { transcript } = req.body;
-    if (!transcript) {
-      return res.status(400).json({ error: "Transcript is required" });
+    const { transcript, subtitles } = req.body;
+    if (!transcript && !subtitles) {
+      return res.status(400).json({ error: "Transcript or subtitles required" });
     }
 
-    const prompt = sectionDetectionPrompt(transcript);
+    // Use timestamps if available, otherwise estimate
+    const prompt = subtitles && subtitles.length > 0
+      ? sectionDetectionWithTimestampsPrompt(subtitles)
+      : sectionDetectionPrompt(transcript);
+
     const result = await geminiModel.generateContent(prompt);
     const text = result.response.text();
 
-    // Parse JSON from response
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      throw new Error("No JSON array found in response");
+    // Parse JSON from response - handle both array and object formats
+    let sections;
+    const objectMatch = text.match(/\{[\s\S]*"sections"[\s\S]*\}/);
+    const arrayMatch = text.match(/\[[\s\S]*\]/);
+
+    if (objectMatch) {
+      const parsed = JSON.parse(sanitizeJson(objectMatch[0]));
+      sections = parsed.sections || parsed;
+    } else if (arrayMatch) {
+      sections = JSON.parse(sanitizeJson(arrayMatch[0]));
+    } else {
+      throw new Error("No valid JSON found in response");
     }
 
-    const sections = JSON.parse(sanitizeJson(jsonMatch[0]));
     res.json({ sections });
   } catch (error) {
     console.error("Sections error:", error);

@@ -63,6 +63,8 @@ export type NoteSection = {
   summary: string;
   bullets: string[];
   language: "english" | "hindi" | "hinglish";
+  startTime?: number;
+  endTime?: number;
 };
 
 export type Note = {
@@ -199,20 +201,25 @@ export const youtubeApi = {
   },
 
   async generateSections(
-    transcript: string
+    transcript: string,
+    subtitles?: { text: string; start: number; dur: number }[]
   ): Promise<{ sections: NoteSection[] }> {
     const res = await fetch(`${API_BASE}/sections`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transcript }),
+      body: JSON.stringify({ transcript, subtitles }),
     });
     if (!res.ok) throw new Error("Failed to generate sections");
     return res.json();
   },
 
-  // Combined: fetch transcript + generate sections
-  async generate(url: string): Promise<{ sections: any[]; error?: string }> {
-    // 1. Get transcript
+  // Combined: fetch transcript + generate sections with timestamps
+  async generate(url: string): Promise<{
+    sections: NoteSection[];
+    videoId?: string;
+    error?: string;
+  }> {
+    // 1. Get transcript with subtitles
     const transcriptRes = await fetch(`${API_BASE}/transcript`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -224,11 +231,14 @@ export const youtubeApi = {
       return { sections: [], error: transcriptData.error };
     }
 
-    // 2. Generate sections
+    // 2. Generate sections with timestamps
     const sectionsRes = await fetch(`${API_BASE}/sections`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ transcript: transcriptData.transcript }),
+      body: JSON.stringify({
+        transcript: transcriptData.transcript,
+        subtitles: transcriptData.subtitles,
+      }),
     });
     const sectionsData = await sectionsRes.json();
 
@@ -236,7 +246,10 @@ export const youtubeApi = {
       return { sections: [], error: sectionsData.error };
     }
 
-    return { sections: sectionsData.sections || [] };
+    return {
+      sections: sectionsData.sections || [],
+      videoId: transcriptData.videoId,
+    };
   },
 };
 
