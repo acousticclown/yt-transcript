@@ -7,7 +7,7 @@
 import type { Response, Request } from "express";
 import { GoogleGenAI } from "@google/genai";
 import jwt from "jsonwebtoken";
-import { getUserApiKey } from "../../ai/gemini";
+import { getUserApiKey } from "../../ai/gemini.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
 
