@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../../lib/utils";
 import { Logo } from "../Logo";
+import { useUser } from "../../lib/UserContext";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -24,6 +26,21 @@ const bottomItems = [
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useUser();
+  const [showUserMenu, setShowUserMenu] = useState(false);
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
+  const initials = user?.name
+    ?.split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2) || "U";
 
   return (
     <>
@@ -121,19 +138,68 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             })}
           </ul>
 
-          {/* User */}
-          <div className="mt-4 flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--color-bg)]">
-            <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-medium text-sm">
-              U
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-[var(--color-text)] truncate">User</p>
-              <p className="text-xs text-[var(--color-text-muted)] truncate">user@example.com</p>
-            </div>
+          {/* User with dropdown */}
+          <div className="mt-4 relative">
+            <button
+              onClick={() => setShowUserMenu(!showUserMenu)}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-[var(--color-bg)] hover:bg-[var(--color-bg-alt)] transition-colors"
+            >
+              {user?.avatar ? (
+                <img
+                  src={user.avatar}
+                  alt={user.name}
+                  className="w-8 h-8 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-full bg-[var(--color-primary)] flex items-center justify-center text-white font-medium text-sm">
+                  {initials}
+                </div>
+              )}
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-sm font-medium text-[var(--color-text)] truncate">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-xs text-[var(--color-text-muted)] truncate">
+                  {user?.email || "user@example.com"}
+                </p>
+              </div>
+              <svg
+                className={cn(
+                  "w-4 h-4 text-[var(--color-text-muted)] transition-transform",
+                  showUserMenu && "rotate-180"
+                )}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+
+            {/* User menu dropdown */}
+            <AnimatePresence>
+              {showUserMenu && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="absolute bottom-full left-0 right-0 mb-2 bg-[var(--color-surface)] rounded-xl border border-[var(--color-border)] shadow-lg overflow-hidden"
+                >
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign Out
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </aside>
     </>
   );
 }
-

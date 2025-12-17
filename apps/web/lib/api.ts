@@ -1,5 +1,61 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+// Auth helpers
+function getToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("notely-token");
+}
+
+function authHeaders(): HeadersInit {
+  const token = getToken();
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// Auth types
+export type User = {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string | null;
+};
+
+// Auth API
+export const authApi = {
+  async login(email: string, password: string): Promise<{ token: string; user: User }> {
+    const res = await fetch(`${API_BASE}/api/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Login failed");
+    }
+    return res.json();
+  },
+
+  async signup(email: string, password: string, name: string): Promise<{ token: string; user: User }> {
+    const res = await fetch(`${API_BASE}/api/auth/signup`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name }),
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Signup failed");
+    }
+    return res.json();
+  },
+
+  async me(): Promise<{ user: User }> {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { ...authHeaders() },
+    });
+    if (!res.ok) throw new Error("Not authenticated");
+    return res.json();
+  },
+};
+
 // Types
 export type NoteSection = {
   id: string;

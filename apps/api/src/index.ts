@@ -5,6 +5,7 @@ import cors from "cors";
 // Routes
 import notesRouter from "./routes/notes";
 import tagsRouter from "./routes/tags";
+import authRouter from "./routes/auth";
 
 // Legacy imports for YouTube/AI features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -23,6 +24,7 @@ app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
 // API Routes
+app.use("/api/auth", authRouter);
 app.use("/api/notes", notesRouter);
 app.use("/api/tags", tagsRouter);
 

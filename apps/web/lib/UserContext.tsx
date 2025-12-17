@@ -1,58 +1,66 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from "react";
+import { authApi, type User } from "./api";
 
-type User = {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-};
+type AuthState = "loading" | "authenticated" | "unauthenticated";
 
 type UserContextType = {
   user: User | null;
-  isLoggedIn: boolean;
-  login: (email: string, password: string) => void;
-  signup: (name: string, email: string, password: string) => void;
+  authState: AuthState;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string, name: string) => Promise<void>;
   logout: () => void;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Mock user for demo
-const mockUser: User = {
-  id: "1",
-  name: "Demo User",
-  email: "demo@example.com",
-};
-
 export function UserProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [authState, setAuthState] = useState<AuthState>("loading");
 
-  const login = (email: string, _password: string) => {
-    // Mock login - just set the user
-    setUser({ ...mockUser, email });
-  };
+  // Check for existing session on mount
+  useEffect(() => {
+    const token = localStorage.getItem("notely-token");
+    if (!token) {
+      setAuthState("unauthenticated");
+      return;
+    }
 
-  const signup = (name: string, email: string, _password: string) => {
-    // Mock signup - create user
-    setUser({ ...mockUser, name, email });
-  };
+    // Verify token
+    authApi.me()
+      .then(({ user }) => {
+        setUser(user);
+        setAuthState("authenticated");
+      })
+      .catch(() => {
+        localStorage.removeItem("notely-token");
+        setAuthState("unauthenticated");
+      });
+  }, []);
 
-  const logout = () => {
+  const login = useCallback(async (email: string, password: string) => {
+    const { token, user } = await authApi.login(email, password);
+    localStorage.setItem("notely-token", token);
+    setUser(user);
+    setAuthState("authenticated");
+  }, []);
+
+  const signup = useCallback(async (email: string, password: string, name: string) => {
+    const { token, user } = await authApi.signup(email, password, name);
+    localStorage.setItem("notely-token", token);
+    setUser(user);
+    setAuthState("authenticated");
+  }, []);
+
+  const logout = useCallback(() => {
+    localStorage.removeItem("notely-token");
     setUser(null);
-  };
+    setAuthState("unauthenticated");
+  }, []);
 
   return (
-    <UserContext.Provider
-      value={{
-        user,
-        isLoggedIn: !!user,
-        login,
-        signup,
-        logout,
-      }}
-    >
+    <UserContext.Provider value={{ user, authState, login, signup, logout }}>
       {children}
     </UserContext.Provider>
   );
@@ -65,4 +73,3 @@ export function useUser() {
   }
   return context;
 }
-
