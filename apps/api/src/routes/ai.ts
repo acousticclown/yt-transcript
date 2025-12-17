@@ -12,8 +12,8 @@ import {
   generateAI,
   sanitizeJson,
   getUserIdFromRequest
-} from "../lib/aiStream";
-import { getUserApiKey } from "../../ai/gemini";
+} from "../lib/aiStream.js";
+import { getUserApiKey } from "../../ai/gemini.js";
 import { 
   NOTE_GENERATION_SYSTEM_PROMPT,
   noteGenerationPrompt,

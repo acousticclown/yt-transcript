@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { prisma } from "../lib/prisma";
+import { prisma } from "../lib/prisma.js";
 
 const router = Router();
 const JWT_SECRET = process.env.JWT_SECRET || "notely-secret-key-change-in-production";
