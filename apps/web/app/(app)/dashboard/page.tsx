@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { motion } from "framer-motion";
 import { NoteCard } from "../../../components/notes";
@@ -14,6 +14,7 @@ import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
 import { useSearch } from "../../../lib/SearchContext";
 import { SearchIcon } from "../../../components/Icons";
+import { Onboarding } from "../../../components/Onboarding";
 
 // Lazy load AISpotlight (heavy component with AI streaming)
 const AISpotlight = dynamic(() => import("../../../components/AISpotlight").then(mod => ({ default: mod.AISpotlight })), {
@@ -64,6 +65,17 @@ export default function DashboardPage() {
   const notes = allNotes.slice(0, 10);
   const cardNotes = notes.map(toCardNote);
 
+  // Show onboarding for first-time users (no notes)
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  useEffect(() => {
+    if (!isLoading && allNotes.length === 0) {
+      const completed = localStorage.getItem("onboarding-completed");
+      if (completed !== "true") {
+        setShowOnboarding(true);
+      }
+    }
+  }, [isLoading, allNotes.length]);
+
   const handleDelete = (id: string) => {
     deleteNote.mutate(id);
   };
@@ -80,9 +92,14 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-5rem)] lg:h-screen overflow-hidden flex flex-col p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* API Key Banner - subtle reminder */}
-      <ApiKeyBanner />
+    <>
+      <Onboarding 
+        isVisible={showOnboarding} 
+        onComplete={() => setShowOnboarding(false)} 
+      />
+      <div className="h-[calc(100vh-5rem)] lg:h-screen overflow-hidden flex flex-col p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+        {/* API Key Banner - subtle reminder */}
+        <ApiKeyBanner />
 
       {/* Hero Section with Wave Art */}
       <motion.div
@@ -257,7 +274,8 @@ export default function DashboardPage() {
           <EmptyState />
         )}
       </motion.div>
-    </div>
+      </div>
+    </>
   );
 }
 
