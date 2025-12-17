@@ -1,0 +1,77 @@
+// Notely Database Schema
+// SQLite for local dev, PostgreSQL for production
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String?  @unique
+  name      String?
+  createdAt DateTime @default(now())
+  notes     Note[]
+  tags      Tag[]
+}
+
+model Note {
+  id         String    @id @default(uuid())
+  title      String
+  content    String    @default("")
+  language   String    @default("english")
+  source     String    @default("manual")
+  youtubeUrl String?
+  isFavorite Boolean   @default(false)
+  color      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  sections Section[]
+  noteTags NoteTag[]
+
+  @@index([userId])
+}
+
+model Section {
+  id       String @id @default(uuid())
+  title    String
+  summary  String
+  bullets  String // JSON array stored as string
+  language String @default("english")
+  order    Int
+
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+
+  @@index([noteId])
+}
+
+model Tag {
+  id    String  @id @default(uuid())
+  name  String
+  color String?
+
+  userId   String
+  user     User      @relation(fields: [userId], references: [id])
+  noteTags NoteTag[]
+
+  @@unique([userId, name])
+  @@index([userId])
+}
+
+// Junction table for Note-Tag many-to-many
+model NoteTag {
+  noteId String
+  tagId  String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+}
