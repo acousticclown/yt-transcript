@@ -40,22 +40,29 @@ app.get("/health", (req, res) => {
 app.post("/transcript", async (req, res) => {
   try {
     const { url } = req.body;
+    console.log("[Transcript] Extracting from:", url);
+    
     if (!url) {
       return res.status(400).json({ error: "URL is required" });
     }
 
     const videoId = extractVideoId(url);
+    console.log("[Transcript] Video ID:", videoId);
+    
     if (!videoId) {
       return res.status(400).json({ error: "Invalid YouTube URL" });
     }
 
+    console.log("[Transcript] Fetching subtitles...");
     const subtitles = await getSubtitles({ videoID: videoId, lang: "en" });
+    console.log("[Transcript] Got subtitles:", subtitles?.length || 0);
+    
     if (!subtitles || subtitles.length === 0) {
       return res.status(404).json({ error: "No captions found" });
     }
 
-    const transcript = subtitles.map((s: any) => s.text).join(" ");
-    const cleanedTranscript = cleanTranscript(transcript);
+    // cleanTranscript expects array of {text} objects
+    const cleanedTranscript = cleanTranscript(subtitles);
 
     // Return both cleaned transcript and raw subtitles with timestamps
     res.json({
@@ -67,8 +74,8 @@ app.post("/transcript", async (req, res) => {
         dur: parseFloat(s.dur) || 0,
       })),
     });
-  } catch (error) {
-    console.error("Transcript error:", error);
+  } catch (error: any) {
+    console.error("[Transcript] Error:", error?.message || error);
     res.status(500).json({ error: "Failed to extract transcript" });
   }
 });
