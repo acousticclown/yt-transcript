@@ -17,6 +17,7 @@ import {
   ClockIcon,
   NotesIcon,
   ExternalLinkIcon,
+  PenIcon,
 } from "../../../components/Icons";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
@@ -29,6 +30,7 @@ const loadingMessages = [
 ];
 
 type GeneratedNote = {
+  id?: string; // Set after auto-save
   title: string;
   tags: string[];
   language: "english" | "hindi" | "hinglish";
@@ -334,16 +336,37 @@ export default function YouTubePage() {
       );
 
       const videoTitle = sections[0]?.title || "YouTube Notes";
+      const videoId = result.videoId || extractVideoId(url) || "";
 
-      setGeneratedNote({
+      const noteData = {
         title: videoTitle,
         tags: ["youtube"],
-        language: "english",
+        language: "english" as const,
         sections,
-        source: "youtube",
+        source: "youtube" as const,
         youtubeUrl: url,
-        videoId: result.videoId || extractVideoId(url) || "",
-      });
+        videoId,
+      };
+
+      // Auto-save the note
+      try {
+        const savedNote = await createNote.mutateAsync({
+          title: noteData.title,
+          content: "",
+          tags: noteData.tags,
+          language: noteData.language,
+          source: "youtube",
+          youtubeUrl: noteData.youtubeUrl,
+          sections: noteData.sections,
+        });
+        
+        setGeneratedNote({ ...noteData, id: savedNote.id });
+        setSaveState("saved");
+      } catch (saveErr) {
+        console.error("Auto-save failed:", saveErr);
+        // Still show the note even if save failed
+        setGeneratedNote(noteData);
+      }
     } catch (error) {
       alert(
         "⚠️ Couldn't generate notes right now. Make sure the API server is running on port 3001."
@@ -413,14 +436,25 @@ export default function YouTubePage() {
 
             <div className="flex items-center gap-3">
               <SaveIndicator state={saveState} />
-              <ActionButton
-                onClick={handleSave}
-                variant="primary"
-                size="sm"
-                icon={<CheckIcon className="w-4 h-4" />}
-              >
-                Save Note
-              </ActionButton>
+              {generatedNote.id ? (
+                <ActionButton
+                  onClick={() => router.push(`/notes/${generatedNote.id}?edit=true`)}
+                  variant="primary"
+                  size="sm"
+                  icon={<PenIcon className="w-4 h-4" />}
+                >
+                  Edit Note
+                </ActionButton>
+              ) : (
+                <ActionButton
+                  onClick={handleSave}
+                  variant="primary"
+                  size="sm"
+                  icon={<CheckIcon className="w-4 h-4" />}
+                >
+                  Save Note
+                </ActionButton>
+              )}
             </div>
           </div>
         </div>

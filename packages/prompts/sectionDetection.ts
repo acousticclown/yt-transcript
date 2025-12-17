@@ -38,25 +38,32 @@ ${transcript}
 export function sectionDetectionWithTimestampsPrompt(
   subtitles: { text: string; start: number; dur: number }[]
 ): string {
-  // Format subtitles with timestamps for AI
+  // Calculate video duration from last subtitle
+  const lastSub = subtitles[subtitles.length - 1];
+  const videoDuration = Math.ceil(lastSub.start + lastSub.dur);
+  
+  // Format subtitles with raw seconds for AI
   const formattedTranscript = subtitles
-    .map((s) => `[${formatTime(s.start)}] ${s.text}`)
+    .map((s) => `[${Math.round(s.start)}s] ${s.text}`)
     .join("\n");
 
-  return `You are given a YouTube video transcript with timestamps.
+  return `You are given a YouTube video transcript with timestamps in seconds.
+
+Video duration: ${videoDuration} seconds
 
 Your task:
 - Identify major topic changes
-- Break the transcript into logical sections
+- Break the transcript into logical sections (3-6 sections typically)
 - Each section must represent one clear idea
-- Use the actual timestamps from the transcript
+- Use the EXACT timestamps from the transcript for startTime
+- endTime should be the startTime of the next section (or video duration for last section)
 
-Rules:
-- Return ONLY valid JSON
-- Do NOT include explanations
-- Do NOT add information not present in the transcript
-- Be concise and factual
-- Use actual timestamps from the transcript (in seconds)
+CRITICAL RULES:
+- Return ONLY valid JSON, no explanations
+- startTime and endTime must be integers IN SECONDS
+- startTime values must come from the [Xs] timestamps in the transcript
+- endTime must NOT exceed ${videoDuration} seconds (the video duration)
+- Do NOT invent timestamps - use only what appears in the transcript
 
 JSON format:
 {
@@ -75,10 +82,4 @@ Transcript with timestamps:
 """
 ${formattedTranscript}
 """`;
-}
-
-function formatTime(seconds: number): string {
-  const mins = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${mins}:${secs.toString().padStart(2, "0")}`;
 }
