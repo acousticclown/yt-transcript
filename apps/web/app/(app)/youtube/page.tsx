@@ -265,6 +265,7 @@ export default function YouTubePage() {
   const [refining, setRefining] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState(loadingMessages[0]);
   const [rawTranscript, setRawTranscript] = useState<RawTranscript | null>(null);
+  const [savedRawNoteId, setSavedRawNoteId] = useState<string | null>(null);
   const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -367,6 +368,8 @@ export default function YouTubePage() {
           videoId: existingNote.videoId || videoId,
           subtitles,
         });
+        setSavedRawNoteId(existingNote.id);
+        setSaveState("saved");
       }
       return;
     }
@@ -379,6 +382,7 @@ export default function YouTubePage() {
   async function fetchTranscript(videoId: string) {
     setLoading(true);
     setRawTranscript(null);
+    setSavedRawNoteId(null);
     setGeneratedNote(null);
     setLoadingMessage("Fetching transcript...");
 
@@ -400,11 +404,37 @@ export default function YouTubePage() {
         return;
       }
 
-      setRawTranscript({
+      const transcriptData = {
         transcript: data.transcript,
         videoId: data.videoId || videoId,
         subtitles: data.subtitles || [],
-      });
+      };
+      setRawTranscript(transcriptData);
+
+      // Auto-save raw transcript
+      try {
+        const formattedContent = transcriptData.subtitles
+          .map((s: { text: string; start: number; dur: number }) => `[${formatTime(s.start)}] ${s.text}`)
+          .join("\n");
+
+        const savedNote = await createNote.mutateAsync({
+          title: "YouTube Transcript",
+          content: formattedContent,
+          tags: ["youtube", "transcript"],
+          language: "english",
+          source: "youtube",
+          isAIGenerated: false,
+          youtubeUrl: url,
+          videoId: transcriptData.videoId,
+          sections: [],
+        });
+
+        setSavedRawNoteId(savedNote.id);
+        setSaveState("saved");
+      } catch (err) {
+        console.error("Auto-save error:", err);
+        // Continue even if auto-save fails
+      }
     } catch (error) {
       alert("⚠️ Couldn't fetch transcript. Make sure the API server is running.");
     } finally {
@@ -487,6 +517,7 @@ export default function YouTubePage() {
       }
 
       setRawTranscript(null); // Clear raw transcript view
+      setSavedRawNoteId(null);
     } catch (error) {
       alert("⚠️ AI refinement failed. Please try again.");
     } finally {
@@ -494,40 +525,6 @@ export default function YouTubePage() {
     }
   }
 
-  // Save raw transcript as simple note (no AI)
-  async function saveAsRawNote() {
-    if (!rawTranscript) return;
-
-    setSaveState("saving");
-
-    try {
-      // Format transcript with timestamps
-      const formattedContent = rawTranscript.subtitles
-        .map((s) => `[${formatTime(s.start)}] ${s.text}`)
-        .join("\n");
-
-      const savedNote = await createNote.mutateAsync({
-        title: "YouTube Transcript",
-        content: formattedContent,
-        tags: ["youtube", "transcript"],
-        language: "english",
-        source: "youtube",
-        isAIGenerated: false, // Raw transcript, not AI enhanced
-        youtubeUrl: url,
-        videoId: rawTranscript.videoId,
-        sections: [],
-      });
-
-      // Clear state before navigating
-      setRawTranscript(null);
-      setSaveState("idle");
-      router.push(`/notes/${savedNote.id}?edit=true`);
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("⚠️ Failed to save note");
-      setSaveState("error");
-    }
-  }
 
   function extractVideoId(url: string): string | null {
     const patterns = [
@@ -575,7 +572,10 @@ export default function YouTubePage() {
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <button
-                onClick={() => setRawTranscript(null)}
+                onClick={() => {
+                  setRawTranscript(null);
+                  setSavedRawNoteId(null);
+                }}
                 className="p-2 hover:bg-[var(--color-bg)] rounded-lg transition-colors"
               >
                 ←
@@ -591,13 +591,15 @@ export default function YouTubePage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button
-                onClick={saveAsRawNote}
-                disabled={saveState === "saving"}
-                className="px-4 py-2 text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-bg)] rounded-xl transition-colors"
-              >
-                Save as Text
-              </button>
+              {savedRawNoteId && (
+                <Link
+                  href={`/notes/${savedRawNoteId}`}
+                  className="px-4 py-2 text-sm font-medium bg-[var(--color-primary)] text-white rounded-xl hover:bg-[var(--color-primary-dark)] transition-colors flex items-center gap-2"
+                >
+                  <NotesIcon className="w-4 h-4" />
+                  View Note
+                </Link>
+              )}
               <button
                 onClick={refineWithAI}
                 disabled={refining}
