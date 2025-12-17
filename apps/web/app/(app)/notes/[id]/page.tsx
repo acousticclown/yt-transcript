@@ -2,10 +2,14 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { UnifiedNoteEditor } from "../../../../components/notes";
+import { SaveIndicator } from "../../../../components/ui";
 import { useNote, useUpdateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
+
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 export default function NoteEditorPage() {
   const params = useParams();
@@ -14,8 +18,18 @@ export default function NoteEditorPage() {
 
   const { data: note, isLoading, error } = useNote(noteId);
   const updateNote = useUpdateNote();
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  // Auto-hide saved state
+  useEffect(() => {
+    if (saveState === "saved") {
+      const timer = setTimeout(() => setSaveState("idle"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveState]);
 
   const handleSave = async (data: any) => {
+    setSaveState("saving");
     try {
       await updateNote.mutateAsync({
         id: noteId,
@@ -27,9 +41,10 @@ export default function NoteEditorPage() {
           sections: data.sections,
         },
       });
-      router.push("/notes");
+      setSaveState("saved");
     } catch (err) {
       console.error("Failed to update note:", err);
+      setSaveState("error");
     }
   };
 
@@ -79,9 +94,7 @@ export default function NoteEditorPage() {
           ← Back
         </Link>
         <h1 className="text-xl font-semibold text-[var(--color-text)]">Edit Note</h1>
-        {updateNote.isPending && (
-          <span className="text-sm text-[var(--color-text-muted)]">Saving...</span>
-        )}
+        <SaveIndicator state={saveState} />
       </motion.div>
 
       {/* Editor */}

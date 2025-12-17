@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Container, Stack } from "../../../components/layout";
 import { ActionButton } from "../../../components/ActionButton";
 import { UnifiedNoteEditor } from "../../../components/notes";
+import { SaveIndicator } from "../../../components/ui";
 import { useCreateNote } from "../../../lib/hooks";
 import { youtubeApi, aiApi } from "../../../lib/api";
+
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 const loadingMessages = [
   "🧠 Listening to the video…",
@@ -41,6 +44,15 @@ export default function YouTubePage() {
   const [generatedNote, setGeneratedNote] = useState<GeneratedNote | null>(null);
 
   const createNote = useCreateNote();
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  // Auto-hide saved state
+  useEffect(() => {
+    if (saveState === "saved") {
+      const timer = setTimeout(() => setSaveState("idle"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveState]);
 
   async function generateNotes() {
     if (!url.trim()) return;
@@ -98,6 +110,7 @@ export default function YouTubePage() {
   }
 
   const handleSave = async (note: any) => {
+    setSaveState("saving");
     try {
       const result = await createNote.mutateAsync({
         title: note.title || "YouTube Notes",
@@ -108,10 +121,11 @@ export default function YouTubePage() {
         youtubeUrl: generatedNote?.youtubeUrl || url,
         sections: note.sections || [],
       });
-      router.push(`/notes/${result.id}`);
+      setSaveState("saved");
+      setTimeout(() => router.push(`/notes/${result.id}`), 500);
     } catch (err) {
       console.error("Failed to save note:", err);
-      alert("Failed to save note. Please try again.");
+      setSaveState("error");
     }
   };
 
@@ -134,13 +148,16 @@ export default function YouTubePage() {
         <Stack gap={6}>
           {/* Header */}
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-                Generated Notes
-              </h1>
-              <p className="mt-1 text-[var(--color-text-muted)] text-sm truncate max-w-md">
-                From: {generatedNote.youtubeUrl}
-              </p>
+            <div className="flex items-center gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
+                  Generated Notes
+                </h1>
+                <p className="mt-1 text-[var(--color-text-muted)] text-sm truncate max-w-md">
+                  From: {generatedNote.youtubeUrl}
+                </p>
+              </div>
+              <SaveIndicator state={saveState} />
             </div>
             <button
               onClick={() => {
@@ -159,12 +176,6 @@ export default function YouTubePage() {
             onSave={handleSave}
             onAIAction={handleAIAction}
           />
-          
-          {createNote.isPending && (
-            <div className="fixed bottom-4 right-4 bg-[var(--color-surface)] px-4 py-2 rounded-xl shadow-lg border border-[var(--color-border)]">
-              Saving...
-            </div>
-          )}
         </Stack>
       </Container>
     );

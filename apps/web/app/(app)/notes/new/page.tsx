@@ -2,11 +2,14 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { UnifiedNoteEditor } from "../../../../components/notes";
+import { SaveIndicator } from "../../../../components/ui";
 import { useCreateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
+
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 function NewNotePageContent() {
   const router = useRouter();
@@ -14,8 +17,18 @@ function NewNotePageContent() {
   const prompt = searchParams.get("prompt");
   
   const createNote = useCreateNote();
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+
+  // Auto-hide saved state
+  useEffect(() => {
+    if (saveState === "saved") {
+      const timer = setTimeout(() => setSaveState("idle"), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [saveState]);
 
   const handleSave = async (note: any) => {
+    setSaveState("saving");
     try {
       const result = await createNote.mutateAsync({
         title: note.title || "Untitled",
@@ -26,9 +39,11 @@ function NewNotePageContent() {
         youtubeUrl: note.youtubeUrl,
         sections: note.sections || [],
       });
-      router.push(`/notes/${result.id}`);
+      setSaveState("saved");
+      setTimeout(() => router.push(`/notes/${result.id}`), 500);
     } catch (err) {
       console.error("Failed to save note:", err);
+      setSaveState("error");
     }
   };
 
@@ -59,9 +74,7 @@ function NewNotePageContent() {
           ← Back
         </Link>
         <h1 className="text-xl font-semibold text-[var(--color-text)]">New Note</h1>
-        {createNote.isPending && (
-          <span className="text-sm text-[var(--color-text-muted)]">Saving...</span>
-        )}
+        <SaveIndicator state={saveState} />
       </motion.div>
 
       {/* Editor */}
