@@ -249,9 +249,14 @@ function sanitizeJson(text: string): string {
     .replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
 }
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🚀 Notely API running on http://localhost:${PORT}`);
-  console.log(`📝 Notes API: http://localhost:${PORT}/api/notes`);
-  console.log(`🏷️  Tags API: http://localhost:${PORT}/api/tags`);
-});
+// Export for Vercel serverless functions
+export default app;
+
+// Start server (only in non-Vercel environments)
+if (process.env.VERCEL !== "1") {
+  app.listen(PORT, () => {
+    console.log(`🚀 Notely API running on http://localhost:${PORT}`);
+    console.log(`📝 Notes API: http://localhost:${PORT}/api/notes`);
+    console.log(`🏷️  Tags API: http://localhost:${PORT}/api/tags`);
+  });
+}
