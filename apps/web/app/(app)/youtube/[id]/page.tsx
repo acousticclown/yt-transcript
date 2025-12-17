@@ -136,7 +136,9 @@ function SectionCard({
           ? "bg-[var(--color-primary)]/10 border-[var(--color-primary)] shadow-md"
           : "bg-[var(--color-surface)] border-[var(--color-border)] hover:border-[var(--color-primary)]/50"
       }`}
-      onClick={() => section.startTime !== undefined && onSeek(section.startTime)}
+      onClick={() =>
+        section.startTime !== undefined && onSeek(section.startTime)
+      }
     >
       <div className="flex items-start gap-3">
         {section.startTime !== undefined && (
@@ -281,7 +283,9 @@ export default function YouTubeViewerPage() {
   if (!videoId) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <p className="text-[var(--color-text-muted)]">No YouTube video associated with this note</p>
+        <p className="text-[var(--color-text-muted)]">
+          No YouTube video associated with this note
+        </p>
         <Link href={`/notes/${noteId}`} className="text-[var(--color-primary)]">
           ← Back to Note
         </Link>
@@ -351,7 +355,8 @@ export default function YouTubeViewerPage() {
               <p className="flex items-center gap-2 text-sm text-[var(--color-text-muted)]">
                 <ClockIcon className="w-4 h-4" />
                 {note.sections.length} sections •{" "}
-                {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)} key points
+                {note.sections.reduce((acc, s) => acc + s.bullets.length, 0)}{" "}
+                key points
               </p>
               {/* Overall video summary */}
               {note.content && (
@@ -387,4 +392,3 @@ export default function YouTubeViewerPage() {
     </div>
   );
 }
-
