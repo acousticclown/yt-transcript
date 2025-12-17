@@ -163,89 +163,100 @@ export default function TagsPage() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      <div className="h-screen flex flex-col overflow-hidden max-w-4xl mx-auto">
+        <div className="flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-4 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-[var(--color-text)]">Tags</h1>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-4 flex items-center justify-center">
+          <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto">
-      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold text-[var(--color-text)]">Tags</h1>
-          <button
-            onClick={() => setShowNewTag(true)}
-            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm"
-          >
-            + New Tag
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="mb-6">
-          <input
-            type="text"
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            placeholder="Filter tags..."
-            className="w-full px-4 py-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-          />
-        </div>
-
-        {/* New Tag Form */}
-        <AnimatePresence>
-          {showNewTag && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="mb-6 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 overflow-hidden"
+    <div className="h-screen flex flex-col overflow-hidden max-w-4xl mx-auto">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-4 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-[var(--color-text)]">Tags</h1>
+            <button
+              onClick={() => setShowNewTag(true)}
+              className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm"
             >
-              <h3 className="font-medium text-[var(--color-text)] mb-4">Create New Tag</h3>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <input
-                  type="text"
-                  value={newTagName}
-                  onChange={(e) => setNewTagName(e.target.value)}
-                  placeholder="Tag name"
-                  autoFocus
-                  className="flex-1 px-3 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
-                />
-                <div className="flex gap-2">
-                  {COLORS.map((color) => (
-                    <button
-                      key={color}
-                      onClick={() => setNewTagColor(color)}
-                      className={`w-8 h-8 rounded-full transition-transform ${
-                        newTagColor === color ? "ring-2 ring-offset-2 ring-[var(--color-primary)] scale-110" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                    />
-                  ))}
-                </div>
-              </div>
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={handleCreateTag}
-                  disabled={createTag.isPending}
-                  className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm disabled:opacity-50"
-                >
-                  {createTag.isPending ? "Creating..." : "Create"}
-                </button>
-                <button
-                  onClick={() => setShowNewTag(false)}
-                  className="px-4 py-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors text-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              + New Tag
+            </button>
+          </div>
 
-        {/* Tags Grid */}
+          {/* Search */}
+          <div className="mb-4">
+            <input
+              type="text"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+              placeholder="Filter tags..."
+              className="w-full px-4 py-2.5 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl text-[var(--color-text)] placeholder:text-[var(--color-text-subtle)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+            />
+          </div>
+
+          {/* New Tag Form */}
+          <AnimatePresence>
+            {showNewTag && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mb-4 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-4 overflow-hidden"
+              >
+                <h3 className="font-medium text-[var(--color-text)] mb-4">Create New Tag</h3>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <input
+                    type="text"
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder="Tag name"
+                    autoFocus
+                    className="flex-1 px-3 py-2 bg-[var(--color-bg)] border border-[var(--color-border)] rounded-lg text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
+                  />
+                  <div className="flex gap-2">
+                    {COLORS.map((color) => (
+                      <button
+                        key={color}
+                        onClick={() => setNewTagColor(color)}
+                        className={`w-8 h-8 rounded-full transition-transform ${
+                          newTagColor === color ? "ring-2 ring-offset-2 ring-[var(--color-primary)] scale-110" : ""
+                        }`}
+                        style={{ backgroundColor: color }}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={handleCreateTag}
+                    disabled={createTag.isPending}
+                    className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-lg font-medium hover:bg-[var(--color-primary-dark)] transition-colors text-sm disabled:opacity-50"
+                  >
+                    {createTag.isPending ? "Creating..." : "Create"}
+                  </button>
+                  <button
+                    onClick={() => setShowNewTag(false)}
+                    className="px-4 py-2 text-[var(--color-text-muted)] hover:text-[var(--color-text)] transition-colors text-sm"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* Scrollable Tags Grid */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <AnimatePresence mode="popLayout">
             {filteredTags.map((tag, index) => (
@@ -264,7 +275,7 @@ export default function TagsPage() {
             {filter ? "No tags match your filter" : "No tags yet. Create your first tag!"}
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

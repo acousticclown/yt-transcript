@@ -12,6 +12,8 @@ import { NoteCardSkeleton } from "../../../components/ui";
 import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
 import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
+import { useSearch } from "../../../lib/SearchContext";
+import { SearchIcon } from "../../../components/Icons";
 
 // Lazy load AISpotlight (heavy component with AI streaming)
 const AISpotlight = dynamic(() => import("../../../components/AISpotlight").then(mod => ({ default: mod.AISpotlight })), {
@@ -50,6 +52,7 @@ function formatDate(dateStr: string): string {
 export default function DashboardPage() {
   const router = useRouter();
   const [aiSpotlightOpen, setAiSpotlightOpen] = useState(false);
+  const { openSearch } = useSearch();
 
   // TanStack Query hooks
   const { data: allNotes = [], isLoading } = useNotes();
@@ -138,6 +141,19 @@ export default function DashboardPage() {
           </p>
         </div>
       </motion.div>
+
+      {/* Mobile Search Button - Below greeting banner */}
+      <motion.button
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05 }}
+        onClick={() => openSearch()}
+        className="lg:hidden mb-6 w-full px-4 py-3 bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl text-left text-[var(--color-text-muted)] hover:border-[var(--color-primary)] hover:text-[var(--color-text)] transition-colors flex items-center gap-3"
+      >
+        <SearchIcon className="w-5 h-5" />
+        <span className="text-sm">Search notes, tags, and more...</span>
+        <span className="ml-auto text-xs text-[var(--color-text-subtle)]">⌘K</span>
+      </motion.button>
 
       {/* Primary Actions - Modern Card Grid */}
       <motion.div

@@ -132,51 +132,66 @@ function NotesPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6">
-        <NoteListSkeleton count={9} />
+      <div className="h-screen flex flex-col overflow-hidden max-w-6xl mx-auto">
+        <div className="flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-4 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-[var(--color-text)]">Notes</h1>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-4">
+          <NoteListSkeleton count={9} />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 text-center">
-        <p className="text-[var(--color-danger)]">Failed to load notes</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl"
-        >
-          Retry
-        </button>
+      <div className="h-screen flex flex-col overflow-hidden max-w-6xl mx-auto">
+        <div className="flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-4 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+          <div className="flex items-center justify-between mb-4">
+            <h1 className="text-2xl font-bold text-[var(--color-text)]">Notes</h1>
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-4 text-center">
+          <p className="text-[var(--color-danger)]">Failed to load notes</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* Header */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex items-center justify-between mb-6"
-      >
-        <h1 className="text-2xl font-bold text-[var(--color-text)]">Notes</h1>
-        <Link
-          href="/notes/new"
-          className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors flex items-center gap-2"
+    <div className="h-screen flex flex-col overflow-hidden max-w-6xl mx-auto">
+      {/* Fixed Header */}
+      <div className="flex-shrink-0 p-4 sm:p-6 lg:p-8 pb-4 border-b border-[var(--color-border)] bg-[var(--color-bg)]">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between mb-4"
         >
-          <span>+</span>
-          <span className="hidden sm:inline">New Note</span>
-        </Link>
-      </motion.div>
+          <h1 className="text-2xl font-bold text-[var(--color-text)]">Notes</h1>
+          <Link
+            href="/notes/new"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors flex items-center gap-2"
+          >
+            <span>+</span>
+            <span className="hidden sm:inline">New Note</span>
+          </Link>
+        </motion.div>
 
-      {/* Search & Filters */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.05 }}
-        className="mb-6 space-y-4"
-      >
+        {/* Search & Filters */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="space-y-4"
+        >
         {/* Search */}
         <input
           type="text"
@@ -276,14 +291,17 @@ function NotesPageContent() {
           )}
         </div>
       </motion.div>
+      </div>
 
-      {/* Notes Grid */}
-      <NoteList
-        notes={cardNotes}
-        onDelete={handleDelete}
-        onToggleFavorite={handleToggleFavorite}
-        emptyMessage={search || selectedTag ? "No notes match your filters" : "No notes yet. Create your first note!"}
-      />
+      {/* Scrollable Notes Grid */}
+      <div className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pt-4">
+        <NoteList
+          notes={cardNotes}
+          onDelete={handleDelete}
+          onToggleFavorite={handleToggleFavorite}
+          emptyMessage={search || selectedTag ? "No notes match your filters" : "No notes yet. Create your first note!"}
+        />
+      </div>
     </div>
   );
 }

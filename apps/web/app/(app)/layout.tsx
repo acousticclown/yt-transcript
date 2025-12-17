@@ -1,22 +1,23 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sidebar } from "../../components/layout/Sidebar";
 import { MobileNav } from "../../components/layout/MobileNav";
 import { SearchModal } from "../../components/SearchModal";
 import { useUser } from "../../lib/UserContext";
 import { useKeyboardShortcuts } from "../../lib/useKeyboardShortcuts";
+import { SearchProvider, useSearch } from "../../lib/SearchContext";
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function AppLayoutContent({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { authState } = useUser();
-  const [searchOpen, setSearchOpen] = useState(false);
+  const { isOpen, openSearch, closeSearch } = useSearch();
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
-    onSearch: () => setSearchOpen(true),
-    onClose: () => setSearchOpen(false),
+    onSearch: () => openSearch(),
+    onClose: () => closeSearch(),
     onYouTube: () => router.push("/youtube"),
     enabled: authState === "authenticated",
   });
@@ -47,7 +48,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="flex h-full">
         {/* Sidebar - Desktop only, fixed height */}
         <div className="hidden lg:block h-full">
-          <Sidebar isOpen={true} onClose={() => {}} onSearchClick={() => setSearchOpen(true)} />
+          <Sidebar isOpen={true} onClose={() => {}} onSearchClick={() => openSearch()} />
         </div>
 
         {/* Main content - independent scroll */}
@@ -62,7 +63,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <MobileNav />
 
       {/* Global search modal */}
-      <SearchModal isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      <SearchModal isOpen={isOpen} onClose={() => closeSearch()} />
     </div>
+  );
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <SearchProvider>
+      <AppLayoutContent>{children}</AppLayoutContent>
+    </SearchProvider>
   );
 }
