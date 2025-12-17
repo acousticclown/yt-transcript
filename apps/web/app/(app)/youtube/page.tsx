@@ -265,7 +265,7 @@ export default function YouTubePage() {
   const createNote = useCreateNote();
   
   // API key check
-  const { showPrompt, promptContext, setShowPrompt, checkAndPrompt } = useApiKeyCheck();
+  const { showPrompt, promptContext, handleClose: handleApiKeyClose, checkAndPrompt } = useApiKeyCheck();
   
   // Fetch all notes for cache checking
   const { data: allNotes } = useNotes();
@@ -697,11 +697,8 @@ export default function YouTubePage() {
       {/* API Key Prompt Modal */}
       <ApiKeyPrompt
         isOpen={showPrompt}
-        onClose={() => setShowPrompt(false)}
-        onSuccess={() => {
-          // Retry the generation after key is added
-          generateNotes();
-        }}
+        onClose={() => handleApiKeyClose(false)}
+        onSuccess={() => handleApiKeyClose(true)}
         context={promptContext}
       />
     </Container>

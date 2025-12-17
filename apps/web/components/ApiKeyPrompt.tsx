@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { SparklesIcon } from "./Icons";
@@ -158,36 +158,54 @@ export function ApiKeyPrompt({ isOpen, onClose, onSuccess, context = "ai-generat
 export function useApiKeyCheck() {
   const [showPrompt, setShowPrompt] = useState(false);
   const [promptContext, setPromptContext] = useState<"youtube" | "ai-generate" | "inline-action">("ai-generate");
+  const resolveRef = useRef<((hasKey: boolean) => void) | null>(null);
 
-  const checkAndPrompt = async (context: "youtube" | "ai-generate" | "inline-action" = "ai-generate"): Promise<boolean> => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return false;
+  const checkAndPrompt = (context: "youtube" | "ai-generate" | "inline-action" = "ai-generate"): Promise<boolean> => {
+    return new Promise(async (resolve) => {
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          resolve(false);
+          return;
+        }
 
-      const res = await fetch("http://localhost:3001/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      
-      if (!res.ok) return false;
-      
-      const data = await res.json();
-      
-      if (!data.user?.hasGeminiKey) {
-        setPromptContext(context);
-        setShowPrompt(true);
-        return false;
+        const res = await fetch("http://localhost:3001/api/auth/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        
+        if (!res.ok) {
+          resolve(false);
+          return;
+        }
+        
+        const data = await res.json();
+        
+        if (!data.user?.hasGeminiKey) {
+          setPromptContext(context);
+          setShowPrompt(true);
+          // Store resolve to call when user connects or dismisses
+          resolveRef.current = resolve;
+          return;
+        }
+        
+        resolve(true);
+      } catch {
+        resolve(false);
       }
-      
-      return true;
-    } catch {
-      return false;
-    }
+    });
+  };
+
+  const handleClose = (connected: boolean) => {
+    setShowPrompt(false);
+    // Resolve the promise with whether key was connected
+    resolveRef.current?.(connected);
+    resolveRef.current = null;
   };
 
   return {
     showPrompt,
     promptContext,
-    setShowPrompt,
+    handleClose,
     checkAndPrompt,
   };
 }
