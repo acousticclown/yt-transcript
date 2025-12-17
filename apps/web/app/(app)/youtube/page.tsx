@@ -9,14 +9,15 @@ import { UnifiedNoteEditor } from "../../../components/notes";
 import { SaveIndicator } from "../../../components/ui";
 import { useCreateNote } from "../../../lib/hooks";
 import { youtubeApi, aiApi } from "../../../lib/api";
+import { SparklesIcon, YouTubeIcon, CheckIcon } from "../../../components/Icons";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
 const loadingMessages = [
-  "🧠 Listening to the video…",
-  "✍️ Writing clean notes…",
-  "🧩 Organizing thoughts…",
-  "🎨 Making it readable…",
+  "Listening to the video…",
+  "Writing clean notes…",
+  "Organizing thoughts…",
+  "Making it readable…",
 ];
 
 type NoteSection = {
@@ -214,7 +215,7 @@ export default function YouTubePage() {
             loading={loading}
             variant="primary"
             size="lg"
-            icon={<span>✨</span>}
+            icon={<SparklesIcon className="w-5 h-5" />}
             className="w-full sm:w-auto"
           >
             Generate Notes
@@ -229,13 +230,12 @@ export default function YouTubePage() {
             className="text-center py-16"
           >
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[var(--color-primary)]/10 mb-4">
-              <motion.span
+              <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="text-2xl"
               >
-                ✨
-              </motion.span>
+                <SparklesIcon className="w-8 h-8 text-[var(--color-primary)]" />
+              </motion.div>
             </div>
             <p className="text-lg text-[var(--color-text)]">{loadingMessage}</p>
             <p className="mt-2 text-sm text-[var(--color-text-muted)]">
@@ -248,7 +248,7 @@ export default function YouTubePage() {
         {!loading && !generatedNote && (
           <div className="text-center py-16 px-4">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-500/10 mb-6">
-              <span className="text-4xl">📺</span>
+              <YouTubeIcon className="w-10 h-10 text-red-500" />
             </div>
             <h2 className="text-xl font-semibold text-[var(--color-text)]">
               Import from YouTube
@@ -257,10 +257,10 @@ export default function YouTubePage() {
               Paste a YouTube URL above to automatically generate structured notes with sections, summaries, and key points.
             </p>
             <div className="mt-6 flex flex-wrap gap-2 justify-center text-xs text-[var(--color-text-subtle)]">
-              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Auto-sections</span>
-              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Key points</span>
-              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Multilingual</span>
-              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full">✓ Editable</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Auto-sections</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Key points</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Multilingual</span>
+              <span className="px-3 py-1 bg-[var(--color-bg)] rounded-full flex items-center gap-1"><CheckIcon className="w-3 h-3" /> Editable</span>
             </div>
           </div>
         )}
