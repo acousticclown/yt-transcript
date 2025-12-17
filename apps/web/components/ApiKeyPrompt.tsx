@@ -70,7 +70,7 @@ export function ApiKeyPrompt({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60]"
           />
 
           {/* Modal */}
@@ -78,7 +78,7 @@ export function ApiKeyPrompt({
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-xl z-50 p-6"
+            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] shadow-xl z-[60] p-6"
           >
             {/* Header */}
             <div className="flex items-center gap-3 mb-4">
