@@ -137,10 +137,17 @@ router.put("/gemini-key", async (req: Request, res: Response) => {
         const testAi = new GoogleGenAI({ apiKey });
         await testAi.models.generateContent({
           model: "gemini-1.5-flash",
-          contents: "Say 'ok' in one word.",
+          contents: "Hi",
         });
+        console.log("✅ API key validation successful");
       } catch (err: any) {
-        return res.status(400).json({ error: "Invalid API key. Please check and try again." });
+        console.error("❌ API key validation failed:", err.message);
+        // Only reject if it's an auth error, not rate limit
+        if (err.message?.includes("API_KEY_INVALID") || err.status === 401 || err.status === 403) {
+          return res.status(400).json({ error: "Invalid API key. Please check and try again." });
+        }
+        // For rate limits or other errors, still save the key (user can try later)
+        console.log("⚠️ Non-auth error, saving key anyway");
       }
     }
 
