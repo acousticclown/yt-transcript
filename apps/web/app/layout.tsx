@@ -5,6 +5,7 @@ import { ThemeProvider } from "./components/ThemeProvider";
 import { UserProvider } from "../lib/UserContext";
 import { ToastProvider } from "../components/ui";
 import { QueryProvider } from "../lib/QueryProvider";
+import { ServiceWorkerRegistration } from "../components/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +28,21 @@ export const metadata: Metadata = {
   description: "Transform YouTube videos into smart notes. Organize your thoughts with AI assistance.",
   icons: {
     icon: "/icon.svg",
+    apple: "/icon-192.png",
+  },
+  manifest: "/manifest.json",
+  themeColor: "#F5A623",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Notely",
+  },
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+    viewportFit: "cover",
   },
 };
 
@@ -45,6 +61,7 @@ export default function RootLayout({
             <UserProvider>
               <ToastProvider>
                 {children}
+                <ServiceWorkerRegistration />
               </ToastProvider>
             </UserProvider>
           </ThemeProvider>
