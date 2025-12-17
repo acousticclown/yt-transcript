@@ -7,6 +7,12 @@ import { useState, useCallback, useRef } from "react";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
+function getAuthHeaders(): HeadersInit {
+  if (typeof window === "undefined") return {};
+  const token = localStorage.getItem("notely-token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
 export type ThinkingStep = {
   id: string;
   message: string;
@@ -81,13 +87,17 @@ export function useAIStream() {
     try {
       const response = await fetch(`${API_BASE}/api/ai/generate-note/stream`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ prompt }),
         signal: abortControllerRef.current.signal,
       });
 
       if (!response.ok) {
-        throw new Error("Failed to connect to AI");
+        const data = await response.json().catch(() => ({}));
+        if (data.error === "API_KEY_REQUIRED") {
+          throw new Error("API_KEY_REQUIRED");
+        }
+        throw new Error(data.error || "Failed to connect to AI");
       }
 
       const reader = response.body?.getReader();

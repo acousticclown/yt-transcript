@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "../lib/utils";
 import { useAIStream, type GeneratedNote, type ThinkingStep } from "../lib/useAIStream";
+import { ApiKeyPrompt } from "./ApiKeyPrompt";
 
 type AISpotlightProps = {
   isOpen: boolean;
@@ -22,6 +23,7 @@ const suggestions = [
 
 export function AISpotlight({ isOpen, onClose, onGenerate }: AISpotlightProps) {
   const [prompt, setPrompt] = useState("");
+  const [showApiKeyPrompt, setShowApiKeyPrompt] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   
   const { 
@@ -66,6 +68,13 @@ export function AISpotlight({ isOpen, onClose, onGenerate }: AISpotlightProps) {
       reset();
     }
   };
+
+  // Show API key prompt if error is API_KEY_REQUIRED
+  useEffect(() => {
+    if (error === "API_KEY_REQUIRED") {
+      setShowApiKeyPrompt(true);
+    }
+  }, [error]);
 
   const handleCancel = () => {
     cancel();
@@ -212,6 +221,24 @@ export function AISpotlight({ isOpen, onClose, onGenerate }: AISpotlightProps) {
               </div>
             </div>
           </motion.div>
+
+          {/* API Key Prompt */}
+          <ApiKeyPrompt
+            isOpen={showApiKeyPrompt}
+            onClose={() => {
+              setShowApiKeyPrompt(false);
+              reset();
+            }}
+            onSuccess={() => {
+              setShowApiKeyPrompt(false);
+              reset();
+              // Retry generation
+              if (prompt.trim()) {
+                handleSubmit();
+              }
+            }}
+            context="ai-generate"
+          />
         </>
       )}
     </AnimatePresence>
