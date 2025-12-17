@@ -179,31 +179,14 @@ function SectionCard({
 
         <div className="flex-1 min-w-0">
           {/* Title */}
-          <h3 className="font-semibold text-[var(--color-text)] mb-1">
+          <h3 className="font-semibold text-[var(--color-text)] mb-1 line-clamp-1">
             {section.title}
           </h3>
 
-          {/* Summary */}
-          <p className="text-sm text-[var(--color-text-muted)] mb-2 line-clamp-2">
+          {/* Summary - truncated with ellipsis */}
+          <p className="text-sm text-[var(--color-text-muted)] line-clamp-3">
             {section.summary}
           </p>
-
-          {/* Bullets preview */}
-          {section.bullets.length > 0 && (
-            <ul className="text-xs text-[var(--color-text-subtle)] space-y-0.5">
-              {section.bullets.slice(0, 2).map((bullet, i) => (
-                <li key={i} className="flex items-start gap-1">
-                  <span className="text-[var(--color-primary)]">•</span>
-                  <span className="line-clamp-1">{bullet}</span>
-                </li>
-              ))}
-              {section.bullets.length > 2 && (
-                <li className="text-[var(--color-text-subtle)]">
-                  +{section.bullets.length - 2} more
-                </li>
-              )}
-            </ul>
-          )}
         </div>
       </div>
     </motion.div>
@@ -438,12 +421,12 @@ export default function YouTubePage() {
               <SaveIndicator state={saveState} />
               {generatedNote.id ? (
                 <ActionButton
-                  onClick={() => router.push(`/notes/${generatedNote.id}?edit=true`)}
+                  onClick={() => router.push(`/notes/${generatedNote.id}`)}
                   variant="primary"
                   size="sm"
-                  icon={<PenIcon className="w-4 h-4" />}
+                  icon={<NotesIcon className="w-4 h-4" />}
                 >
-                  Edit Note
+                  View Note
                 </ActionButton>
               ) : (
                 <ActionButton
