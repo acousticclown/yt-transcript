@@ -8,6 +8,7 @@ import { NoteCard } from "../../../components/notes";
 import { EmptyStateIllustration } from "../../../components/illustrations";
 import { AISpotlight } from "../../../components/AISpotlight";
 import { ApiKeyBanner } from "../../../components/ApiKeyBanner";
+import { NoteCardSkeleton } from "../../../components/ui";
 import { useNotes, useDeleteNote, useToggleFavorite, useCreateNote } from "../../../lib/hooks";
 import type { GeneratedNote } from "../../../lib/useAIStream";
 import { Note as ApiNote } from "../../../lib/api";
@@ -210,8 +211,14 @@ export default function DashboardPage() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-8">
-            <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+          <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
+            <div className="flex gap-4" style={{ minWidth: "max-content" }}>
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="w-72 flex-shrink-0">
+                  <NoteCardSkeleton />
+                </div>
+              ))}
+            </div>
           </div>
         ) : cardNotes.length > 0 ? (
           <div className="overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">

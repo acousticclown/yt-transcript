@@ -8,6 +8,7 @@ import { NoteList } from "../../../components/notes";
 import { useNotes, useDeleteNote, useToggleFavorite } from "../../../lib/hooks";
 import { Note as ApiNote } from "../../../lib/api";
 import { StarIcon, YouTubeIcon, SparklesIcon } from "../../../components/Icons";
+import { NoteListSkeleton } from "../../../components/ui";
 
 type SortOption = "recent" | "title" | "favorites";
 type FilterOption = "all" | "favorites" | "youtube" | "ai";
@@ -131,8 +132,8 @@ function NotesPageContent() {
 
   if (isLoading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      <div className="p-6">
+        <NoteListSkeleton count={9} />
       </div>
     );
   }

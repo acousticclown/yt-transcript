@@ -1,5 +1,6 @@
 export { PageTransition } from "./PageTransition";
-export { LoadingSpinner, LoadingPage, LoadingCard } from "./LoadingSpinner";
+export { LoadingSpinner } from "./LoadingSpinner";
+export { NoteCardSkeleton, NoteListSkeleton } from "./LoadingSkeleton";
 export { ToastProvider, useToast } from "./Toast";
 export { SaveIndicator } from "./SaveIndicator";
 
