@@ -11,14 +11,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String   // hashed
-  name      String
-  avatar    String?
-  createdAt DateTime @default(now())
-  notes     Note[]
-  tags      Tag[]
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String   // hashed
+  name         String
+  avatar       String?
+  geminiApiKey String?  // User's own Gemini API key (encrypted)
+  createdAt    DateTime @default(now())
+  notes        Note[]
+  tags         Tag[]
 }
 
 model Note {

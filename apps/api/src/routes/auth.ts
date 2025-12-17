@@ -98,16 +98,86 @@ router.get("/me", async (req: Request, res: Response) => {
 
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, name: true, avatar: true },
+      select: { id: true, email: true, name: true, avatar: true, geminiApiKey: true },
     });
 
     if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
 
-    res.json({ user });
+    res.json({ 
+      user: {
+        ...user,
+        hasGeminiKey: !!user.geminiApiKey,
+        geminiApiKey: undefined, // Don't expose the actual key
+      }
+    });
   } catch (error) {
     res.status(401).json({ error: "Invalid token" });
+  }
+});
+
+// PUT /auth/gemini-key - Save user's Gemini API key
+router.put("/gemini-key", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    const { apiKey } = req.body;
+
+    // Validate the API key by making a test request
+    if (apiKey) {
+      try {
+        const { GoogleGenAI } = await import("@google/genai");
+        const testAi = new GoogleGenAI({ apiKey });
+        await testAi.models.generateContent({
+          model: "gemini-1.5-flash",
+          contents: "Say 'ok' in one word.",
+        });
+      } catch (err: any) {
+        return res.status(400).json({ error: "Invalid API key. Please check and try again." });
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: decoded.userId },
+      data: { geminiApiKey: apiKey || null },
+    });
+
+    console.log("✅ Gemini API key updated for user:", decoded.userId);
+    res.json({ success: true, hasGeminiKey: !!apiKey });
+  } catch (error) {
+    console.error("❌ Gemini key update error:", error);
+    res.status(500).json({ error: "Failed to update API key" });
+  }
+});
+
+// DELETE /auth/gemini-key - Remove user's Gemini API key
+router.delete("/gemini-key", async (req: Request, res: Response) => {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    const token = authHeader.substring(7);
+    const decoded = jwt.verify(token, JWT_SECRET) as { userId: string };
+
+    await prisma.user.update({
+      where: { id: decoded.userId },
+      data: { geminiApiKey: null },
+    });
+
+    console.log("✅ Gemini API key removed for user:", decoded.userId);
+    res.json({ success: true });
+  } catch (error) {
+    console.error("❌ Gemini key delete error:", error);
+    res.status(500).json({ error: "Failed to remove API key" });
   }
 });
 
