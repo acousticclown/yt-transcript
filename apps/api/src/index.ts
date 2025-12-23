@@ -79,8 +79,9 @@ if (process.env.NODE_ENV === "development" || process.env.DEBUG === "true") {
 // Health check endpoint (before auth) - test database connection
 app.get("/health", async (req: express.Request, res: express.Response) => {
   try {
-    // Test database connection
-    await prisma.$queryRaw`SELECT 1`;
+    // Test database connection using a simple query that doesn't create prepared statements
+    // Using findFirst is safer in serverless environments than $queryRaw
+    await prisma.user.findFirst({ take: 1 });
     res.json({ 
       status: "ok", 
       database: "connected",

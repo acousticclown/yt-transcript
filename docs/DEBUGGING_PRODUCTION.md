@@ -105,12 +105,13 @@ Verify these are set in Vercel (`notely-api` project):
 For Supabase Transaction Pooler (required for serverless):
 
 ```
-postgres://postgres.[PROJECT-REF]:[URL-ENCODED-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres
+postgres://postgres.[PROJECT-REF]:[URL-ENCODED-PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres?pgbouncer=true
 ```
 
 **Important:**
 - Use port **6543** (Transaction Pooler), not 5432
 - URL-encode special characters in password
+- Add `?pgbouncer=true` parameter to disable prepared statements (prevents "prepared statement already exists" errors)
 - Get the connection string from Supabase Dashboard → Settings → Database → Connection string → Transaction Pooler
 
 ### 8. Error Message Improvements
