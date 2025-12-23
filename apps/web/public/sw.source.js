@@ -97,6 +97,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // CRITICAL: Never cache Next.js chunks - they have their own versioning
+  // Caching them causes "Failed to load chunk" errors after new deployments
+  if (url.pathname.startsWith("/_next/static/chunks/") || 
+      url.pathname.startsWith("/_next/static/css/") ||
+      url.pathname.startsWith("/_next/static/media/")) {
+    // Network-first for chunks (always fetch fresh)
+    event.respondWith(fetch(request));
+    return;
+  }
+
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       // Return cached response if available
@@ -113,16 +123,26 @@ self.addEventListener("fetch", (event) => {
           }
 
           // Only cache same-origin responses
+          // Don't cache Next.js chunks (already handled above, but double-check)
           if (response.type === "basic" || response.type === "cors") {
-            // Clone the response for caching
-            const responseToCache = response.clone();
+            // Only cache static assets (images, fonts, icons) and HTML pages
+            const shouldCache = 
+              url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|woff|woff2|ttf|eot)$/i) ||
+              request.destination === "document" ||
+              request.destination === "image" ||
+              request.destination === "font";
 
-            // Cache in background (don't block response)
-            caches.open(RUNTIME_CACHE).then((cache) => {
-              cache.put(request, responseToCache).catch((err) => {
-                console.warn("Failed to cache response:", err);
+            if (shouldCache) {
+              // Clone the response for caching
+              const responseToCache = response.clone();
+
+              // Cache in background (don't block response)
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                cache.put(request, responseToCache).catch((err) => {
+                  console.warn("Failed to cache response:", err);
+                });
               });
-            });
+            }
           }
 
           return response;
