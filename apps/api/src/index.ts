@@ -1,4 +1,25 @@
-import "dotenv/config";
+// Load environment variables - prefer .env.production for production testing
+import { config } from "dotenv";
+import { existsSync } from "fs";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+
+// Get the directory where this file is located
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+// Go up from src/ to apps/api/
+const apiDir = join(__dirname, "..");
+const prodEnvPath = join(apiDir, ".env.production");
+const devEnvPath = join(apiDir, ".env");
+
+if (existsSync(prodEnvPath)) {
+  config({ path: prodEnvPath, override: true });
+} else if (existsSync(devEnvPath)) {
+  config({ path: devEnvPath });
+} else {
+  config(); // Use default .env or system env vars
+}
+
 import express from "express";
 import cors from "cors";
 

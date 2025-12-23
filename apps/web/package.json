@@ -4,8 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "node scripts/inject-sw-version.js && next dev",
+    "dev:prod": "node scripts/inject-sw-version.js && NEXT_PUBLIC_API_URL=https://notely-api-eight.vercel.app next dev",
     "build": "node scripts/inject-sw-version.js && next build",
+    "build:prod": "node scripts/inject-sw-version.js && NEXT_PUBLIC_API_URL=https://notely-api-eight.vercel.app next build",
     "start": "next start",
+    "start:prod": "NEXT_PUBLIC_API_URL=https://notely-api-eight.vercel.app next start",
     "lint": "eslint",
     "generate-icons": "node scripts/generate-icons-sharp.js",
     "pwa-benchmark": "node scripts/pwa-benchmark.js",
