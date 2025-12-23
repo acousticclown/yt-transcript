@@ -300,6 +300,7 @@ function NotesPageContent() {
           onDelete={handleDelete}
           onToggleFavorite={handleToggleFavorite}
           emptyMessage={search || selectedTag ? "No notes match your filters" : "No notes yet. Create your first note!"}
+          deletingNoteId={deleteNote.isPending ? deleteNote.variables : null}
         />
       </div>
     </div>

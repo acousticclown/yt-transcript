@@ -21,9 +21,10 @@ type NoteCardProps = {
   note: Note;
   onDelete?: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
+  isDeleting?: boolean; // Loading state for delete
 };
 
-export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
+export function NoteCard({ note, onDelete, onToggleFavorite, isDeleting = false }: NoteCardProps) {
   const [showMenu, setShowMenu] = useState(false);
   const longPressTimer = useRef<NodeJS.Timeout | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -164,10 +165,26 @@ export function NoteCard({ note, onDelete, onToggleFavorite }: NoteCardProps) {
                   onDelete(note.id);
                   setShowMenu(false);
                 }}
-                className="w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors text-red-600"
+                disabled={isDeleting}
+                className={cn(
+                  "w-full px-4 py-3 text-left text-sm flex items-center gap-3 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors",
+                  isDeleting ? "text-red-400 opacity-70 cursor-not-allowed" : "text-red-600"
+                )}
               >
-                <span>🗑️</span>
-                Delete
+                {isDeleting ? (
+                  <>
+                    <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <span>🗑️</span>
+                    Delete
+                  </>
+                )}
               </button>
             )}
             <button

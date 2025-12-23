@@ -6,7 +6,7 @@ import { useState, Suspense } from "react";
 import { motion } from "framer-motion";
 import { NoteViewer } from "../../../../components/notes/NoteViewer";
 import { UnifiedNoteEditor } from "../../../../components/notes";
-import { SaveIndicator } from "../../../../components/ui";
+import { SaveIndicator, NoteViewerSkeleton } from "../../../../components/ui";
 import { ShareModal } from "../../../../components/ShareModal";
 import { useNote, useUpdateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
@@ -71,8 +71,20 @@ function NotePageContent() {
 
   if (isLoading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-spin w-8 h-8 border-2 border-[var(--color-primary)] border-t-transparent rounded-full" />
+      <div className="h-full flex flex-col">
+        {/* Header Skeleton */}
+        <div className="sticky top-0 z-10 bg-[var(--color-bg)]/80 backdrop-blur-lg border-b border-[var(--color-border)] px-4 sm:px-6 lg:px-8 py-3">
+          <div className="max-w-3xl mx-auto flex items-center gap-4">
+            <div className="h-8 w-8 bg-[var(--color-bg)] rounded-lg animate-pulse" />
+            <div className="flex-1" />
+            <div className="h-8 w-8 bg-[var(--color-bg)] rounded-lg animate-pulse" />
+            <div className="h-8 w-8 bg-[var(--color-bg)] rounded-lg animate-pulse" />
+          </div>
+        </div>
+        {/* Content Skeleton */}
+        <div className="flex-1 overflow-y-auto">
+          <NoteViewerSkeleton />
+        </div>
       </div>
     );
   }
@@ -123,6 +135,7 @@ function NotePageContent() {
               }}
               onSave={handleSave}
               onAIAction={handleAIAction}
+              isSaving={saveState === "saving" || updateNote.isPending}
             />
           </div>
         </div>

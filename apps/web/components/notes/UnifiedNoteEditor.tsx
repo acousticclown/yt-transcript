@@ -75,6 +75,7 @@ type UnifiedNoteEditorProps = {
   onSave?: (note: UnifiedNote) => void;
   onChange?: (note: UnifiedNote) => void;
   onAIAction?: (action: string, text: string) => Promise<string>;
+  isSaving?: boolean; // External loading state
 };
 
 // Helper components (defined before main component)
@@ -315,6 +316,7 @@ export function UnifiedNoteEditor({
   onSave,
   onChange,
   onAIAction,
+  isSaving = false,
 }: UnifiedNoteEditorProps) {
   const initialNoteState: UnifiedNote = {
     title: initialNote?.title || "",
@@ -1006,9 +1008,23 @@ export function UnifiedNoteEditor({
         </div>
         <button
           onClick={handleSave}
-          className="px-5 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors"
+          disabled={isSaving}
+          className={cn(
+            "px-5 py-2 bg-[var(--color-primary)] text-white rounded-xl font-medium hover:bg-[var(--color-primary-dark)] transition-colors flex items-center gap-2",
+            isSaving && "opacity-70 cursor-not-allowed"
+          )}
         >
-          Save Note
+          {isSaving ? (
+            <>
+              <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Saving...
+            </>
+          ) : (
+            "Save Note"
+          )}
         </button>
       </div>
     </div>

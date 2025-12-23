@@ -91,6 +91,7 @@ function NewNotePageContent() {
             onSave={handleSave} 
             onAIAction={handleAIAction}
             initialNote={prompt ? { title: prompt } : undefined}
+            isSaving={saveState === "saving" || createNote.isPending}
           />
         </motion.div>
       </div>

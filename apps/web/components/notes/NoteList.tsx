@@ -8,6 +8,7 @@ type NoteListProps = {
   onDelete?: (id: string) => void;
   onToggleFavorite?: (id: string) => void;
   emptyMessage?: string;
+  deletingNoteId?: string | null; // ID of note being deleted
 };
 
 export function NoteList({
@@ -15,6 +16,7 @@ export function NoteList({
   onDelete,
   onToggleFavorite,
   emptyMessage = "No notes yet",
+  deletingNoteId,
 }: NoteListProps) {
   if (notes.length === 0) {
     return (
@@ -34,6 +36,7 @@ export function NoteList({
             note={note}
             onDelete={onDelete}
             onToggleFavorite={onToggleFavorite}
+            isDeleting={deletingNoteId === note.id}
           />
         ))}
       </AnimatePresence>

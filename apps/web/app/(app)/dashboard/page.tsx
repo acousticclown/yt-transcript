@@ -266,6 +266,7 @@ export default function DashboardPage() {
                   note={note}
                   onDelete={handleDelete}
                   onToggleFavorite={handleToggleFavorite}
+                  isDeleting={deleteNote.isPending && deleteNote.variables === note.id}
                 />
               ))}
             </div>
