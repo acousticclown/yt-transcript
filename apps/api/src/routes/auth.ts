@@ -244,7 +244,7 @@ router.put("/gemini-key", async (req: Request, res: Response) => {
           model: "gemini-1.5-flash",
           contents: "Hi",
         });
-        console.log("✅ API key validation successful");
+        logger.debug("✅ API key validation successful");
       } catch (err: any) {
         logger.error("❌ API key validation failed:", err.message);
         // Only reject if it's an auth error, not rate limit

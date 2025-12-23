@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
+import { logger } from "../lib/logger.js";
 
 const router = Router();
 
@@ -61,7 +62,7 @@ router.get("/notes/:token", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching public note:", error);
+    logger.error("Error fetching public note:", error);
     res.status(500).json({ error: "Failed to fetch note" });
   }
 });
@@ -91,7 +92,7 @@ router.post("/notes/:token/verify", async (req: Request, res: Response) => {
 
     res.json({ verified: true });
   } catch (error) {
-    console.error("Error verifying password:", error);
+    logger.error("Error verifying password:", error);
     res.status(500).json({ error: "Failed to verify password" });
   }
 });

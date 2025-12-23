@@ -186,7 +186,7 @@ router.put("/:id", async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Note not found" });
     }
     
-    console.log("📝 Updating note:", req.params.id, { title });
+    logger.debug("📝 Updating note:", req.params.id, { title });
 
     // Update note
     const note = await prisma.note.update({
@@ -240,10 +240,10 @@ router.put("/:id", async (req: Request, res: Response) => {
       }
     }
 
-    console.log("✅ Note updated:", note.id);
+    logger.log("✅ Note updated:", note.id);
     res.json({ id: note.id, message: "Note updated" });
   } catch (error) {
-    console.error("❌ Error updating note:", error);
+    logger.error("❌ Error updating note:", error);
     res.status(500).json({ error: "Failed to update note" });
   }
 });
@@ -261,12 +261,12 @@ router.delete("/:id", async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Note not found" });
     }
     
-    console.log("🗑️ Deleting note:", req.params.id);
+    logger.debug("🗑️ Deleting note:", req.params.id);
     await prisma.note.delete({ where: { id: req.params.id } });
-    console.log("✅ Note deleted:", req.params.id);
+    logger.log("✅ Note deleted:", req.params.id);
     res.json({ message: "Note deleted" });
   } catch (error) {
-    console.error("Error deleting note:", error);
+    logger.error("Error deleting note:", error);
     res.status(500).json({ error: "Failed to delete note" });
   }
 });
@@ -288,10 +288,10 @@ router.post("/:id/favorite", async (req: Request, res: Response) => {
       data: { isFavorite: !note.isFavorite },
     });
 
-    console.log("⭐ Toggled favorite:", req.params.id, "→", !note.isFavorite);
+    logger.debug("⭐ Toggled favorite:", req.params.id, "→", !note.isFavorite);
     res.json({ isFavorite: !note.isFavorite });
   } catch (error) {
-    console.error("Error toggling favorite:", error);
+    logger.error("Error toggling favorite:", error);
     res.status(500).json({ error: "Failed to toggle favorite" });
   }
 });
@@ -336,7 +336,7 @@ router.post("/:id/share", async (req: Request, res: Response) => {
       },
     });
 
-    console.log("🔗 Note shared:", req.params.id, "token:", shareToken);
+    logger.log("🔗 Note shared:", req.params.id, "token:", shareToken);
     res.json({
       shareToken,
       shareUrl: `${process.env.FRONTEND_URL || "http://localhost:3000"}/share/${shareToken}`,
@@ -344,7 +344,7 @@ router.post("/:id/share", async (req: Request, res: Response) => {
       expiresAt: shareExpiresAt?.toISOString() || null,
     });
   } catch (error) {
-    console.error("Error sharing note:", error);
+    logger.error("Error sharing note:", error);
     res.status(500).json({ error: "Failed to share note" });
   }
 });
@@ -372,10 +372,10 @@ router.delete("/:id/share", async (req: Request, res: Response) => {
       },
     });
 
-    console.log("🔒 Note sharing disabled:", req.params.id);
+    logger.log("🔒 Note sharing disabled:", req.params.id);
     res.json({ message: "Sharing disabled" });
   } catch (error) {
-    console.error("Error disabling sharing:", error);
+    logger.error("Error disabling sharing:", error);
     res.status(500).json({ error: "Failed to disable sharing" });
   }
 });

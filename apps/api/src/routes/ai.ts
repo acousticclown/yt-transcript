@@ -160,7 +160,7 @@ router.post("/inline", async (req: Request, res: Response) => {
     res.json({ result: result.trim() });
 
   } catch (error: any) {
-    console.error("Inline AI error:", error);
+    logger.error("Inline AI error:", error);
     if (error.message === "API_KEY_REQUIRED") {
       return res.status(400).json({ error: "API_KEY_REQUIRED" });
     }
@@ -189,7 +189,7 @@ router.post("/transform-language", async (req: Request, res: Response) => {
     res.json({ result: result.trim() });
 
   } catch (error: any) {
-    console.error("Language transform error:", error);
+    logger.error("Language transform error:", error);
     if (error.message === "API_KEY_REQUIRED") {
       return res.status(400).json({ error: "API_KEY_REQUIRED" });
     }
@@ -231,7 +231,7 @@ router.post("/chat", async (req: Request, res: Response) => {
     });
 
   } catch (error: any) {
-    console.error("Chat error:", error);
+    logger.error("Chat error:", error);
     if (error.message === "API_KEY_REQUIRED") {
       return res.status(400).json({ error: "API_KEY_REQUIRED" });
     }

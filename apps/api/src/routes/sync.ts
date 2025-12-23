@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { logger } from "../lib/logger.js";
 
 const router = Router();
 
@@ -40,7 +41,7 @@ router.get("/status", async (req: Request, res: Response) => {
       serverTime: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error getting sync status:", error);
+    logger.error("Error getting sync status:", error);
     res.status(500).json({ error: "Failed to get sync status" });
   }
 });
@@ -106,7 +107,7 @@ router.post("/pull", async (req: Request, res: Response) => {
       serverTime: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error pulling sync:", error);
+    logger.error("Error pulling sync:", error);
     res.status(500).json({ error: "Failed to pull sync" });
   }
 });
@@ -275,7 +276,7 @@ router.post("/push", async (req: Request, res: Response) => {
           results.created.push(noteData.id);
         }
       } catch (error) {
-        console.error(`Error syncing note ${noteData.id}:`, error);
+        logger.error(`Error syncing note ${noteData.id}:`, error);
         results.conflicts.push({
           noteId: noteData.id,
           reason: error instanceof Error ? error.message : "Unknown error",
@@ -288,7 +289,7 @@ router.post("/push", async (req: Request, res: Response) => {
       serverTime: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Error pushing sync:", error);
+    logger.error("Error pushing sync:", error);
     res.status(500).json({ error: "Failed to push sync" });
   }
 });

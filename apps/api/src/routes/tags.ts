@@ -2,6 +2,7 @@ import { Router } from "express";
 import type { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { logger } from "../lib/logger.js";
 
 const router = Router();
 
@@ -29,7 +30,7 @@ router.get("/", async (req: Request, res: Response) => {
       }))
     );
   } catch (error) {
-    console.error("Error fetching tags:", error);
+    logger.error("Error fetching tags:", error);
     res.status(500).json({ error: "Failed to fetch tags" });
   }
 });
@@ -58,7 +59,7 @@ router.post("/", async (req: Request, res: Response) => {
 
     res.status(201).json({ id: tag.id, name: tag.name, color: tag.color });
   } catch (error) {
-    console.error("Error creating tag:", error);
+    logger.error("Error creating tag:", error);
     res.status(500).json({ error: "Failed to create tag" });
   }
 });
@@ -84,7 +85,7 @@ router.put("/:id", async (req: Request, res: Response) => {
 
     res.json({ id: tag.id, name: tag.name, color: tag.color });
   } catch (error) {
-    console.error("Error updating tag:", error);
+    logger.error("Error updating tag:", error);
     res.status(500).json({ error: "Failed to update tag" });
   }
 });
@@ -105,7 +106,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
     await prisma.tag.delete({ where: { id: req.params.id } });
     res.json({ message: "Tag deleted" });
   } catch (error) {
-    console.error("Error deleting tag:", error);
+    logger.error("Error deleting tag:", error);
     res.status(500).json({ error: "Failed to delete tag" });
   }
 });
