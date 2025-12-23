@@ -8,6 +8,7 @@ import { UnifiedNoteEditor } from "../../../../components/notes";
 import { SaveIndicator } from "../../../../components/ui";
 import { useCreateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
+import { logger } from "../../../../lib/logger";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -42,7 +43,7 @@ function NewNotePageContent() {
       setSaveState("saved");
       setTimeout(() => router.push(`/notes/${result.id}`), 500);
     } catch (err) {
-      console.error("Failed to save note:", err);
+      logger.error("Failed to save note:", err);
       setSaveState("error");
     }
   };
@@ -54,7 +55,7 @@ function NewNotePageContent() {
       }
       return text;
     } catch (e) {
-      console.error("AI action failed:", e);
+      logger.error("AI action failed:", e);
       return text;
     }
   };

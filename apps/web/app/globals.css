@@ -94,6 +94,20 @@
   --glass-blur: blur(10px);
 }
 
+/* Shimmer animation for Beta badge */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s infinite;
+}
+
 /* ===== Dark Mode ===== */
 @media (prefers-color-scheme: dark) {
   :root {

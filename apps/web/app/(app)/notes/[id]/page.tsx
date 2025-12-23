@@ -12,6 +12,7 @@ import { useNote, useUpdateNote } from "../../../../lib/hooks";
 import { aiApi } from "../../../../lib/api";
 import { downloadMarkdown, copyMarkdownToClipboard } from "../../../../lib/exportNote";
 import { ShareIcon } from "../../../../components/Icons";
+import { logger } from "../../../../lib/logger";
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
@@ -46,7 +47,7 @@ function NotePageContent() {
         setSaveState("idle");
       }, 1000);
     } catch (err) {
-      console.error("Failed to update note:", err);
+      logger.error("Failed to update note:", err);
       setSaveState("error");
     }
   };
@@ -64,7 +65,7 @@ function NotePageContent() {
       }
       return text;
     } catch (e) {
-      console.error("AI action failed:", e);
+      logger.error("AI action failed:", e);
       return text;
     }
   };

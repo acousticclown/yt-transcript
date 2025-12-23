@@ -12,7 +12,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-[var(--color-bg)]/80 backdrop-blur-md border-b border-[var(--color-border)]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <Logo size="md" href="/" />
+          <Logo size="md" href="/" showBeta={true} />
           <nav className="flex items-center gap-4">
             <Link
               href="/login"

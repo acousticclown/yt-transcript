@@ -15,6 +15,7 @@ import { Note as ApiNote } from "../../../lib/api";
 import { useSearch } from "../../../lib/SearchContext";
 import { SearchIcon } from "../../../components/Icons";
 import { Onboarding } from "../../../components/Onboarding";
+import { logger } from "../../../lib/logger";
 
 // Lazy load AISpotlight (heavy component with AI streaming)
 const AISpotlight = dynamic(() => import("../../../components/AISpotlight").then(mod => ({ default: mod.AISpotlight })), {
@@ -227,7 +228,7 @@ export default function DashboardPage() {
             setAiSpotlightOpen(false);
             router.push(`/notes/${result.id}?edit=true`);
           } catch (error) {
-            console.error("Failed to create note:", error);
+            logger.error("Failed to create note:", error);
           }
         }}
       />

@@ -1,6 +1,6 @@
 # Notely
 
-> **v1.6.0** - AI-Powered Notes Application with YouTube Transcript Integration
+> **v2.0.0 Beta** - AI-Powered Notes Application with YouTube Transcript Integration
 
 Notely is a modern, personal-first notes application with AI-powered features and YouTube transcript integration. Create smart notes manually, generate with AI, or import from YouTube videos with automatic structuring, multilingual support, and a beautiful, playful UX.
 

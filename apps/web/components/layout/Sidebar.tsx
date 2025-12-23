@@ -76,7 +76,7 @@ export function Sidebar({ isOpen, onClose, onSearchClick }: SidebarProps) {
       >
         {/* Logo */}
         <div className="p-6 border-b border-[var(--color-border)]">
-          <Logo size="md" href="/dashboard" />
+          <Logo size="md" href="/dashboard" showBeta={true} />
         </div>
 
         {/* Search */}

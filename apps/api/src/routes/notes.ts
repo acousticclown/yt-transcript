@@ -4,6 +4,7 @@ import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "../lib/prisma.js";
 import { authMiddleware } from "../middleware/auth.js";
+import { logger } from "../lib/logger.js";
 
 const router = Router();
 
@@ -52,7 +53,7 @@ router.get("/", async (req: Request, res: Response) => {
 
     res.json(transformed);
   } catch (error) {
-    console.error("Error fetching notes:", error);
+    logger.error("Error fetching notes:", error);
     res.status(500).json({ error: "Failed to fetch notes" });
   }
 });
@@ -99,7 +100,7 @@ router.get("/:id", async (req: Request, res: Response) => {
       shareExpiresAt: note.shareExpiresAt?.toISOString(),
     });
   } catch (error) {
-    console.error("Error fetching note:", error);
+    logger.error("Error fetching note:", error);
     res.status(500).json({ error: "Failed to fetch note" });
   }
 });
@@ -110,7 +111,7 @@ router.post("/", async (req: Request, res: Response) => {
     const userId = req.userId!;
     const { title, content, language, source, youtubeUrl, videoId, color, tags, sections, isAIGenerated } = req.body;
     
-    console.log("📝 Creating note:", { title, source, isAIGenerated, userId });
+    logger.debug("📝 Creating note:", { title, source, isAIGenerated, userId });
 
     // Create note
     const note = await prisma.note.create({
@@ -163,10 +164,10 @@ router.post("/", async (req: Request, res: Response) => {
       }
     }
 
-    console.log("✅ Note created:", note.id);
+    logger.log("✅ Note created:", note.id);
     res.status(201).json({ id: note.id, message: "Note created" });
   } catch (error) {
-    console.error("❌ Error creating note:", error);
+    logger.error("❌ Error creating note:", error);
     res.status(500).json({ error: "Failed to create note" });
   }
 });

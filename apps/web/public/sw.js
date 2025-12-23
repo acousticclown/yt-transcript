@@ -1,9 +1,9 @@
 // Notely Service Worker
-// Version: notely-1766504400024
+// Version: notely-1766508375023
 
 'use strict';
 
-const CACHE_NAME = "notely-1766504400024";
+const CACHE_NAME = "notely-1766508375023";
 const RUNTIME_CACHE = "notely-runtime";
 
 // Install event - cache essential assets only

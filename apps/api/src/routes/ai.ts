@@ -14,6 +14,7 @@ import {
   getUserIdFromRequest
 } from "../lib/aiStream.js";
 import { getUserApiKey } from "../../ai/gemini.js";
+import { logger } from "../lib/logger.js";
 import { 
   NOTE_GENERATION_SYSTEM_PROMPT,
   noteGenerationPrompt,
@@ -63,7 +64,7 @@ router.post("/generate-note/stream", async (req: Request, res: Response) => {
     return res.status(400).json({ error: "API_KEY_REQUIRED" });
   }
 
-  console.log("🤖 [Stream] Generating note:", prompt.substring(0, 50) + "...");
+  logger.debug("🤖 [Stream] Generating note:", prompt.substring(0, 50) + "...");
 
   setupSSE(res);
 
@@ -98,7 +99,7 @@ router.post("/generate-note", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Prompt is required" });
     }
 
-    console.log("🤖 Generating note:", prompt.substring(0, 50) + "...");
+    logger.debug("🤖 Generating note:", prompt.substring(0, 50) + "...");
 
     const text = await generateAI(
       NOTE_GENERATION_SYSTEM_PROMPT,
@@ -117,11 +118,11 @@ router.post("/generate-note", async (req: Request, res: Response) => {
     // Validate and normalize
     const normalizedNote = normalizeNote(note);
     
-    console.log("✅ Note generated:", normalizedNote.title);
+    logger.log("✅ Note generated:", normalizedNote.title);
     res.json({ note: normalizedNote });
 
   } catch (error: any) {
-    console.error("Note generation error:", error);
+    logger.error("Note generation error:", error);
     if (error.message === "API_KEY_REQUIRED") {
       return res.status(400).json({ error: "API_KEY_REQUIRED" });
     }

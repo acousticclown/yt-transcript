@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { cn } from "../lib/utils";
+import { BetaBadge } from "./BetaBadge";
 
 type LogoProps = {
   size?: "sm" | "md" | "lg";
   showIcon?: boolean;
   href?: string;
   className?: string;
+  showBeta?: boolean; // Show beta badge
 };
 
 // App name: "Notely" - Simple, memorable, note-focused
-export function Logo({ size = "md", showIcon = true, href = "/dashboard", className }: LogoProps) {
+export function Logo({ size = "md", showIcon = true, href = "/dashboard", className, showBeta = false }: LogoProps) {
   const sizes = {
     sm: { text: "text-lg", icon: "w-6 h-6", gap: "gap-1.5" },
     md: { text: "text-xl", icon: "w-7 h-7", gap: "gap-2" },
@@ -62,6 +64,11 @@ export function Logo({ size = "md", showIcon = true, href = "/dashboard", classN
         <span className="text-[var(--color-text)]">Note</span>
         <span className="text-[var(--color-primary)]">ly</span>
       </span>
+      
+      {/* Beta badge */}
+      {showBeta && (
+        <BetaBadge size={size === "sm" ? "sm" : "md"} className="ml-2" />
+      )}
     </div>
   );
 

@@ -31,6 +31,7 @@ import aiRouter from "./routes/ai.js";
 import publicRouter from "./routes/public.js";
 import syncRouter from "./routes/sync.js";
 import { prisma } from "./lib/prisma.js";
+import { logger } from "./lib/logger.js";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -64,7 +65,7 @@ app.use(express.json({ limit: "10mb" }));
 if (process.env.NODE_ENV === "development" || process.env.DEBUG === "true") {
   app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (req.path.startsWith("/api/auth")) {
-      console.log(`📥 ${req.method} ${req.path}`, {
+      logger.debug(`📥 ${req.method} ${req.path}`, {
         body: req.method !== "GET" ? req.body : undefined,
         headers: {
           "content-type": req.headers["content-type"],
@@ -96,7 +97,7 @@ app.get("/health", async (req: express.Request, res: express.Response) => {
     
     if (isPreparedStatementError) {
       // This means database is reachable but connection pooling needs configuration
-      console.warn("⚠️  Health check: Prepared statement error (PgBouncer). Database is reachable but connection string needs ?pgbouncer=true");
+      logger.warn("⚠️  Health check: Prepared statement error (PgBouncer). Database is reachable but connection string needs ?pgbouncer=true");
       res.json({ 
         status: "warning", 
         database: "connected",
@@ -106,7 +107,7 @@ app.get("/health", async (req: express.Request, res: express.Response) => {
       return;
     }
     
-    console.error("❌ Health check failed:", {
+    logger.error("❌ Health check failed:", {
       message: error?.message,
       code: error?.code,
       name: error?.name,
@@ -144,22 +145,22 @@ app.get("/health", (req: express.Request, res: express.Response) => {
 app.post("/transcript", async (req: express.Request, res: express.Response) => {
   try {
     const { url } = req.body;
-    console.log("[Transcript] Extracting from:", url);
+    logger.debug("[Transcript] Extracting from:", url);
 
     if (!url) {
       return res.status(400).json({ error: "URL is required" });
     }
 
     const videoId = extractVideoId(url);
-    console.log("[Transcript] Video ID:", videoId);
+    logger.debug("[Transcript] Video ID:", videoId);
 
     if (!videoId) {
       return res.status(400).json({ error: "Invalid YouTube URL" });
     }
 
-    console.log("[Transcript] Fetching subtitles...");
+    logger.debug("[Transcript] Fetching subtitles...");
     const subtitles = await getSubtitles({ videoID: videoId, lang: "en" });
-    console.log("[Transcript] Got subtitles:", subtitles?.length || 0);
+    logger.debug("[Transcript] Got subtitles:", subtitles?.length || 0);
 
     if (!subtitles || subtitles.length === 0) {
       return res.status(404).json({ error: "No captions found" });
@@ -179,7 +180,7 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
       })),
     });
   } catch (error: any) {
-    console.error("[Transcript] Error:", error?.message || error);
+    logger.error("[Transcript] Error:", error?.message || error);
     res.status(500).json({ error: "Failed to extract transcript" });
   }
 });
@@ -218,7 +219,7 @@ app.post("/summary", async (req: express.Request, res: express.Response) => {
 
     res.json({ summary });
   } catch (error) {
-    console.error("Summary error:", error);
+    logger.error("Summary error:", error);
     res.status(500).json({ error: "Failed to generate summary" });
   }
 });
@@ -267,9 +268,9 @@ app.post("/sections", async (req: express.Request, res: express.Response) => {
         ? sectionDetectionWithTimestampsPrompt(subtitles)
         : sectionDetectionPrompt(transcript);
 
-    console.log("[Sections] Calling Gemini with user's API key...");
+    logger.debug("[Sections] Calling Gemini with user's API key...");
     const text = await geminiModel.generateContent(prompt, userApiKey);
-    console.log("[Sections] Got response, length:", text.length);
+    logger.debug("[Sections] Got response, length:", text.length);
 
     // Parse JSON from response - handle both array and object formats
     let sections;
@@ -286,7 +287,7 @@ app.post("/sections", async (req: express.Request, res: express.Response) => {
     } else if (arrayMatch) {
       sections = JSON.parse(sanitizeJson(arrayMatch[0]));
     } else {
-      console.error("[Sections] No JSON found in:", text.substring(0, 500));
+      logger.error("[Sections] No JSON found in:", text.substring(0, 500));
       throw new Error("No valid JSON found in response");
     }
 
@@ -295,7 +296,7 @@ app.post("/sections", async (req: express.Request, res: express.Response) => {
       tags = ["youtube", ...tags];
     }
 
-    console.log(
+    logger.debug(
       "[Sections] Parsed sections:",
       sections.length,
       "summary:",
@@ -305,7 +306,7 @@ app.post("/sections", async (req: express.Request, res: express.Response) => {
     );
     res.json({ sections, summary, tags });
   } catch (error: any) {
-    console.error("[Sections] Error:", error?.message || error);
+    logger.error("[Sections] Error:", error?.message || error);
     res.status(500).json({ error: "Failed to generate sections" });
   }
 });
@@ -334,7 +335,7 @@ function sanitizeJson(text: string): string {
 
 // Global error handler (must be last)
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("❌ Unhandled error:", {
+  logger.error("❌ Unhandled error:", {
     message: err?.message,
     stack: err?.stack,
     name: err?.name,
@@ -355,8 +356,8 @@ export default app;
 // Start server (only in non-Vercel environments)
 if (process.env.VERCEL !== "1") {
   app.listen(PORT, () => {
-    console.log(`🚀 Notely API running on http://localhost:${PORT}`);
-    console.log(`📝 Notes API: http://localhost:${PORT}/api/notes`);
-    console.log(`🏷️  Tags API: http://localhost:${PORT}/api/tags`);
+  logger.log(`🚀 Notely API running on http://localhost:${PORT}`);
+  logger.log(`📝 Notes API: http://localhost:${PORT}/api/notes`);
+  logger.log(`🏷️  Tags API: http://localhost:${PORT}/api/tags`);
   });
 }
