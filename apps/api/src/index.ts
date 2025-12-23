@@ -31,7 +31,6 @@ import aiRouter from "./routes/ai.js";
 import publicRouter from "./routes/public.js";
 import syncRouter from "./routes/sync.js";
 import { prisma } from "./lib/prisma.js";
-import { prisma } from "./lib/prisma.js";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -60,6 +59,22 @@ app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json({ limit: "10mb" }));
+
+// Request logging middleware (for debugging)
+if (process.env.NODE_ENV === "development" || process.env.DEBUG === "true") {
+  app.use((req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (req.path.startsWith("/api/auth")) {
+      console.log(`📥 ${req.method} ${req.path}`, {
+        body: req.method !== "GET" ? req.body : undefined,
+        headers: {
+          "content-type": req.headers["content-type"],
+          "authorization": req.headers["authorization"] ? "***" : undefined,
+        },
+      });
+    }
+    next();
+  });
+}
 
 // Health check endpoint (before auth) - test database connection
 app.get("/health", async (req: express.Request, res: express.Response) => {
