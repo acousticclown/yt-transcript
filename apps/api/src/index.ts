@@ -30,6 +30,8 @@ import authRouter from "./routes/auth.js";
 import aiRouter from "./routes/ai.js";
 import publicRouter from "./routes/public.js";
 import syncRouter from "./routes/sync.js";
+import { prisma } from "./lib/prisma.js";
+import { prisma } from "./lib/prisma.js";
 
 // Legacy imports for YouTube features
 import { getSubtitles } from "youtube-caption-extractor";
@@ -58,6 +60,32 @@ app.use(cors(corsOptions));
 
 // Middleware
 app.use(express.json({ limit: "10mb" }));
+
+// Health check endpoint (before auth) - test database connection
+app.get("/health", async (req: express.Request, res: express.Response) => {
+  try {
+    // Test database connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ 
+      status: "ok", 
+      database: "connected",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error("❌ Health check failed:", {
+      message: error?.message,
+      code: error?.code,
+      name: error?.name,
+    });
+    res.status(503).json({ 
+      status: "error", 
+      database: "disconnected",
+      error: error?.message || "Database connection failed",
+      code: error?.code,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
 
 // Public Routes (no auth required)
 app.use("/api/public", publicRouter);
@@ -269,6 +297,23 @@ function sanitizeJson(text: string): string {
     })
     .replace(/\\(?!["\\/bfnrtu])/g, "\\\\");
 }
+
+// Global error handler (must be last)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("❌ Unhandled error:", {
+    message: err?.message,
+    stack: err?.stack,
+    name: err?.name,
+    code: err?.code,
+    path: req.path,
+    method: req.method,
+  });
+  
+  res.status(err?.status || 500).json({
+    error: err?.message || "Internal server error",
+    details: process.env.NODE_ENV === "development" ? err?.stack : undefined,
+  });
+});
 
 // Export for Vercel serverless functions
 export default app;

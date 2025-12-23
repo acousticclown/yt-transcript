@@ -61,9 +61,26 @@ router.post("/login", async (req: Request, res: Response) => {
         avatar: user.avatar,
       },
     });
-  } catch (error) {
-    console.error("❌ Login error:", error);
-    res.status(500).json({ error: "Login failed" });
+  } catch (error: any) {
+    console.error("❌ Login error:", {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      code: error?.code,
+    });
+    
+    // Provide more specific error messages
+    if (error?.code === "P1001" || error?.message?.includes("Can't reach database")) {
+      return res.status(500).json({ 
+        error: "Database connection failed",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined
+      });
+    }
+    
+    res.status(500).json({ 
+      error: "Login failed",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 });
 
@@ -102,9 +119,32 @@ router.post("/signup", async (req: Request, res: Response) => {
         avatar: user.avatar,
       },
     });
-  } catch (error) {
-    console.error("❌ Signup error:", error);
-    res.status(500).json({ error: "Signup failed" });
+  } catch (error: any) {
+    console.error("❌ Signup error:", {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name,
+      code: error?.code,
+      meta: error?.meta,
+    });
+    
+    // Provide more specific error messages
+    if (error?.code === "P1001" || error?.message?.includes("Can't reach database")) {
+      return res.status(500).json({ 
+        error: "Database connection failed",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined
+      });
+    }
+    
+    if (error?.code === "P2002") {
+      // Unique constraint violation
+      return res.status(400).json({ error: "Email already registered" });
+    }
+    
+    res.status(500).json({ 
+      error: "Signup failed",
+      details: process.env.NODE_ENV === "development" ? error.message : undefined
+    });
   }
 });
 
