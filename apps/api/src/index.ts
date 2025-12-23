@@ -79,15 +79,33 @@ if (process.env.NODE_ENV === "development" || process.env.DEBUG === "true") {
 // Health check endpoint (before auth) - test database connection
 app.get("/health", async (req: express.Request, res: express.Response) => {
   try {
-    // Test database connection using a simple query that doesn't create prepared statements
-    // Using findFirst is safer in serverless environments than $queryRaw
-    await prisma.user.findFirst({ take: 1 });
+    // Test database connection using $executeRawUnsafe which doesn't create prepared statements
+    // This works better with PgBouncer transaction pooling mode
+    await prisma.$executeRawUnsafe("SELECT 1");
     res.json({ 
       status: "ok", 
       database: "connected",
       timestamp: new Date().toISOString()
     });
   } catch (error: any) {
+    // Check if it's a prepared statement error (PgBouncer issue)
+    const isPreparedStatementError = 
+      error?.message?.includes("prepared statement") || 
+      error?.code === "P2010" ||
+      error?.message?.includes("42P05");
+    
+    if (isPreparedStatementError) {
+      // This means database is reachable but connection pooling needs configuration
+      console.warn("⚠️  Health check: Prepared statement error (PgBouncer). Database is reachable but connection string needs ?pgbouncer=true");
+      res.json({ 
+        status: "warning", 
+        database: "connected",
+        message: "Database connection works but connection pooling needs configuration. Add ?pgbouncer=true to DATABASE_URL.",
+        timestamp: new Date().toISOString()
+      });
+      return;
+    }
+    
     console.error("❌ Health check failed:", {
       message: error?.message,
       code: error?.code,
