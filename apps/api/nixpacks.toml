@@ -1,3 +1,11 @@
+[phases.setup]
+cmds = [
+  # Ensure packages folder exists (it should be in apps/api/packages/ from git)
+  "mkdir -p packages/prompts || true",
+  # If packages folder doesn't exist, copy from parent monorepo (if building from root)
+  "if [ ! -d packages/prompts ] && [ -d ../../packages/prompts ]; then cp -r ../../packages/* packages/; fi"
+]
+
 [phases.install]
 cmds = [
   "npm install",
