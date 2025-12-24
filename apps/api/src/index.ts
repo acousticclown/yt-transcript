@@ -211,7 +211,18 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
           break;
         }
       } catch (error: any) {
-        logger.debug(`[Transcript] Failed with lang=${lang}:`, error?.message || error);
+        // Log full error details for debugging
+        const errorDetails = {
+          message: error?.message,
+          stack: error?.stack,
+          name: error?.name,
+          code: error?.code,
+          statusCode: error?.statusCode,
+          response: error?.response?.status,
+          lang,
+          videoId,
+        };
+        logger.error(`[Transcript] Failed with lang=${lang}:`, errorDetails);
         lastError = error;
         // Continue to next language
         continue;
@@ -221,20 +232,57 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
     if (!subtitles || subtitles.length === 0) {
       // Provide more specific error message based on the error
       let errorMessage = "No captions found";
+      let isProductionBlock = false;
+      
       if (lastError) {
         const errorMsg = lastError?.message || String(lastError);
-        if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
-          errorMessage = "YouTube is blocking caption access. This may be due to regional restrictions or rate limiting.";
-        } else if (errorMsg.includes("404") || errorMsg.includes("Not Found")) {
+        const errorString = JSON.stringify(lastError);
+        
+        // Check for various blocking patterns
+        if (
+          errorMsg.includes("403") || 
+          errorMsg.includes("Forbidden") ||
+          errorMsg.includes("blocked") ||
+          errorString.includes("403") ||
+          lastError?.statusCode === 403 ||
+          lastError?.response?.status === 403
+        ) {
+          isProductionBlock = true;
+          errorMessage = "YouTube is blocking caption access from this server. This is a known limitation when using cloud hosting (like Vercel). The video has captions, but YouTube blocks automated requests from cloud IP addresses.\n\nPossible solutions:\n• Try again later (rate limits may reset)\n• Use a different video\n• This feature works better when running the API server locally";
+        } else if (errorMsg.includes("404") || errorMsg.includes("Not Found") || lastError?.statusCode === 404) {
           errorMessage = "Video not found or captions are not available for this video.";
         } else if (errorMsg.includes("private") || errorMsg.includes("Private")) {
           errorMessage = "This video is private or unavailable.";
+        } else if (errorMsg.includes("timeout") || errorMsg.includes("ETIMEDOUT")) {
+          errorMessage = "Request timed out. YouTube may be slow to respond or blocking the request.";
+          isProductionBlock = true;
         } else {
+          // Include the actual error message for debugging
           errorMessage = `Failed to fetch captions: ${errorMsg}`;
         }
       }
-      logger.error("[Transcript] No captions found:", { videoId, error: lastError?.message || lastError });
-      return res.status(404).json({ error: errorMessage });
+      
+      // Enhanced logging for production debugging
+      logger.error("[Transcript] No captions found:", {
+        videoId,
+        error: lastError?.message || lastError,
+        errorType: lastError?.name,
+        statusCode: lastError?.statusCode || lastError?.response?.status,
+        isProductionBlock,
+        environment: process.env.VERCEL ? "production" : "local",
+      });
+      
+      return res.status(404).json({ 
+        error: errorMessage,
+        videoId,
+        // Include debug info in development
+        ...(process.env.NODE_ENV === "development" && lastError ? {
+          debug: {
+            errorType: lastError?.name,
+            statusCode: lastError?.statusCode || lastError?.response?.status,
+          }
+        } : {})
+      });
     }
 
     // cleanTranscript expects array of {text} objects
