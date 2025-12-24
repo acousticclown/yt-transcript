@@ -1,0 +1,12 @@
+# Files to ignore when deploying to Railway
+node_modules/
+.env
+.env.local
+.env.production
+*.db
+*.db-journal
+data/
+dev.db
+.DS_Store
+*.log
+
