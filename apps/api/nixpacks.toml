@@ -8,7 +8,6 @@ cmds = [
 
 [phases.install]
 cmds = [
-  "npm config set production false",
   "NODE_ENV=development npm install",
   "npx prisma generate"
 ]
