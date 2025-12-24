@@ -52,8 +52,44 @@ const PORT = process.env.PORT || 3001;
 
 // CORS configuration
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || "http://localhost:3000",
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps, Postman, or curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // If not running on Vercel, allow localhost origins (local development)
+    // This works even if NODE_ENV is set to production for testing
+    if (process.env.VERCEL !== "1") {
+      if (origin.startsWith("http://localhost:") || origin.startsWith("http://127.0.0.1:")) {
+        return callback(null, true);
+      }
+    }
+
+    // Check against allowed origins from environment variable
+    const allowedOrigins = process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(",").map((o) => o.trim())
+      : ["http://localhost:3000"];
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Default: allow localhost:3000 if no CORS_ORIGIN is set
+    if (!process.env.CORS_ORIGIN && origin === "http://localhost:3000") {
+      return callback(null, true);
+    }
+
+    // Log rejected origin for debugging
+    if (process.env.DEBUG === "true" || process.env.NODE_ENV === "development") {
+      logger.debug(`CORS rejected origin: ${origin}`);
+    }
+
+    callback(new Error("Not allowed by CORS"));
+  },
   credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
 app.use(cors(corsOptions));
@@ -159,11 +195,46 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
     }
 
     logger.debug("[Transcript] Fetching subtitles...");
-    const subtitles = await getSubtitles({ videoID: videoId, lang: "en" });
-    logger.debug("[Transcript] Got subtitles:", subtitles?.length || 0);
+    let subtitles: any[] | null = null;
+    let lastError: any = null;
+
+    // Try multiple languages in order of preference
+    // This helps with videos that might have captions in different languages
+    const languagesToTry = ["en", "en-US", "en-GB"];
+    
+    for (const lang of languagesToTry) {
+      try {
+        subtitles = await getSubtitles({ videoID: videoId, lang });
+        
+        if (subtitles && subtitles.length > 0) {
+          logger.debug(`[Transcript] Got subtitles with lang=${lang}:`, subtitles.length);
+          break;
+        }
+      } catch (error: any) {
+        logger.debug(`[Transcript] Failed with lang=${lang}:`, error?.message || error);
+        lastError = error;
+        // Continue to next language
+        continue;
+      }
+    }
 
     if (!subtitles || subtitles.length === 0) {
-      return res.status(404).json({ error: "No captions found" });
+      // Provide more specific error message based on the error
+      let errorMessage = "No captions found";
+      if (lastError) {
+        const errorMsg = lastError?.message || String(lastError);
+        if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
+          errorMessage = "YouTube is blocking caption access. This may be due to regional restrictions or rate limiting.";
+        } else if (errorMsg.includes("404") || errorMsg.includes("Not Found")) {
+          errorMessage = "Video not found or captions are not available for this video.";
+        } else if (errorMsg.includes("private") || errorMsg.includes("Private")) {
+          errorMessage = "This video is private or unavailable.";
+        } else {
+          errorMessage = `Failed to fetch captions: ${errorMsg}`;
+        }
+      }
+      logger.error("[Transcript] No captions found:", { videoId, error: lastError?.message || lastError });
+      return res.status(404).json({ error: errorMessage });
     }
 
     // cleanTranscript expects array of {text} objects
@@ -180,8 +251,25 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
       })),
     });
   } catch (error: any) {
-    logger.error("[Transcript] Error:", error?.message || error);
-    res.status(500).json({ error: "Failed to extract transcript" });
+    logger.error("[Transcript] Error:", {
+      message: error?.message || error,
+      videoId: req.body?.url ? extractVideoId(req.body.url) : "unknown",
+      stack: process.env.NODE_ENV === "development" ? error?.stack : undefined,
+    });
+    
+    // Provide more specific error messages
+    const errorMsg = error?.message || String(error);
+    let userMessage = "Failed to extract transcript";
+    
+    if (errorMsg.includes("403") || errorMsg.includes("Forbidden")) {
+      userMessage = "YouTube is blocking caption access. This may be due to regional restrictions, IP blocking, or rate limiting. Try again later or use a different video.";
+    } else if (errorMsg.includes("network") || errorMsg.includes("ECONNREFUSED") || errorMsg.includes("ETIMEDOUT")) {
+      userMessage = "Network error while fetching captions. Please check your connection and try again.";
+    } else if (errorMsg.includes("timeout")) {
+      userMessage = "Request timed out. The video might be too long or YouTube is slow to respond. Try again later.";
+    }
+    
+    res.status(500).json({ error: userMessage });
   }
 });
 
