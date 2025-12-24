@@ -39,8 +39,8 @@ import { geminiModel, getUserApiKey } from "../ai/gemini.js";
 import {
   sectionDetectionPrompt,
   sectionDetectionWithTimestampsPrompt,
-} from "../../packages/prompts/sectionDetection.js";
-import { basicSummaryPrompt } from "../../packages/prompts/basicSummary.js";
+} from "../../../packages/prompts/sectionDetection.js";
+import { basicSummaryPrompt } from "../../../packages/prompts/basicSummary.js";
 import { cleanTranscript } from "../utils/cleanTranscript.js";
 import jwt from "jsonwebtoken";
 

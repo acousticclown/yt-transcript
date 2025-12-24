@@ -26,9 +26,9 @@ This guide will help you deploy the Notely API to Railway.
 1. **Set Root Directory**:
 
    - Go to Settings → Source
-   - **IMPORTANT**: Set Root Directory to: `apps/api`
-   - This tells Railway where your `package.json` is located
-   - The nixpacks.toml will detect this and work correctly
+   - **IMPORTANT**: **Leave Root Directory EMPTY** (build from monorepo root)
+   - This allows access to both `apps/api` and `packages` folders
+   - The nixpacks.toml will handle building from `apps/api` directory
 
 2. **Add PostgreSQL Database**:
 

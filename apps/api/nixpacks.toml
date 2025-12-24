@@ -1,15 +1,9 @@
-[phases.setup]
-cmds = [
-  "if [ -d ../../packages ]; then mkdir -p packages && cp -r ../../packages/* packages/; fi",
-  "if [ -d ../packages ]; then mkdir -p packages && cp -r ../packages/* packages/; fi"
-]
-
 [phases.install]
 cmds = [
-  "npm install",
-  "npx prisma generate"
+  "cd apps/api && npm install",
+  "cd apps/api && npx prisma generate"
 ]
 
 [start]
-cmd = "npm run start"
+cmd = "cd apps/api && npm run start"
 
