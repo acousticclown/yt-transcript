@@ -1,9 +1,9 @@
 [phases.install]
 cmds = [
-  "npm install",
-  "npx prisma generate"
+  "cd apps/api && npm install",
+  "cd apps/api && npx prisma generate"
 ]
 
 [start]
-cmd = "npm run start"
+cmd = "cd apps/api && npm run start"
 
