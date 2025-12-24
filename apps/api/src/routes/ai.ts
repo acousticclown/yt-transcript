@@ -5,40 +5,43 @@
 
 import { Router } from "express";
 import type { Request, Response } from "express";
-import { 
-  setupSSE, 
-  sendSSE, 
+import {
+  setupSSE,
+  sendSSE,
   streamAIGeneration,
   generateAI,
   sanitizeJson,
-  getUserIdFromRequest
+  getUserIdFromRequest,
 } from "../lib/aiStream.js";
 import { getUserApiKey } from "../../ai/gemini.js";
 import { logger } from "../lib/logger.js";
-import { 
+import {
   NOTE_GENERATION_SYSTEM_PROMPT,
   noteGenerationPrompt,
-  STEP_MESSAGES 
-} from "../../packages/prompts/noteGeneration.js";
+  STEP_MESSAGES,
+} from "../packages/prompts/noteGeneration.js";
 
 const router = Router();
 
 /**
  * Middleware to get user's API key
  */
-async function requireApiKey(req: Request, res: Response): Promise<string | null> {
+async function requireApiKey(
+  req: Request,
+  res: Response
+): Promise<string | null> {
   const userId = await getUserIdFromRequest(req);
   if (!userId) {
     res.status(401).json({ error: "Authentication required" });
     return null;
   }
-  
+
   const apiKey = await getUserApiKey(userId);
   if (!apiKey) {
     res.status(400).json({ error: "API_KEY_REQUIRED" });
     return null;
   }
-  
+
   return apiKey;
 }
 
@@ -48,7 +51,7 @@ async function requireApiKey(req: Request, res: Response): Promise<string | null
  */
 router.post("/generate-note/stream", async (req: Request, res: Response) => {
   const { prompt } = req.body;
-  
+
   if (!prompt) {
     return res.status(400).json({ error: "Prompt is required" });
   }
@@ -58,7 +61,7 @@ router.post("/generate-note/stream", async (req: Request, res: Response) => {
   if (!userId) {
     return res.status(401).json({ error: "Authentication required" });
   }
-  
+
   const apiKey = await getUserApiKey(userId);
   if (!apiKey) {
     return res.status(400).json({ error: "API_KEY_REQUIRED" });
@@ -94,7 +97,7 @@ router.post("/generate-note", async (req: Request, res: Response) => {
     if (!apiKey) return;
 
     const { prompt } = req.body;
-    
+
     if (!prompt) {
       return res.status(400).json({ error: "Prompt is required" });
     }
@@ -114,13 +117,12 @@ router.post("/generate-note", async (req: Request, res: Response) => {
     }
 
     const note = JSON.parse(sanitizeJson(jsonMatch[0]));
-    
+
     // Validate and normalize
     const normalizedNote = normalizeNote(note);
-    
+
     logger.log("✅ Note generated:", normalizedNote.title);
     res.json({ note: normalizedNote });
-
   } catch (error: any) {
     logger.error("Note generation error:", error);
     if (error.message === "API_KEY_REQUIRED") {
@@ -140,7 +142,7 @@ router.post("/inline", async (req: Request, res: Response) => {
     if (!apiKey) return;
 
     const { text, action } = req.body;
-    
+
     if (!text || !action) {
       return res.status(400).json({ error: "Text and action are required" });
     }
@@ -156,9 +158,12 @@ router.post("/inline", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Invalid action" });
     }
 
-    const result = await generateAI("You are a helpful writing assistant.", prompt, apiKey);
+    const result = await generateAI(
+      "You are a helpful writing assistant.",
+      prompt,
+      apiKey
+    );
     res.json({ result: result.trim() });
-
   } catch (error: any) {
     logger.error("Inline AI error:", error);
     if (error.message === "API_KEY_REQUIRED") {
@@ -178,16 +183,23 @@ router.post("/transform-language", async (req: Request, res: Response) => {
     if (!apiKey) return;
 
     const { text, targetLanguage, tone } = req.body;
-    
+
     if (!text || !targetLanguage) {
-      return res.status(400).json({ error: "Text and targetLanguage are required" });
+      return res
+        .status(400)
+        .json({ error: "Text and targetLanguage are required" });
     }
 
-    const prompt = `Transform this text to ${targetLanguage}${tone ? ` with a ${tone} tone` : ""}:\n\n"${text}"\n\nReturn only the transformed text.`;
-    
-    const result = await generateAI("You are a multilingual translator.", prompt, apiKey);
-    res.json({ result: result.trim() });
+    const prompt = `Transform this text to ${targetLanguage}${
+      tone ? ` with a ${tone} tone` : ""
+    }:\n\n"${text}"\n\nReturn only the transformed text.`;
 
+    const result = await generateAI(
+      "You are a multilingual translator.",
+      prompt,
+      apiKey
+    );
+    res.json({ result: result.trim() });
   } catch (error: any) {
     logger.error("Language transform error:", error);
     if (error.message === "API_KEY_REQUIRED") {
@@ -207,29 +219,29 @@ router.post("/chat", async (req: Request, res: Response) => {
     if (!apiKey) return;
 
     const { messages, context } = req.body;
-    
+
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ error: "Messages array is required" });
     }
 
     // Build conversation history
     const conversationPrompt = messages
-      .map((m: { role: string; content: string }) => 
-        `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`
+      .map(
+        (m: { role: string; content: string }) =>
+          `${m.role === "user" ? "User" : "Assistant"}: ${m.content}`
       )
       .join("\n\n");
 
-    const systemPrompt = context 
+    const systemPrompt = context
       ? `You are Notely AI. Context: ${context}`
       : "You are Notely AI, a helpful note-taking assistant.";
 
     const result = await generateAI(systemPrompt, conversationPrompt, apiKey);
-    
-    res.json({ 
-      message: result.trim(),
-      role: "assistant" 
-    });
 
+    res.json({
+      message: result.trim(),
+      role: "assistant",
+    });
   } catch (error: any) {
     logger.error("Chat error:", error);
     if (error.message === "API_KEY_REQUIRED") {
@@ -247,7 +259,7 @@ function normalizeNote(note: any) {
     title: note.title || "Generated Note",
     content: note.content || "",
     tags: Array.isArray(note.tags) ? note.tags : [],
-    sections: Array.isArray(note.sections) 
+    sections: Array.isArray(note.sections)
       ? note.sections.map((s: any, i: number) => ({
           id: `section-${i}-${Date.now()}`,
           title: s.title || `Section ${i + 1}`,
