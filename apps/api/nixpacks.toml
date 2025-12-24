@@ -8,10 +8,11 @@ cmds = [
 
 [phases.install]
 cmds = [
+  "npm config set production false",
   "NODE_ENV=development npm install",
   "npx prisma generate"
 ]
 
 [start]
-cmd = "npm run start"
+cmd = "sh -c '(npm run start 2>&1) | grep -v \"npm warn config production\"'"
 
