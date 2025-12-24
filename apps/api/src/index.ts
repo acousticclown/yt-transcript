@@ -194,9 +194,10 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
       return res.status(400).json({ error: "Invalid YouTube URL" });
     }
 
-    logger.debug("[Transcript] Fetching subtitles...");
+    logger.debug("[Transcript] Fetching subtitles...", { videoId, environment: process.env.VERCEL ? "production" : "local" });
     let subtitles: any[] | null = null;
     let lastError: any = null;
+    let attemptResults: any[] = [];
 
     // Try multiple languages in order of preference
     // This helps with videos that might have captions in different languages
@@ -204,24 +205,46 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
     
     for (const lang of languagesToTry) {
       try {
+        logger.debug(`[Transcript] Attempting lang=${lang} for videoId=${videoId}`);
+        // The library should handle serverless environments automatically in newer versions
+        // It includes bot detection bypass and dual extraction methods
         subtitles = await getSubtitles({ videoID: videoId, lang });
+        
+        const result = {
+          lang,
+          success: true,
+          subtitleCount: subtitles?.length || 0,
+          hasSubtitles: !!(subtitles && subtitles.length > 0),
+        };
+        attemptResults.push(result);
+        logger.debug(`[Transcript] Result for lang=${lang}:`, result);
         
         if (subtitles && subtitles.length > 0) {
           logger.debug(`[Transcript] Got subtitles with lang=${lang}:`, subtitles.length);
           break;
+        } else {
+          logger.warn(`[Transcript] Empty result for lang=${lang}, trying next language...`);
         }
       } catch (error: any) {
         // Log full error details for debugging
         const errorDetails = {
           message: error?.message,
-          stack: error?.stack,
+          stack: error?.stack?.substring(0, 500), // Truncate stack for logging
           name: error?.name,
           code: error?.code,
           statusCode: error?.statusCode,
           response: error?.response?.status,
+          responseData: error?.response?.data,
           lang,
           videoId,
         };
+        attemptResults.push({
+          lang,
+          success: false,
+          error: error?.message || String(error),
+          errorType: error?.name,
+          statusCode: error?.statusCode || error?.response?.status,
+        });
         logger.error(`[Transcript] Failed with lang=${lang}:`, errorDetails);
         lastError = error;
         // Continue to next language
@@ -233,8 +256,13 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
       // Provide more specific error message based on the error
       let errorMessage = "No captions found";
       let isProductionBlock = false;
+      const isProduction = !!process.env.VERCEL;
       
-      if (lastError) {
+      // Check if we're in production and got empty results (likely blocking)
+      if (isProduction && !lastError && attemptResults.every(r => r.success && !r.hasSubtitles)) {
+        isProductionBlock = true;
+        errorMessage = "YouTube is blocking caption access from this server. This is a known limitation when using cloud hosting (like Vercel). The video may have captions, but YouTube blocks automated requests from cloud IP addresses.\n\nPossible solutions:\n• Try again later (rate limits may reset)\n• Use a different video\n• This feature works better when running the API server locally";
+      } else if (lastError) {
         const errorMsg = lastError?.message || String(lastError);
         const errorString = JSON.stringify(lastError);
         
@@ -260,26 +288,34 @@ app.post("/transcript", async (req: express.Request, res: express.Response) => {
           // Include the actual error message for debugging
           errorMessage = `Failed to fetch captions: ${errorMsg}`;
         }
+      } else if (isProduction) {
+        // Production environment, no error thrown, but no results - likely blocking
+        isProductionBlock = true;
+        errorMessage = "Unable to fetch captions. This may be due to YouTube blocking requests from cloud servers. Try again later or use a different video.";
       }
       
       // Enhanced logging for production debugging
       logger.error("[Transcript] No captions found:", {
         videoId,
-        error: lastError?.message || lastError,
+        error: lastError?.message || lastError || "No error thrown, but no subtitles returned",
         errorType: lastError?.name,
         statusCode: lastError?.statusCode || lastError?.response?.status,
         isProductionBlock,
-        environment: process.env.VERCEL ? "production" : "local",
+        environment: isProduction ? "production" : "local",
+        attemptResults,
+        allAttemptsFailed: attemptResults.every(r => !r.hasSubtitles),
       });
       
       return res.status(404).json({ 
         error: errorMessage,
         videoId,
-        // Include debug info in development
-        ...(process.env.NODE_ENV === "development" && lastError ? {
+        // Include debug info in development or if explicitly requested
+        ...(process.env.NODE_ENV === "development" || process.env.DEBUG === "true" ? {
           debug: {
             errorType: lastError?.name,
             statusCode: lastError?.statusCode || lastError?.response?.status,
+            attempts: attemptResults,
+            isProductionBlock,
           }
         } : {})
       });
