@@ -1,0 +1,13 @@
+{
+  "name": "@yt-transcript/prompts",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./index.ts",
+  "exports": {
+    ".": "./index.ts",
+    "./basicSummary": "./basicSummary.ts",
+    "./sectionDetection": "./sectionDetection.ts",
+    "./categoryDetection": "./categoryDetection.ts"
+  }
+}
+
