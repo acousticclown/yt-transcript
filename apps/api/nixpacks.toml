@@ -13,5 +13,5 @@ cmds = [
 ]
 
 [start]
-cmd = "sh -c '(npm run start 2>&1) | grep -v \"npm warn config production\"'"
+cmd = "tsx src/index.ts"
 
