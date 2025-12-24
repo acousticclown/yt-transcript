@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { SparklesIcon } from "./Icons";
+import { API_BASE } from "../lib/api";
 
 type ApiKeyPromptProps = {
   isOpen: boolean;
@@ -49,7 +50,7 @@ export function ApiKeyPrompt({
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/auth/gemini-key", {
+      const res = await fetch(`${API_BASE}/api/auth/gemini-key`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -190,7 +191,7 @@ export function useApiKeyCheck() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const res = await fetch("http://localhost:3001/api/auth/me", {
+      const res = await fetch(`${API_BASE}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

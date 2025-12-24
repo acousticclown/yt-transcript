@@ -9,7 +9,7 @@ import { ActionButton } from "../../../components/ActionButton";
 import { SaveIndicator } from "../../../components/ui";
 import { ApiKeyPrompt } from "../../../components/ApiKeyPrompt";
 import { useCreateNote, useNotes } from "../../../lib/hooks";
-import { youtubeApi, aiApi, NoteSection, Note } from "../../../lib/api";
+import { youtubeApi, aiApi, NoteSection, Note, API_BASE } from "../../../lib/api";
 import {
   SparklesIcon,
   YouTubeIcon,
@@ -414,7 +414,7 @@ export default function YouTubePage() {
     setLoadingMessage("Fetching transcript...");
 
     try {
-      const res = await fetch("http://localhost:3001/transcript", {
+      const res = await fetch(`${API_BASE}/transcript`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
@@ -468,7 +468,7 @@ export default function YouTubePage() {
       }
     } catch (error) {
       console.error("Transcript fetch error:", error);
-      alert("⚠️ Failed to fetch transcript.\n\nPlease check:\n• API server is running (localhost:3001)\n• Your internet connection\n• The video URL is correct\n\nTry again in a moment.");
+      alert("⚠️ Failed to fetch transcript.\n\nPlease check:\n• API server is running\n• Your internet connection\n• The video URL is correct\n\nTry again in a moment.");
     } finally {
       setLoading(false);
     }
@@ -483,7 +483,7 @@ export default function YouTubePage() {
 
     try {
       const token = localStorage.getItem("notely-token");
-      const res = await fetch("http://localhost:3001/sections", {
+      const res = await fetch(`${API_BASE}/sections`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

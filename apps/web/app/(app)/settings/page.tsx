@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ThemePicker } from "../../../components/ThemePicker";
 import { useUser } from "../../../lib/UserContext";
 import { CheckIcon, SparklesIcon } from "../../../components/Icons";
+import { API_BASE } from "../../../lib/api";
 
 export default function SettingsPage() {
   const { user } = useUser();
@@ -28,7 +29,7 @@ export default function SettingsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/auth/gemini-key", {
+      const res = await fetch(`${API_BASE}/api/auth/gemini-key`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -59,7 +60,7 @@ export default function SettingsPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:3001/api/auth/gemini-key", {
+      const res = await fetch(`${API_BASE}/api/auth/gemini-key`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
