@@ -1,4 +1,4 @@
-# Notely
+# Notely v2.0.1 Beta
 
 > **v2.0.0 Beta** - AI-Powered Notes Application with YouTube Transcript Integration
 
@@ -7,6 +7,7 @@ Notely is a modern, personal-first notes application with AI-powered features an
 ## Features
 
 ### Notes & Editor
+
 - **Rich note editor** - Create notes with title, tags, sections, and content
 - **Beautiful note viewer** - Clean read-only view, click anywhere to edit
 - **AI-powered actions** - Simplify, expand, regenerate, or translate text
@@ -17,12 +18,14 @@ Notely is a modern, personal-first notes application with AI-powered features an
 - **Auto-save** - Changes saved automatically on navigation
 
 ### AI Generation
+
 - **AI note generator** - Create full notes from text prompts
 - **SSE streaming** - Real-time generation with thinking states
 - **Model fallback** - Automatic fallback (gemini-2.5-flash → gemini-2.5-flash-lite)
 - **Structured output** - Title, content, sections, and tags
 
 ### YouTube Integration
+
 - **YouTube transcript extraction** - Fast, reliable caption extraction
 - **AI-powered structuring** - Automatically break content into sections with timestamps
 - **Embedded video player** - Watch videos directly in-app
@@ -33,6 +36,7 @@ Notely is a modern, personal-first notes application with AI-powered features an
 - **Caching** - Skip AI for already transcribed videos
 
 ### Design & UX
+
 - **Modern design** - Warm color palette with glassmorphism effects
 - **Multiple themes** - 8 themes (4 light, 4 dark) with creative names
 - **Pure vector icons** - Consistent design system, no emojis
@@ -41,12 +45,14 @@ Notely is a modern, personal-first notes application with AI-powered features an
 - **Dark mode** - Full dark mode support with system preference
 
 ### Search & Filtering
+
 - **Global search** - Cmd+K to search all notes
 - **Quick filters** - Favorites, YouTube imports, AI generated
 - **Tag filtering** - Filter by tags
 - **Keyboard shortcuts** - Cmd+K (search), Cmd+N (new note)
 
 ### Data & Export
+
 - **SQLite database** - Persistent storage with Prisma ORM
 - **Markdown export** - Download or copy notes as Markdown
 - **User authentication** - Session-based JWT auth
@@ -61,6 +67,7 @@ Notely is a modern, personal-first notes application with AI-powered features an
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 20+
 - Gemini API key (free from [Google AI Studio](https://aistudio.google.com/))
 
@@ -107,6 +114,7 @@ notely/
 ## API Endpoints
 
 ### Notes
+
 - `GET /api/notes` - List all notes
 - `GET /api/notes/:id` - Get single note
 - `POST /api/notes` - Create note
@@ -114,11 +122,13 @@ notely/
 - `DELETE /api/notes/:id` - Delete note
 
 ### AI
+
 - `POST /api/ai/generate-note` - Generate note from prompt
 - `POST /api/ai/generate-note/stream` - SSE streaming generation
 - `POST /api/ai/inline` - Inline actions (simplify, expand, example)
 
 ### YouTube
+
 - `POST /transcript` - Extract transcript from URL
 - `POST /sections` - Generate sections from transcript
 
